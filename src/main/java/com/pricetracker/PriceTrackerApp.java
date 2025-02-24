@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // mvn clean javafx:run
+// .\mvnw.cmd clean install
 
 public class PriceTrackerApp extends Application {
     private final List<Product> products = new ArrayList<>();
