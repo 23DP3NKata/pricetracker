@@ -19,13 +19,15 @@ public class PriceTrackerApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         uiHandler = new UIHandler(this);
-        primaryStage.setTitle("Price Tracker");
-        primaryStage.setScene(uiHandler.createMainScene());
-        primaryStage.show();
+        new StartWindow(this).show(primaryStage);
     }
 
     public void addProduct(Product product) {
         products.add(product);
         uiHandler.addProductToUI(product);
+    }
+
+    public UIHandler getUIHandler() {
+        return uiHandler;
     }
 }
