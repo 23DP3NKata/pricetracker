@@ -1,5 +1,6 @@
+com\pricetracker\StartWindow.class
+com\pricetracker\UIHandler.class
+com\pricetracker\Product.class
 com\pricetracker\PriceTrackerApp.class
 com\pricetracker\UIHandler$1.class
-com\pricetracker\UIHandler.class
 com\pricetracker\PriceChecker.class
-com\pricetracker\Product.class

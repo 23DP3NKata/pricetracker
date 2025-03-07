@@ -9,6 +9,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 
 public class StartWindow {
     private final PriceTrackerApp app;
@@ -38,8 +39,6 @@ public class StartWindow {
         primaryStage.show();
     }
 
-    // need create method create new list and work with it
-
     private void showNewListDialog(Stage primaryStage) {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("New List");
@@ -49,10 +48,22 @@ public class StartWindow {
         dialog.showAndWait().ifPresent(name -> {
             if (!name.trim().isEmpty()) {
                 System.out.println("New list created: " + name);
+
+                ProductList newList = new ProductList(name);
+                
+                FileManager fileManager = new FileManager();
+                try {
+                    fileManager.writeProductList(newList);
+                    System.out.println("List saved as " + name + ".json");
+                } catch (IOException e) {
+                    System.err.println("Error saving list: " + e.getMessage());
+                }
+
                 primaryStage.setScene(app.getUIHandler().createMainScene());
             }
         });
     }
+
 
     private void showLoadListDialog(Stage primaryStage) {
         FileChooser fileChooser = new FileChooser();
