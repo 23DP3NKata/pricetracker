@@ -57,35 +57,33 @@ public class UIHandler {
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
         dialog.setResultConverter(button -> button == ButtonType.OK ? linkField.getText() : null);
-        dialog.showAndWait().ifPresent(this::fetchProductData);
-    }
+        dialog.showAndWait().ifPresent(url -> {
+            Task<Product> task = new Task<>() {
+                @Override
+                protected Product call() {
+                    return PriceChecker.fetchProductDetails(url);
+                }
+            };
 
-    private void fetchProductData(String url) {
-        Task<Product> task = new Task<>() {
-            @Override
-            protected Product call() {
-                return PriceChecker.fetchProductDetails(url);
-            }
-        };
+            task.setOnSucceeded(e -> {
+                Product product = task.getValue();
+                if (product != null) app.addProduct(product);
+            });
 
-        task.setOnSucceeded(e -> {
-            Product product = task.getValue();
-            if (product != null) app.addProduct(product);
+            new Thread(task).start();
         });
-
-        new Thread(task).start();
     }
 
     public void addProductToUI(Product product) {
         HBox productBox = new HBox(10);
         productBox.setPadding(new Insets(10));
 
-        ImageView imageView = new ImageView(new Image(product.imageUrl));
+        ImageView imageView = new ImageView(new Image(product.getImageUrl()));
         imageView.setFitHeight(50);
         imageView.setFitWidth(50);
 
-        Label nameLabel = new Label(product.name);
-        Label priceLabel = new Label("€" + product.price);
+        Label nameLabel = new Label(product.getName());
+        Label priceLabel = new Label("€" + product.getPrice());
 
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction(e -> productContainer.getChildren().remove(productBox));

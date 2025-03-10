@@ -3,17 +3,16 @@ package com.pricetracker;
 import java.io.File;
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class FileManager {
-    public void writeProductList(ProductList list) throws IOException {
+    public void writeProductList(ProductList list, String filePath) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(new File(list.getName() + ".json"), list);
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.writeValue(new File(filePath), list);
     }
-    
+
     public ProductList readProductList(String filename) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(new File(filename), ProductList.class);

@@ -50,20 +50,28 @@ public class StartWindow {
                 System.out.println("New list created: " + name);
 
                 ProductList newList = new ProductList(name);
-                
-                FileManager fileManager = new FileManager();
-                try {
-                    fileManager.writeProductList(newList);
-                    System.out.println("List saved as " + name + ".json");
-                } catch (IOException e) {
-                    System.err.println("Error saving list: " + e.getMessage());
-                }
 
-                primaryStage.setScene(app.getUIHandler().createMainScene());
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Save List As");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+                fileChooser.setInitialFileName(name + ".json");
+
+                File file = fileChooser.showSaveDialog(primaryStage);
+                if (file != null) {
+                    app.setCurrentProductList(newList, file.getAbsolutePath());
+                    FileManager fileManager = new FileManager();
+                    try {
+                        fileManager.writeProductList(newList, file.getAbsolutePath());
+                        System.out.println("List saved as " + file.getAbsolutePath());
+                    } catch (IOException e) {
+                        System.err.println("Error saving list: " + e.getMessage());
+                    }
+
+                    primaryStage.setScene(app.getUIHandler().createMainScene());
+                }
             }
         });
     }
-
 
     private void showLoadListDialog(Stage primaryStage) {
         FileChooser fileChooser = new FileChooser();
