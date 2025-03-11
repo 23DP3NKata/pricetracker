@@ -76,12 +76,19 @@ public class StartWindow {
     private void showLoadListDialog(Stage primaryStage) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select a list file");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
 
         File file = fileChooser.showOpenDialog(primaryStage);
         if (file != null) {
-            System.out.println("Loaded list from file: " + file.getName());
-            primaryStage.setScene(app.getUIHandler().createMainScene());
+            FileManager fileManager = new FileManager();
+            try {
+                ProductList loadedList = fileManager.readProductList(file.getAbsolutePath());
+                app.setCurrentProductList(loadedList, file.getAbsolutePath());
+                System.out.println("Loaded list from file: " + file.getName());
+                primaryStage.setScene(app.getUIHandler().createMainScene());
+            } catch (IOException e) {
+                System.err.println("Error loading list: " + e.getMessage());
+            }
         }
     }
 }

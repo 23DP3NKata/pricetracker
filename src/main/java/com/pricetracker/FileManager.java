@@ -16,5 +16,5 @@ public class FileManager {
     public ProductList readProductList(String filename) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(new File(filename), ProductList.class);
-    }    
+    }
 }

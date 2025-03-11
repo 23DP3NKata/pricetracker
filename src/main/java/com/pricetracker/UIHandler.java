@@ -38,7 +38,7 @@ public class UIHandler {
 
         root.setTop(topMenu);
         root.setCenter(scrollPane);
-        return new Scene(root, 500, 600);
+        return new Scene(root, 800, 600);
     }
 
     private void openAddProductDialog() {
@@ -87,6 +87,8 @@ public class UIHandler {
 
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction(e -> productContainer.getChildren().remove(productBox));
+
+        deleteButton.setPrefWidth(60);
 
         productBox.getChildren().addAll(imageView, nameLabel, priceLabel, deleteButton);
         productContainer.getChildren().add(productBox);

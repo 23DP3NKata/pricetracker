@@ -9,7 +9,7 @@ public class PriceChecker {
         try {
             Document doc = Jsoup.connect(url)
                     .userAgent("Mozilla/5.0")
-                    .timeout(3000)
+                    .timeout(2000)
                     .get();
 
             if (url.contains("rdveikals.lv")) {

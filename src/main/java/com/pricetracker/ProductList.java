@@ -7,6 +7,9 @@ public class ProductList {
     private List<Product> products = new ArrayList<>();
     private String name;
 
+    public ProductList() {
+    }
+
     public ProductList(String name) {
         this.name = name;
     }

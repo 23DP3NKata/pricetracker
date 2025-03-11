@@ -10,6 +10,9 @@ import java.util.List;
 // mvn clean javafx:run
 // .\mvnw.cmd clean install
 
+// ./mvnw.cmd javafx:run
+// ./mvnw.cmd clean javafx:run
+
 public class PriceTrackerApp extends Application {
     private final List<Product> products = new ArrayList<>();
     private UIHandler uiHandler;
