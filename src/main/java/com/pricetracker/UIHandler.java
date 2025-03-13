@@ -86,7 +86,10 @@ public class UIHandler {
         Label priceLabel = new Label("€" + product.getPrice());
 
         Button deleteButton = new Button("Delete");
-        deleteButton.setOnAction(e -> productContainer.getChildren().remove(productBox));
+        deleteButton.setOnAction(e -> {
+            productContainer.getChildren().remove(productBox);
+            app.removeProduct(product);
+        });
 
         deleteButton.setPrefWidth(60);
 

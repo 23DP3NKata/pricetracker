@@ -38,6 +38,14 @@ public class PriceTrackerApp extends Application {
         }
     }
 
+    public void removeProduct(Product product) {
+        products.remove(product);
+        if (currentProductList != null) {
+            currentProductList.getProducts().remove(product);
+            saveCurrentProductList();
+        }
+    }
+
     public void setCurrentProductList(ProductList productList, String filePath) {
         this.currentProductList = productList;
         this.currentFilePath = filePath;
