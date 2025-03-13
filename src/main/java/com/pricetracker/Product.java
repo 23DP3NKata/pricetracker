@@ -12,6 +12,9 @@ public class Product {
     @JsonProperty
     private String imageUrl;
 
+    public Product() {
+    }
+
     public Product(String name, String url, double price, String imageUrl) {
         this.name = name;
         this.url = url;

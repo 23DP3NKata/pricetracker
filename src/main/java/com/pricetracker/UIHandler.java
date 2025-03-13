@@ -93,4 +93,8 @@ public class UIHandler {
         productBox.getChildren().addAll(imageView, nameLabel, priceLabel, deleteButton);
         productContainer.getChildren().add(productBox);
     }
+
+    public void clearProductUI() {
+        productContainer.getChildren().clear();
+    }
 }

@@ -34,8 +34,9 @@ public class StartWindow {
         loadListButton.setOnAction(e -> showLoadListDialog(primaryStage));
 
         startLayout.getChildren().addAll(welcomeLabel, newListButton, loadListButton);
-        primaryStage.setScene(new Scene(startLayout, 300, 200));
-        primaryStage.setTitle("PriceTracker");
+
+        Scene scene = new Scene(startLayout, 300, 200);
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 
@@ -75,20 +76,13 @@ public class StartWindow {
 
     private void showLoadListDialog(Stage primaryStage) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select a list file");
+        fileChooser.setTitle("Open List");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
 
         File file = fileChooser.showOpenDialog(primaryStage);
         if (file != null) {
-            FileManager fileManager = new FileManager();
-            try {
-                ProductList loadedList = fileManager.readProductList(file.getAbsolutePath());
-                app.setCurrentProductList(loadedList, file.getAbsolutePath());
-                System.out.println("Loaded list from file: " + file.getName());
-                primaryStage.setScene(app.getUIHandler().createMainScene());
-            } catch (IOException e) {
-                System.err.println("Error loading list: " + e.getMessage());
-            }
+            app.loadProductList(file.getAbsolutePath());
+            primaryStage.setScene(app.getUIHandler().createMainScene());
         }
     }
 }

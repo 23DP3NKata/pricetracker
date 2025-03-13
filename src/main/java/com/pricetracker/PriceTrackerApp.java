@@ -55,6 +55,20 @@ public class PriceTrackerApp extends Application {
         }
     }
 
+    public void loadProductList(String filePath) {
+        FileManager fileManager = new FileManager();
+        try {
+            ProductList productList = fileManager.readProductList(filePath);
+            setCurrentProductList(productList, filePath);
+            uiHandler.clearProductUI();
+            for (Product product : productList.getProducts()) {
+                uiHandler.addProductToUI(product);
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading list: " + e.getMessage());
+        }
+    }
+
     public UIHandler getUIHandler() {
         return uiHandler;
     }
