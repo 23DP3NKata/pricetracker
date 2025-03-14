@@ -1,23 +1,26 @@
 package com.pricetracker;
 
-import javafx.application.Application;
-import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 // mvn clean javafx:run
 // .\mvnw.cmd clean install
 
 // ./mvnw.cmd javafx:run
 // ./mvnw.cmd clean javafx:run
 
+import javafx.application.Application;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class PriceTrackerApp extends Application {
     private final List<Product> products = new ArrayList<>();
     private UIHandler uiHandler;
     private ProductList currentProductList;
     private String currentFilePath;
+    private Timer priceUpdateTimer;
 
     public static void main(String[] args) {
         launch(args);
@@ -30,12 +33,21 @@ public class PriceTrackerApp extends Application {
     }
 
     public void addProduct(Product product) {
+        if (isProductInList(product)) {
+            uiHandler.showProductExistsAlert(product);
+            return;
+        }
+
         products.add(product);
         uiHandler.addProductToUI(product);
         if (currentProductList != null) {
             currentProductList.addProduct(product);
             saveCurrentProductList();
         }
+    }
+
+    private boolean isProductInList(Product product) {
+        return products.stream().anyMatch(p -> p.getUrl().equals(product.getUrl()) || p.getName().equals(product.getName()));
     }
 
     public void removeProduct(Product product) {
@@ -49,6 +61,7 @@ public class PriceTrackerApp extends Application {
     public void setCurrentProductList(ProductList productList, String filePath) {
         this.currentProductList = productList;
         this.currentFilePath = filePath;
+        startPriceUpdateTimer();
     }
 
     private void saveCurrentProductList() {
@@ -74,6 +87,29 @@ public class PriceTrackerApp extends Application {
             }
         } catch (IOException e) {
             System.err.println("Error loading list: " + e.getMessage());
+        }
+    }
+
+    private void startPriceUpdateTimer() {
+        if (priceUpdateTimer != null) {
+            priceUpdateTimer.cancel();
+        }
+
+        priceUpdateTimer = new Timer(true);
+        priceUpdateTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                updatePrices();
+            }
+        }, 0, 5 * 60 * 1000); // Update prices every 5 minutes
+    }
+
+    private void updatePrices() {
+        if (currentProductList != null) {
+            for (Product product : currentProductList.getProducts()) {
+                PriceChecker.updateProductPrice(product);
+            }
+            saveCurrentProductList();
         }
     }
 

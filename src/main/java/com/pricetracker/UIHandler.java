@@ -100,4 +100,12 @@ public class UIHandler {
     public void clearProductUI() {
         productContainer.getChildren().clear();
     }
+
+    public void showProductExistsAlert(Product product) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Product Exists");
+        alert.setHeaderText(null);
+        alert.setContentText("The product \"" + product.getName() + "\" already exists in the list.");
+        alert.showAndWait();
+    }
 }

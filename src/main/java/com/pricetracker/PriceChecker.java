@@ -30,6 +30,31 @@ public class PriceChecker {
         }
     }
 
+    public static void updateProductPrice(Product product) {
+        try {
+            Document doc = Jsoup.connect(product.getUrl())
+                    .userAgent("Mozilla/5.0")
+                    .timeout(2000)
+                    .get();
+
+            if (product.getUrl().contains("rdveikals.lv")) {
+                Element priceElement = doc.selectFirst(".price strong");
+                if (priceElement != null) {
+                    double newPrice = Double.parseDouble(priceElement.text().replaceAll("[^\\d.]", ""));
+                    product.setPrice(newPrice);
+                }
+            } else if (product.getUrl().contains("1a.lv")) {
+                Element priceElement = doc.selectFirst(".price span");
+                if (priceElement != null) {
+                    double newPrice = Double.parseDouble(priceElement.text().replaceAll("[^\\d.]", ""));
+                    product.setPrice(newPrice);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static Product extractDetails(Element nameElement, Element priceElement, Element imageElement, String url) {
         String name = "Unknown Product";
         double price = 0.0;
