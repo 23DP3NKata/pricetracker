@@ -97,16 +97,58 @@ public class UIHandler {
         Label nameLabel = new Label(product.getName());
         Label priceLabel = new Label("€" + product.getPrice());
 
-        Button deleteButton = new Button("Delete");
-        deleteButton.setOnAction(e -> {
-            productContainer.getChildren().remove(productBox);
-            app.removeProduct(product);
+        Button priceHistoryButton = new Button("Price History");
+        priceHistoryButton.setOnAction(e -> showPriceHistory(product));
+
+        Button settingsButton = new Button("Settings");
+        settingsButton.setOnAction(e -> showSettingsDialog(product, productBox));
+
+        priceHistoryButton.setPrefWidth(100);
+        settingsButton.setPrefWidth(100);
+
+        productBox.getChildren().addAll(imageView, nameLabel, priceLabel, priceHistoryButton, settingsButton);
+        productContainer.getChildren().add(productBox);
+    }
+
+    private void showPriceHistory(Product product) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Price History");
+        alert.setHeaderText(product.getName());
+
+        StringBuilder history = new StringBuilder();
+        for (PriceHistoryEntry entry : product.getPriceHistory()) {
+            history.append("Price: €").append(entry.getPrice())
+                   .append(", Date: ").append(entry.getDate().toString()).append("\n");
+        }
+
+        alert.setContentText(history.toString());
+        alert.showAndWait();
+    }
+
+    private void showSettingsDialog(Product product, HBox productBox) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Product Settings");
+
+        ButtonType deleteButtonType = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(deleteButtonType, cancelButtonType);
+
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(10));
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == deleteButtonType) {
+                productContainer.getChildren().remove(productBox);
+                app.removeProduct(product);
+            }
+            return null;
         });
 
-        deleteButton.setPrefWidth(60);
-
-        productBox.getChildren().addAll(imageView, nameLabel, priceLabel, deleteButton);
-        productContainer.getChildren().add(productBox);
+        dialog.showAndWait();
     }
 
     public void clearProductUI() {

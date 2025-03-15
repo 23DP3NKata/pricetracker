@@ -66,7 +66,7 @@ public class PriceTrackerApp extends Application {
         startPriceUpdateTimer();
     }
 
-    private void saveCurrentProductList() {
+    public void saveCurrentProductList() {
         if (currentProductList != null && currentFilePath != null) {
             FileManager fileManager = new FileManager();
             try {
