@@ -10,6 +10,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -21,6 +22,7 @@ public class PriceTrackerApp extends Application {
     private ProductList currentProductList;
     private String currentFilePath;
     private Timer priceUpdateTimer;
+    private LocalDateTime lastUpdate;
 
     public static void main(String[] args) {
         launch(args);
@@ -104,13 +106,19 @@ public class PriceTrackerApp extends Application {
         }, 0, 5 * 60 * 1000); // Update prices every 5 minutes
     }
 
-    private void updatePrices() {
+    public void updatePrices() {
         if (currentProductList != null) {
             for (Product product : currentProductList.getProducts()) {
                 PriceChecker.updateProductPrice(product);
             }
             saveCurrentProductList();
+            lastUpdate = LocalDateTime.now();
+            uiHandler.updateLastUpdateText(lastUpdate);
         }
+    }
+
+    public void updatePricesManually() {
+        updatePrices();
     }
 
     public UIHandler getUIHandler() {

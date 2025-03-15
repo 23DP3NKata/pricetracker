@@ -4,6 +4,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+
 public class PriceChecker {
     public static Product fetchProductDetails(String url) {
         try {
@@ -37,21 +40,42 @@ public class PriceChecker {
                     .timeout(2000)
                     .get();
 
+            double newPrice = 0.0;
             if (product.getUrl().contains("rdveikals.lv")) {
                 Element priceElement = doc.selectFirst(".price strong");
                 if (priceElement != null) {
-                    double newPrice = Double.parseDouble(priceElement.text().replaceAll("[^\\d.]", ""));
-                    product.setPrice(newPrice);
+                    newPrice = parsePrice(priceElement.text());
                 }
             } else if (product.getUrl().contains("1a.lv")) {
                 Element priceElement = doc.selectFirst(".price span");
                 if (priceElement != null) {
-                    double newPrice = Double.parseDouble(priceElement.text().replaceAll("[^\\d.]", ""));
-                    product.setPrice(newPrice);
+                    newPrice = parsePrice(priceElement.text());
                 }
             }
-        } catch (Exception e) {
+
+            if (newPrice != product.getPrice()) {
+                product.setPrice(newPrice);
+                product.setUpdatedAt(LocalDateTime.now());
+                product.addPriceHistoryEntry(new PriceHistoryEntry(newPrice, LocalDateTime.now()));
+            }
+        } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static double parsePrice(String priceText) {
+        String rawPrice = priceText.replaceAll("[^0-9,\\.]", "");
+
+        if (rawPrice.contains(",") && !rawPrice.contains(".")) {
+            rawPrice = rawPrice.replace(",", ".");
+        } else {
+            rawPrice = rawPrice.replace(",", "");
+        }
+
+        try {
+            return Double.parseDouble(rawPrice);
+        } catch (NumberFormatException e) {
+            return 0.0;
         }
     }
 
@@ -65,25 +89,18 @@ public class PriceChecker {
         }
 
         if (priceElement != null) {
-            String rawPrice = priceElement.text().replaceAll("[^0-9,\\.]", "");
-
-            if (rawPrice.contains(",") && !rawPrice.contains(".")) {
-                rawPrice = rawPrice.replace(",", ".");
-            } else {
-                rawPrice = rawPrice.replace(",", "");
-            }
-
-            try {
-                price = Double.parseDouble(rawPrice);
-            } catch (NumberFormatException e) {
-                price = 0.0;
-            }
+            price = parsePrice(priceElement.text());
         }
 
         if (imageElement != null) {
             imageUrl = imageElement.absUrl("src");
         }
 
-        return new Product(name, url, price, imageUrl);
+        Product product = new Product(name, url, price, imageUrl);
+        product.setCreatedAt(LocalDateTime.now());
+        product.setUpdatedAt(LocalDateTime.now());
+        product.addPriceHistoryEntry(new PriceHistoryEntry(price, LocalDateTime.now()));
+
+        return product;
     }
 }

@@ -23,10 +23,9 @@ public class Product {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm")
     private LocalDateTime updatedAt;
     @JsonProperty
-    private List<PriceHistoryEntry> priceHistory;
+    private List<PriceHistoryEntry> priceHistory = new ArrayList<>();
 
     public Product() {
-        this.priceHistory = new ArrayList<>();
     }
 
     public Product(String name, String url, double price, String imageUrl) {
@@ -36,8 +35,6 @@ public class Product {
         this.imageUrl = imageUrl;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.priceHistory = new ArrayList<>();
-        this.priceHistory.add(new PriceHistoryEntry(price, this.updatedAt));
     }
 
     public String getName() {
@@ -68,9 +65,27 @@ public class Product {
         return priceHistory;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setPrice(double price) {
         this.price = price;
-        this.updatedAt = LocalDateTime.now();
-        this.priceHistory.add(new PriceHistoryEntry(price, this.updatedAt));
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void addPriceHistoryEntry(PriceHistoryEntry entry) {
+        this.priceHistory.add(entry);
     }
 }

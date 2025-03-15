@@ -7,10 +7,15 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class UIHandler {
     private final PriceTrackerApp app;
     private final VBox productContainer = new VBox(10);
+    private final Text lastUpdateText = new Text("Last update: N/A");
 
     public UIHandler(PriceTrackerApp app) {
         this.app = app;
@@ -26,18 +31,25 @@ public class UIHandler {
         Button addButton = new Button("Add Product");
         addButton.setOnAction(e -> openAddProductDialog());
 
-        TextField serchField = new TextField();
-        serchField.setPromptText("Search products");
+        TextField searchField = new TextField();
+        searchField.setPromptText("Search products");
 
         ChoiceBox<String> sortChoiceBox = new ChoiceBox<>();
         sortChoiceBox.getItems().addAll("Name", "Price");
         sortChoiceBox.setValue("Name");
 
-        HBox topMenu = new HBox(10, addButton, serchField, sortChoiceBox);
+        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox);
         topMenu.setPadding(new Insets(10));
+
+        Button updateButton = new Button("Update Prices");
+        updateButton.setOnAction(e -> app.updatePricesManually());
+
+        HBox bottomMenu = new HBox(10, lastUpdateText, updateButton);
+        bottomMenu.setPadding(new Insets(10));
 
         root.setTop(topMenu);
         root.setCenter(scrollPane);
+        root.setBottom(bottomMenu);
         return new Scene(root, 800, 600);
     }
 
@@ -107,5 +119,10 @@ public class UIHandler {
         alert.setHeaderText(null);
         alert.setContentText("The product \"" + product.getName() + "\" already exists in the list.");
         alert.showAndWait();
+    }
+
+    public void updateLastUpdateText(LocalDateTime lastUpdate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        lastUpdateText.setText("Last update: " + lastUpdate.format(formatter));
     }
 }
