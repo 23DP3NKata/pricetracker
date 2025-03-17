@@ -116,9 +116,10 @@ public class UIHandler {
         alert.setHeaderText(product.getName());
 
         StringBuilder history = new StringBuilder();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
         for (PriceHistoryEntry entry : product.getPriceHistory()) {
             history.append("Price: €").append(entry.getPrice())
-                   .append(", Date: ").append(entry.getDate().toString()).append("\n");
+                   .append(", Date: ").append(entry.getDate().format(formatter)).append("\n");
         }
 
         alert.setContentText(history.toString());
