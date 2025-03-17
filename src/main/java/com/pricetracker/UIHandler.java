@@ -11,6 +11,7 @@ import javafx.scene.text.Text;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ public class UIHandler {
     private final PriceTrackerApp app;
     private final VBox productContainer = new VBox(10);
     private final Text lastUpdateText = new Text("Last update: N/A");
+    private List<HBox> allProducts;
 
     public UIHandler(PriceTrackerApp app) {
         this.app = app;
@@ -36,6 +38,7 @@ public class UIHandler {
 
         TextField searchField = new TextField();
         searchField.setPromptText("Search products");
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> filterProducts(newValue));
 
         ChoiceBox<String> sortChoiceBox = new ChoiceBox<>();
         sortChoiceBox.getItems().addAll("Name A-Z", "Name Z-A", "Price Low-High", "Price High-Low");
@@ -101,6 +104,9 @@ public class UIHandler {
         Label nameLabel = new Label(product.getName());
         Label priceLabel = new Label("€" + product.getPrice());
 
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
         Button priceHistoryButton = new Button("Price History");
         priceHistoryButton.setOnAction(e -> showPriceHistory(product));
 
@@ -110,8 +116,14 @@ public class UIHandler {
         priceHistoryButton.setPrefWidth(100);
         settingsButton.setPrefWidth(100);
 
-        productBox.getChildren().addAll(imageView, nameLabel, priceLabel, priceHistoryButton, settingsButton);
+        HBox buttonBox = new HBox(10, priceHistoryButton, settingsButton);
+        productBox.getChildren().addAll(imageView, nameLabel, priceLabel, spacer, buttonBox);
         productContainer.getChildren().add(productBox);
+
+        if (allProducts == null) {
+            allProducts = new ArrayList<>();
+        }
+        allProducts.add(productBox);
     }
 
     private void showPriceHistory(Product product) {
@@ -158,6 +170,9 @@ public class UIHandler {
 
     public void clearProductUI() {
         productContainer.getChildren().clear();
+        if (allProducts != null) {
+            allProducts.clear();
+        }
     }
 
     public void showProductExistsAlert(Product product) {
@@ -200,5 +215,19 @@ public class UIHandler {
                 return Comparator.comparing((HBox hbox) -> ((Label) hbox.getChildren().get(1)).getText());
         }
     }
-    
+
+    private void filterProducts(String searchText) {
+        if (allProducts == null) {
+            return;
+        }
+
+        List<HBox> filteredProducts = allProducts.stream()
+                .filter(hbox -> {
+                    Label nameLabel = (Label) hbox.getChildren().get(1);
+                    return nameLabel.getText().toLowerCase().contains(searchText.toLowerCase());
+                })
+                .collect(Collectors.toList());
+
+        productContainer.getChildren().setAll(filteredProducts);
+    }
 }
