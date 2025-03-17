@@ -11,6 +11,9 @@ import javafx.scene.text.Text;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class UIHandler {
     private final PriceTrackerApp app;
@@ -35,8 +38,9 @@ public class UIHandler {
         searchField.setPromptText("Search products");
 
         ChoiceBox<String> sortChoiceBox = new ChoiceBox<>();
-        sortChoiceBox.getItems().addAll("Name", "Price");
-        sortChoiceBox.setValue("Name");
+        sortChoiceBox.getItems().addAll("Name A-Z", "Name Z-A", "Price Low-High", "Price High-Low");
+        sortChoiceBox.setValue("Name A-Z");
+        sortChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> sortProducts(newValue));
 
         HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox);
         topMenu.setPadding(new Insets(10));
@@ -168,4 +172,33 @@ public class UIHandler {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
         lastUpdateText.setText("Last update: " + lastUpdate.format(formatter));
     }
+
+    private void sortProducts(String sortOption) {
+        List<HBox> sortedProducts = productContainer.getChildren().stream()
+                .map(node -> (HBox) node)
+                .sorted(getComparator(sortOption))
+                .collect(Collectors.toList());
+
+        productContainer.getChildren().setAll(sortedProducts);
+    }
+
+    private Comparator<HBox> getComparator(String sortOption) {
+        switch (sortOption) {
+            case "Name A-Z":
+                return Comparator.comparing((HBox hbox) -> ((Label) hbox.getChildren().get(1)).getText());
+            case "Name Z-A":
+                return Comparator.comparing((HBox hbox) -> ((Label) hbox.getChildren().get(1)).getText()).reversed();
+            case "Price Low-High":
+                return Comparator.comparingDouble((HBox hbox) -> 
+                    Double.parseDouble(((Label) hbox.getChildren().get(2)).getText().replace("€", ""))
+                );
+            case "Price High-Low":
+                return Comparator.comparingDouble((HBox hbox) -> 
+                    Double.parseDouble(((Label) hbox.getChildren().get(2)).getText().replace("€", ""))
+                ).reversed();
+            default:
+                return Comparator.comparing((HBox hbox) -> ((Label) hbox.getChildren().get(1)).getText());
+        }
+    }
+    
 }

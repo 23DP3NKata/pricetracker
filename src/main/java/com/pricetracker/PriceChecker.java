@@ -66,7 +66,9 @@ public class PriceChecker {
     private static double parsePrice(String priceText) {
         String rawPrice = priceText.replaceAll("[^0-9,\\.]", "");
 
-        if (rawPrice.contains(",") && !rawPrice.contains(".")) {
+        if (rawPrice.contains(",") && rawPrice.contains(".")) {
+            rawPrice = rawPrice.replace(".", "").replace(",", ".");
+        } else if (rawPrice.contains(",") && !rawPrice.contains(".")) {
             rawPrice = rawPrice.replace(",", ".");
         } else {
             rawPrice = rawPrice.replace(",", "");
