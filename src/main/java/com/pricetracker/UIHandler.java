@@ -41,7 +41,14 @@ public class UIHandler {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> filterProducts(newValue));
 
         ChoiceBox<String> sortChoiceBox = new ChoiceBox<>();
-        sortChoiceBox.getItems().addAll("Name A-Z", "Name Z-A", "Price Low-High", "Price High-Low");
+        sortChoiceBox.getItems().addAll(
+            "Name A-Z", 
+            "Name Z-A", 
+            "Price Low-High", 
+            "Price High-Low", 
+            "Date New-Old", 
+            "Date Old-New"
+        );
         sortChoiceBox.setValue("Name A-Z");
         sortChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> sortProducts(newValue));
 
@@ -118,6 +125,9 @@ public class UIHandler {
 
         HBox buttonBox = new HBox(10, priceHistoryButton, settingsButton);
         productBox.getChildren().addAll(imageView, nameLabel, priceLabel, spacer, buttonBox);
+
+        productBox.setUserData(product);
+
         productContainer.getChildren().add(productBox);
 
         if (allProducts == null) {
@@ -211,6 +221,14 @@ public class UIHandler {
                 return Comparator.comparingDouble((HBox hbox) -> 
                     Double.parseDouble(((Label) hbox.getChildren().get(2)).getText().replace("€", ""))
                 ).reversed();
+            case "Date New-Old":
+                return Comparator.comparing((HBox hbox) -> 
+                    ((Product) hbox.getUserData()).getCreatedAt()
+                ).reversed();
+            case "Date Old-New":
+                return Comparator.comparing((HBox hbox) -> 
+                    ((Product) hbox.getUserData()).getCreatedAt()
+                );
             default:
                 return Comparator.comparing((HBox hbox) -> ((Label) hbox.getChildren().get(1)).getText());
         }
