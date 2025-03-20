@@ -32,6 +32,8 @@ public class PriceTrackerApp extends Application {
     public void start(Stage primaryStage) {
         uiHandler = new UIHandler(this);
         new StartWindow(this).show(primaryStage);
+        primaryStage.setTitle("Price Tracker");
+        //primaryStage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/images/image.png")));
     }
 
     public void addProduct(Product product) {

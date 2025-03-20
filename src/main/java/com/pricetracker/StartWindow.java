@@ -36,6 +36,7 @@ public class StartWindow {
         startLayout.getChildren().addAll(welcomeLabel, newListButton, loadListButton);
 
         Scene scene = new Scene(startLayout, 300, 200);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
     }

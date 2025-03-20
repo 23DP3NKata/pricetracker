@@ -39,6 +39,7 @@ public class UIHandler {
         TextField searchField = new TextField();
         searchField.setPromptText("Search products");
         searchField.textProperty().addListener((observable, oldValue, newValue) -> filterProducts(newValue));
+        searchField.getStyleClass().add("searchField");
 
         ChoiceBox<String> sortChoiceBox = new ChoiceBox<>();
         sortChoiceBox.getItems().addAll(
@@ -51,20 +52,27 @@ public class UIHandler {
         );
         sortChoiceBox.setValue("Name A-Z");
         sortChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> sortProducts(newValue));
+        sortChoiceBox.getStyleClass().add("sortChoiceBox");
 
         HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox);
         topMenu.setPadding(new Insets(10));
 
         Button updateButton = new Button("Update Prices");
         updateButton.setOnAction(e -> app.updatePricesManually());
-
+        lastUpdateText.getStyleClass().add("lastUpdateText");
+        
         HBox bottomMenu = new HBox(10, lastUpdateText, updateButton);
         bottomMenu.setPadding(new Insets(10));
 
         root.setTop(topMenu);
         root.setCenter(scrollPane);
         root.setBottom(bottomMenu);
-        return new Scene(root, 800, 600);
+
+        Scene scene = new Scene(root, 1200, 600);
+
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+
+        return scene;
     }
 
     private void openAddProductDialog() {
@@ -105,11 +113,13 @@ public class UIHandler {
         productBox.setPadding(new Insets(10));
 
         ImageView imageView = new ImageView(new Image(product.getImageUrl()));
-        imageView.setFitHeight(50);
-        imageView.setFitWidth(50);
+        imageView.setFitHeight(70);
+        imageView.setFitWidth(70);
 
         Label nameLabel = new Label(product.getName());
         Label priceLabel = new Label("€" + product.getPrice());
+
+        VBox textContainer = new VBox(5, nameLabel, priceLabel);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -124,7 +134,7 @@ public class UIHandler {
         settingsButton.setPrefWidth(100);
 
         HBox buttonBox = new HBox(10, priceHistoryButton, settingsButton);
-        productBox.getChildren().addAll(imageView, nameLabel, priceLabel, spacer, buttonBox);
+        productBox.getChildren().addAll(imageView, textContainer, spacer, buttonBox);
 
         productBox.setUserData(product);
 
@@ -210,27 +220,45 @@ public class UIHandler {
     private Comparator<HBox> getComparator(String sortOption) {
         switch (sortOption) {
             case "Name A-Z":
-                return Comparator.comparing((HBox hbox) -> ((Label) hbox.getChildren().get(1)).getText());
+                return Comparator.comparing((HBox hbox) -> {
+                    VBox textContainer = (VBox) hbox.getChildren().get(1);
+                    Label nameLabel = (Label) textContainer.getChildren().get(0);
+                    return nameLabel.getText();
+                });
             case "Name Z-A":
-                return Comparator.comparing((HBox hbox) -> ((Label) hbox.getChildren().get(1)).getText()).reversed();
+                return Comparator.comparing((HBox hbox) -> {
+                    VBox textContainer = (VBox) hbox.getChildren().get(1);
+                    Label nameLabel = (Label) textContainer.getChildren().get(0);
+                    return nameLabel.getText();
+                }).reversed();
             case "Price Low-High":
-                return Comparator.comparingDouble((HBox hbox) -> 
-                    Double.parseDouble(((Label) hbox.getChildren().get(2)).getText().replace("€", ""))
-                );
+                return Comparator.comparingDouble((HBox hbox) -> {
+                    VBox textContainer = (VBox) hbox.getChildren().get(1);
+                    Label priceLabel = (Label) textContainer.getChildren().get(1);
+                    return Double.parseDouble(priceLabel.getText().replace("€", ""));
+                });
             case "Price High-Low":
-                return Comparator.comparingDouble((HBox hbox) -> 
-                    Double.parseDouble(((Label) hbox.getChildren().get(2)).getText().replace("€", ""))
-                ).reversed();
+                return Comparator.comparingDouble((HBox hbox) -> {
+                    VBox textContainer = (VBox) hbox.getChildren().get(1);
+                    Label priceLabel = (Label) textContainer.getChildren().get(1);
+                    return Double.parseDouble(priceLabel.getText().replace("€", ""));
+                }).reversed();
             case "Date New-Old":
-                return Comparator.comparing((HBox hbox) -> 
-                    ((Product) hbox.getUserData()).getCreatedAt()
-                ).reversed();
+                return Comparator.comparing((HBox hbox) -> {
+                    Product product = (Product) hbox.getUserData();
+                    return product.getCreatedAt();
+                }).reversed();
             case "Date Old-New":
-                return Comparator.comparing((HBox hbox) -> 
-                    ((Product) hbox.getUserData()).getCreatedAt()
-                );
+                return Comparator.comparing((HBox hbox) -> {
+                    Product product = (Product) hbox.getUserData();
+                    return product.getCreatedAt();
+                });
             default:
-                return Comparator.comparing((HBox hbox) -> ((Label) hbox.getChildren().get(1)).getText());
+                return Comparator.comparing((HBox hbox) -> {
+                    VBox textContainer = (VBox) hbox.getChildren().get(1);
+                    Label nameLabel = (Label) textContainer.getChildren().get(0);
+                    return nameLabel.getText();
+                });
         }
     }
 

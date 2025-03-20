@@ -1,0 +1,85 @@
+.root {
+    -fx-background-color: #111111;
+}
+
+.button {
+    -fx-background-color: #333333;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+    -fx-padding: 10 20;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.button:hover {
+    -fx-background-color: #555555;
+}
+
+.label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-family: "Arial";
+}
+
+.image-view {
+    -fx-background-radius: 15;
+    -fx-padding: 5;
+    -fx-background-radius: 10;
+}
+
+.hbox {
+    -fx-background-color: #222222;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.scroll-pane {
+    -fx-background: #111111;
+    -fx-background-color: #111111;
+}
+
+.scroll-pane .viewport {
+    -fx-background: #111111;
+    -fx-background-color: #111111;
+}
+
+.searchField {
+    -fx-background-color: #333333;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+}
+
+.sortChoiceBox {
+    -fx-background-color: #333333;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+    -fx-background-radius: 10;
+}
+
+.sortChoiceBox .context-menu {
+    -fx-background-color: #333333;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+    -fx-background-radius: 10;
+}
+
+.sortChoiceBox .menu-item {
+    -fx-background-color: #222222;
+    -fx-text-fill: #ffffff;
+}
+
+.sortChoiceBox .menu-item:hover {
+    -fx-background-color: #777777;
+}
+
+.lastUpdateText {
+    -fx-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-family: "Arial";
+}
