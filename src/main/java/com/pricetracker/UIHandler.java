@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,9 @@ public class UIHandler {
 
     public UIHandler(PriceTrackerApp app) {
         this.app = app;
+
+        Font.loadFont(getClass().getResource("/fonts/Poppins-Regular.ttf").toExternalForm(), 14);
+        this.allProducts = new ArrayList<>();
     }
 
     public Scene createMainScene() {
@@ -264,13 +268,14 @@ public class UIHandler {
     }
 
     private void filterProducts(String searchText) {
-        if (allProducts == null) {
+        if (allProducts == null || allProducts.isEmpty()) {
             return;
         }
 
         List<HBox> filteredProducts = allProducts.stream()
                 .filter(hbox -> {
-                    Label nameLabel = (Label) hbox.getChildren().get(1);
+                    VBox textContainer = (VBox) hbox.getChildren().get(1);
+                    Label nameLabel = (Label) textContainer.getChildren().get(0);
                     return nameLabel.getText().toLowerCase().contains(searchText.toLowerCase());
                 })
                 .collect(Collectors.toList());
