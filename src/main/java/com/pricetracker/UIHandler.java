@@ -9,6 +9,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.Node;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -281,5 +282,22 @@ public class UIHandler {
                 .collect(Collectors.toList());
 
         productContainer.getChildren().setAll(filteredProducts);
+    }
+
+    public void updateProductInUI(Product product) {
+        for (Node node : productContainer.getChildren()) {
+            if (node instanceof HBox) {
+                HBox productBox = (HBox) node;
+                Product existingProduct = (Product) productBox.getUserData();
+
+                if (existingProduct != null && existingProduct.getUrl().equals(product.getUrl())) {
+                    VBox textContainer = (VBox) productBox.getChildren().get(1);
+                    Label priceLabel = (Label) textContainer.getChildren().get(1);
+
+                    priceLabel.setText("€" + product.getPrice());
+                    break;
+                }
+            }
+        }
     }
 }

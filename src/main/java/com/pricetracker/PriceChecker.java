@@ -33,6 +33,12 @@ public class PriceChecker {
         }
     }
 
+    private static UIHandler uiHandler;
+
+    public static void setUIHandler(UIHandler handler) {
+        uiHandler = handler;
+    }
+
     public static void updateProductPrice(Product product) {
         try {
             Document doc = Jsoup.connect(product.getUrl())
@@ -57,6 +63,7 @@ public class PriceChecker {
                 product.setPrice(newPrice);
                 product.setUpdatedAt(LocalDateTime.now());
                 product.addPriceHistoryEntry(new PriceHistoryEntry(newPrice, LocalDateTime.now()));
+                uiHandler.updateProductInUI(product);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,7 +94,7 @@ public class PriceChecker {
         String imageUrl = "https://cdn2.iconfinder.com/data/icons/packing/80/shipping-34-512.png";
 
         if (nameElement != null) {
-            name = nameElement.text();
+            name = capitalize(nameElement.text());
         }
 
         if (priceElement != null) {
@@ -104,5 +111,12 @@ public class PriceChecker {
         product.addPriceHistoryEntry(new PriceHistoryEntry(price, LocalDateTime.now()));
 
         return product;
+    }
+
+    private static String capitalize(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
     }
 }
