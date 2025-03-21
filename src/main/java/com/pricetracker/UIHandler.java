@@ -6,9 +6,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 
 import java.time.LocalDateTime;
@@ -123,6 +126,9 @@ public class UIHandler {
         imageView.setFitWidth(70);
 
         Label nameLabel = new Label(product.getName());
+        nameLabel.setCursor(Cursor.HAND);
+        nameLabel.setOnMouseClicked(event -> copyToClipboard(product.getUrl()));
+
         Label priceLabel = new Label("€" + product.getPrice());
 
         VBox textContainer = new VBox(5, nameLabel, priceLabel);
@@ -150,6 +156,13 @@ public class UIHandler {
             allProducts = new ArrayList<>();
         }
         allProducts.add(productBox);
+    }
+
+    private void copyToClipboard(String text) {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(text);
+        clipboard.setContent(content);
     }
 
     private void showPriceHistory(Product product) {
