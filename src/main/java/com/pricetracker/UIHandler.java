@@ -52,6 +52,7 @@ public class UIHandler {
         );
         sortChoiceBox.setValue("Name A-Z");
         sortChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> sortProducts(newValue));
+        sortProducts("Name A-Z");
         sortChoiceBox.getStyleClass().add("sortChoiceBox");
 
         HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox);
