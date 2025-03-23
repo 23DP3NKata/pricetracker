@@ -17,12 +17,21 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class PriceTrackerApp extends Application {
+    private static PriceTrackerApp instance;
     private final List<Product> products = new ArrayList<>();
     private UIHandler uiHandler;
     private ProductList currentProductList;
     private String currentFilePath;
     private Timer priceUpdateTimer;
     private LocalDateTime lastUpdate;
+
+    public PriceTrackerApp() {
+        instance = this;
+    }
+
+    public static PriceTrackerApp getInstance() {
+        return instance;
+    }
 
     public static void main(String[] args) {
         launch(args);

@@ -35,13 +35,16 @@
   }, {
     "name" : "Videokarte asus geforce rtx 5070 prime oc 12gb gddr7 192bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/721737/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Prime-OC-12GB-GDDR7-192bit-videokarte.html",
-    "price" : 743.99,
+    "price" : 823.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/ce1451540a665e9f6a4f8ba3995452f1.jpg",
     "createdAt" : "21.03.2025 09:48",
-    "updatedAt" : "21.03.2025 09:48",
+    "updatedAt" : "23.03.2025 09:57",
     "priceHistory" : [ {
       "price" : 743.99,
       "date" : "21.03.2025 09:48"
+    }, {
+      "price" : 823.99,
+      "date" : "23.03.2025 09:57"
     } ]
   }, {
     "name" : "Dzesētājs deepcool ak400 zero dark plus 120 mm cpu cooler r-ak400-bknnmd-g-1",
@@ -75,6 +78,50 @@
     "priceHistory" : [ {
       "price" : 329.0,
       "date" : "21.03.2025 09:50"
+    } ]
+  }, {
+    "name" : "Datorpele logitech g305 white 910-005291",
+    "url" : "https://www.rdveikals.lv/products/lv/161/248782/sort/5/filter/0_0_0_0/G305-White-910-005291-datorpele.html",
+    "price" : 59.99,
+    "imageUrl" : "https://www.rdveikals.lv/images/midi/eaeb45ac180f831e7e553eba048ff968.jpg",
+    "createdAt" : "23.03.2025 10:14",
+    "updatedAt" : "23.03.2025 10:14",
+    "priceHistory" : [ {
+      "price" : 59.99,
+      "date" : "23.03.2025 10:14"
+    } ]
+  }, {
+    "name" : "Videokarte msi geforce rtx 5070 gaming trio oc 12gb gddr7 192bit",
+    "url" : "https://www.rdveikals.lv/products/lv/417/721738/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Gaming-Trio-OC-12GB-GDDR7-192bit-videokarte.html",
+    "price" : 818.99,
+    "imageUrl" : "https://www.rdveikals.lv/images/midi/9a1de101d1020b99bdf61b0247e859c6.jpg",
+    "createdAt" : "23.03.2025 10:14",
+    "updatedAt" : "23.03.2025 10:14",
+    "priceHistory" : [ {
+      "price" : 818.99,
+      "date" : "23.03.2025 10:14"
+    } ]
+  }, {
+    "name" : "Videokarte gigabyte geforce rtx 5070 ti aero oc 16gb gddr7 256bit",
+    "url" : "https://www.rdveikals.lv/products/lv/417/721743/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Ti-AERO-OC-16GB-GDDR7-256bit-videokarte.html",
+    "price" : 1188.99,
+    "imageUrl" : "https://www.rdveikals.lv/images/midi/07b12f8dc42e58d71d41c7728f5e5e43.jpg",
+    "createdAt" : "23.03.2025 10:14",
+    "updatedAt" : "23.03.2025 10:14",
+    "priceHistory" : [ {
+      "price" : 1188.99,
+      "date" : "23.03.2025 10:14"
+    } ]
+  }, {
+    "name" : "Videokarte gigabyte geforce rtx 5070 ti eagle oc ice sff 16gb gddr7",
+    "url" : "https://www.rdveikals.lv/products/lv/417/709281/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Ti-EAGLE-OC-ICE-SFF-16GB-GDDR7-videokarte.html",
+    "price" : 1197.61,
+    "imageUrl" : "https://www.rdveikals.lv/images/midi/e10cc5fcd7ca2395f10ad07c63b1ce4e.jpg",
+    "createdAt" : "23.03.2025 10:14",
+    "updatedAt" : "23.03.2025 10:14",
+    "priceHistory" : [ {
+      "price" : 1197.61,
+      "date" : "23.03.2025 10:14"
     } ]
   } ],
   "name" : "myList"

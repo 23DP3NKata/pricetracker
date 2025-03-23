@@ -77,7 +77,7 @@ public class UIHandler {
         root.setCenter(scrollPane);
         root.setBottom(bottomMenu);
 
-        Scene scene = new Scene(root, 1200, 600);
+        Scene scene = new Scene(root, 1000, 600);
 
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
@@ -302,11 +302,13 @@ public class UIHandler {
             if (node instanceof HBox) {
                 HBox productBox = (HBox) node;
                 Product existingProduct = (Product) productBox.getUserData();
+                if (existingProduct.getUrl().equals(product.getUrl())) {
 
-                if (existingProduct != null && existingProduct.getUrl().equals(product.getUrl())) {
                     VBox textContainer = (VBox) productBox.getChildren().get(1);
+                    Label nameLabel = (Label) textContainer.getChildren().get(0);
                     Label priceLabel = (Label) textContainer.getChildren().get(1);
-
+    
+                    nameLabel.setText(product.getName());
                     priceLabel.setText("€" + product.getPrice());
                     break;
                 }

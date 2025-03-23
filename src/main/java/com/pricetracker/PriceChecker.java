@@ -4,6 +4,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import javafx.application.Platform;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 
@@ -12,7 +14,7 @@ public class PriceChecker {
         try {
             Document doc = Jsoup.connect(url)
                     .userAgent("Mozilla/5.0")
-                    .timeout(2000)
+                    .timeout(6000)
                     .get();
 
             if (url.contains("rdveikals.lv")) {
@@ -33,20 +35,15 @@ public class PriceChecker {
         }
     }
 
-    private static UIHandler uiHandler;
-
-    public static void setUIHandler(UIHandler handler) {
-        uiHandler = handler;
-    }
-
     public static void updateProductPrice(Product product) {
         try {
             Document doc = Jsoup.connect(product.getUrl())
                     .userAgent("Mozilla/5.0")
-                    .timeout(2000)
+                    .timeout(6000)
                     .get();
 
             double newPrice = 0.0;
+
             if (product.getUrl().contains("rdveikals.lv")) {
                 Element priceElement = doc.selectFirst(".price strong");
                 if (priceElement != null) {
@@ -60,10 +57,20 @@ public class PriceChecker {
             }
 
             if (newPrice != product.getPrice()) {
+
+                System.out.println("Price changed for " + product.getName() + " from " + product.getPrice() + " to " + newPrice);
+                System.out.println("Old Price: €" + product.getPrice() + ", New Price: €" + newPrice);
+
                 product.setPrice(newPrice);
                 product.setUpdatedAt(LocalDateTime.now());
                 product.addPriceHistoryEntry(new PriceHistoryEntry(newPrice, LocalDateTime.now()));
-                uiHandler.updateProductInUI(product);
+
+                Platform.runLater(() -> {
+                    PriceTrackerApp app = PriceTrackerApp.getInstance();
+                    if (app != null) {
+                        app.getUIHandler().updateProductInUI(product);
+                    }
+                });
             }
         } catch (IOException e) {
             e.printStackTrace();
