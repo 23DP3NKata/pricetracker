@@ -1,6 +1,10 @@
+com\pricetracker\PriceHistoryEntry.class
 com\pricetracker\UIHandler.class
+com\pricetracker\PriceTrackerApp$1.class
 com\pricetracker\Product.class
 com\pricetracker\PriceChecker.class
+com\pricetracker\ProductList.class
+com\pricetracker\FileManager.class
 com\pricetracker\StartWindow.class
 com\pricetracker\PriceTrackerApp.class
 com\pricetracker\UIHandler$1.class
