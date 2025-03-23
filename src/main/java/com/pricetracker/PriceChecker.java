@@ -14,7 +14,7 @@ public class PriceChecker {
         try {
             Document doc = Jsoup.connect(url)
                     .userAgent("Mozilla/5.0")
-                    .timeout(6000)
+                    .timeout(15000)
                     .get();
 
             if (url.contains("rdveikals.lv")) {
@@ -36,44 +36,53 @@ public class PriceChecker {
     }
 
     public static void updateProductPrice(Product product) {
-        try {
-            Document doc = Jsoup.connect(product.getUrl())
-                    .userAgent("Mozilla/5.0")
-                    .timeout(6000)
-                    .get();
+        int retries = 3;
+        int attempt = 0;
 
-            double newPrice = 0.0;
+        while (attempt < retries) {
+            try {
+                Document doc = Jsoup.connect(product.getUrl())
+                        .userAgent("Mozilla/5.0")
+                        .timeout(15000)
+                        .get();
 
-            if (product.getUrl().contains("rdveikals.lv")) {
-                Element priceElement = doc.selectFirst(".price strong");
-                if (priceElement != null) {
-                    newPrice = parsePrice(priceElement.text());
-                }
-            } else if (product.getUrl().contains("1a.lv")) {
-                Element priceElement = doc.selectFirst(".price span");
-                if (priceElement != null) {
-                    newPrice = parsePrice(priceElement.text());
-                }
-            }
+                double newPrice = 0.0;
 
-            if (newPrice != product.getPrice()) {
-
-                System.out.println("Price changed for " + product.getName() + " from " + product.getPrice() + " to " + newPrice);
-                System.out.println("Old Price: €" + product.getPrice() + ", New Price: €" + newPrice);
-
-                product.setPrice(newPrice);
-                product.setUpdatedAt(LocalDateTime.now());
-                product.addPriceHistoryEntry(new PriceHistoryEntry(newPrice, LocalDateTime.now()));
-
-                Platform.runLater(() -> {
-                    PriceTrackerApp app = PriceTrackerApp.getInstance();
-                    if (app != null) {
-                        app.getUIHandler().updateProductInUI(product);
+                if (product.getUrl().contains("rdveikals.lv")) {
+                    Element priceElement = doc.selectFirst(".price strong");
+                    if (priceElement != null) {
+                        newPrice = parsePrice(priceElement.text());
                     }
-                });
+                } else if (product.getUrl().contains("1a.lv")) {
+                    Element priceElement = doc.selectFirst(".price span");
+                    if (priceElement != null) {
+                        newPrice = parsePrice(priceElement.text());
+                    }
+                }
+
+                if (newPrice != product.getPrice()) {
+                    System.out.println("Price changed for " + product.getName() + " from " + product.getPrice() + " to " + newPrice);
+
+                    product.setPrice(newPrice);
+                    product.setUpdatedAt(LocalDateTime.now());
+                    product.addPriceHistoryEntry(new PriceHistoryEntry(newPrice, LocalDateTime.now()));
+
+                    Platform.runLater(() -> {
+                        PriceTrackerApp app = PriceTrackerApp.getInstance();
+                        if (app != null) {
+                            app.getUIHandler().updateProductInUI(product);
+                        }
+                    });
+                }
+                break; // Exit the loop if successful
+            } catch (IOException e) {
+                attempt++;
+                System.err.println("Attempt " + attempt + " failed for product: " + product.getName());
+                System.err.println("Error updating price for product: " + product.getName() + " (URL: " + product.getUrl() + ")");
+                if (attempt == retries) {
+                    System.err.println("Failed to update price after " + retries + " attempts for product: " + product.getName());
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
