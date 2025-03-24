@@ -36,20 +36,6 @@
       "date" : "23.03.2025 17:20"
     } ]
   }, {
-    "name" : "Videokarte asus geforce rtx 5070 prime oc 12gb gddr7 192bit",
-    "url" : "https://www.rdveikals.lv/products/lv/417/721737/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Prime-OC-12GB-GDDR7-192bit-videokarte.html",
-    "price" : 823.99,
-    "imageUrl" : "https://www.rdveikals.lv/images/midi/ce1451540a665e9f6a4f8ba3995452f1.jpg",
-    "createdAt" : "21.03.2025 09:48",
-    "updatedAt" : "23.03.2025 09:57",
-    "priceHistory" : [ {
-      "price" : 743.99,
-      "date" : "21.03.2025 09:48"
-    }, {
-      "price" : 823.99,
-      "date" : "23.03.2025 09:57"
-    } ]
-  }, {
     "name" : "Dzesētājs deepcool ak400 zero dark plus 120 mm cpu cooler r-ak400-bknnmd-g-1",
     "url" : "https://www.rdveikals.lv/products/lv/437/547972/sort/5/filter/0_0_0_0/AK400-Zero-Dark-Plus-120-mm-CPU-Cooler-R-AK400-BKNNMD-G-1-dzes%C4%93t%C4%81js.html",
     "price" : 46.89,
@@ -151,16 +137,19 @@
   }, {
     "name" : "Videokarte gigabyte geforce rtx 4060 windforce oc 8gb gddr6 128bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/525409/sort/5/filter/0_0_0_0/GeForce-RTX-4060-WindForce-OC-8GB-GDDR6-128bit-videokarte.html",
-    "price" : 340.99,
+    "price" : 361.0,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/1c405782a35fe110b580144ed5f40e59.jpg",
     "createdAt" : "23.03.2025 14:51",
-    "updatedAt" : "23.03.2025 17:20",
+    "updatedAt" : "24.03.2025 12:51",
     "priceHistory" : [ {
       "price" : 362.47,
       "date" : "23.03.2025 14:51"
     }, {
       "price" : 340.99,
       "date" : "23.03.2025 17:20"
+    }, {
+      "price" : 361.0,
+      "date" : "24.03.2025 12:51"
     } ]
   }, {
     "name" : "Videokarte asus geforce rtx 4060 dual evo oc 8gb gddr6 128bit",

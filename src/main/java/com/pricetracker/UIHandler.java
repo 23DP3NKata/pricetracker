@@ -2,6 +2,7 @@ package com.pricetracker;
 
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -11,6 +12,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 
@@ -56,11 +58,13 @@ public class UIHandler {
             "Price Low-High", 
             "Price High-Low", 
             "Date New-Old", 
-            "Date Old-New"
+            "Date Old-New",
+            "Updated New-Old",
+            "Updated Old-New"
         );
-        sortChoiceBox.setValue("Name A-Z");
+        sortChoiceBox.setValue("Updated New-Old");
         sortChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> sortProducts(newValue));
-        sortProducts("Name A-Z");
+        sortProducts("Updated New-Old");
         sortChoiceBox.getStyleClass().add("sortChoiceBox");
 
         HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox);
@@ -69,15 +73,17 @@ public class UIHandler {
         Button updateButton = new Button("Update Prices");
         updateButton.setOnAction(e -> app.updatePricesManually());
         lastUpdateText.getStyleClass().add("lastUpdateText");
+        lastUpdateText.setTextAlignment(TextAlignment.CENTER);
         
         HBox bottomMenu = new HBox(10, lastUpdateText, updateButton);
         bottomMenu.setPadding(new Insets(10));
+        bottomMenu.setAlignment(Pos.CENTER_LEFT);
 
         root.setTop(topMenu);
         root.setCenter(scrollPane);
         root.setBottom(bottomMenu);
 
-        Scene scene = new Scene(root, 1000, 600);
+        Scene scene = new Scene(root, 1200, 600);
 
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
@@ -122,8 +128,8 @@ public class UIHandler {
         productBox.setPadding(new Insets(10));
 
         ImageView imageView = new ImageView(new Image(product.getImageUrl()));
-        imageView.setFitHeight(70);
-        imageView.setFitWidth(70);
+        imageView.setFitHeight(80);
+        imageView.setFitWidth(80);
 
         Label nameLabel = new Label(product.getName());
         nameLabel.setCursor(Cursor.HAND);
@@ -271,6 +277,16 @@ public class UIHandler {
                 return Comparator.comparing((HBox hbox) -> {
                     Product product = (Product) hbox.getUserData();
                     return product.getCreatedAt();
+                });
+            case "Updated New-Old":
+                return Comparator.comparing((HBox hbox) -> {
+                    Product product = (Product) hbox.getUserData();
+                    return product.getUpdatedAt();
+                }).reversed();
+            case "Updated Old-New":
+                return Comparator.comparing((HBox hbox) -> {
+                    Product product = (Product) hbox.getUserData();
+                    return product.getUpdatedAt();
                 });
             default:
                 return Comparator.comparing((HBox hbox) -> {

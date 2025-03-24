@@ -23,6 +23,8 @@ public class StartWindow {
         startLayout.setPadding(new Insets(20));
         startLayout.setAlignment(Pos.CENTER);
 
+        startLayout.getStyleClass().add("start-window");
+
         Label welcomeLabel = new Label("Select an action:");
         Button newListButton = new Button("Create New List");
         Button loadListButton = new Button("Load Existing List");
