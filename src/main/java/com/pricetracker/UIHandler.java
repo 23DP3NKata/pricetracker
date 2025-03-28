@@ -62,9 +62,9 @@ public class UIHandler {
             "Updated New-Old",
             "Updated Old-New"
         );
-        sortChoiceBox.setValue("Updated New-Old");
+        sortChoiceBox.setValue("Price High-Low");
         sortChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> sortProducts(newValue));
-        sortProducts("Updated New-Old");
+        sortProducts("Price High-Low");
         sortChoiceBox.getStyleClass().add("sortChoiceBox");
 
         HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox);
@@ -128,8 +128,8 @@ public class UIHandler {
         productBox.setPadding(new Insets(10));
 
         ImageView imageView = new ImageView(new Image(product.getImageUrl()));
-        imageView.setFitHeight(80);
-        imageView.setFitWidth(80);
+        imageView.setFitHeight(90);
+        imageView.setFitWidth(90);
 
         Label nameLabel = new Label(product.getName());
         nameLabel.setCursor(Cursor.HAND);
@@ -148,7 +148,7 @@ public class UIHandler {
         Button settingsButton = new Button("Settings");
         settingsButton.setOnAction(e -> showSettingsDialog(product, productBox));
 
-        priceHistoryButton.setPrefWidth(100);
+        priceHistoryButton.setPrefWidth(150);
         settingsButton.setPrefWidth(100);
 
         HBox buttonBox = new HBox(10, priceHistoryButton, settingsButton);
@@ -191,6 +191,9 @@ public class UIHandler {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Product Settings");
 
+        Text createDate = new Text("Created: " + product.getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
+        Text updateDate = new Text("Last updated: " + product.getUpdatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
+
         ButtonType deleteButtonType = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(deleteButtonType, cancelButtonType);
@@ -199,6 +202,9 @@ public class UIHandler {
         grid.setPadding(new Insets(10));
         grid.setHgap(10);
         grid.setVgap(10);
+
+        grid.add(createDate, 0, 0);
+        grid.add(updateDate, 0, 1);
 
         dialog.getDialogPane().setContent(grid);
 
