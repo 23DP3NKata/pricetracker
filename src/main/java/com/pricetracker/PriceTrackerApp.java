@@ -7,6 +7,7 @@ package com.pricetracker;
 // ./mvnw.cmd clean javafx:run
 
 import javafx.application.Application;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -40,8 +41,11 @@ public class PriceTrackerApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         uiHandler = new UIHandler(this);
-        new StartWindow(this).show(primaryStage);
+        Scene mainScene = uiHandler.createMainScene();
+
         primaryStage.setTitle("Price Tracker");
+        primaryStage.setScene(mainScene);
+        primaryStage.show();
         //primaryStage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/images/image.png")));
     }
 
@@ -69,6 +73,10 @@ public class PriceTrackerApp extends Application {
             currentProductList.getProducts().remove(product);
             saveCurrentProductList();
         }
+    }
+
+    public ProductList getCurrentProductList() {
+        return currentProductList;
     }
 
     public void setCurrentProductList(ProductList productList, String filePath) {

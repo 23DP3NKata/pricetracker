@@ -15,7 +15,12 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.stage.FileChooser;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -67,6 +72,31 @@ public class UIHandler {
         sortProducts("Price High-Low");
         sortChoiceBox.getStyleClass().add("sortChoiceBox");
 
+        TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
+
+        tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
+            @Override
+            public void changed(ObservableValue<? extends Tab> observable, Tab oldTab, Tab newTab) {
+                if (newTab != null) {
+                    ProductList selectedList = (ProductList) newTab.getUserData();
+                    if (selectedList != null) {
+                        loadProductsIntoUI(selectedList);
+                    }
+                }
+            }
+        });
+
+        Button newListButton = new Button("New List");
+        newListButton.setOnAction(e -> createNewTab(tabPane));
+
+        Button loadListButton = new Button("Load List");
+        loadListButton.setOnAction(e -> loadListIntoTab(tabPane));
+
+        HBox tabControls = new HBox(10, tabPane, newListButton, loadListButton);
+        tabControls.setPadding(new Insets(10));
+        tabControls.setAlignment(Pos.CENTER_LEFT);
+
         HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox);
         topMenu.setPadding(new Insets(10));
 
@@ -79,7 +109,7 @@ public class UIHandler {
         bottomMenu.setPadding(new Insets(10));
         bottomMenu.setAlignment(Pos.CENTER_LEFT);
 
-        root.setTop(topMenu);
+        root.setTop(new VBox(topMenu, tabControls));
         root.setCenter(scrollPane);
         root.setBottom(bottomMenu);
 
@@ -88,6 +118,66 @@ public class UIHandler {
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         return scene;
+    }
+
+    private void createNewTab(TabPane tabPane) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("New List");
+        dialog.setHeaderText("Enter a name for the new list:");
+        dialog.setContentText("List Name:");
+
+        dialog.showAndWait().ifPresent(name -> {
+            if (!name.trim().isEmpty()) {
+                ProductList newList = new ProductList(name);
+
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Save List As");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+                fileChooser.setInitialFileName(name + ".json");
+
+                File file = fileChooser.showSaveDialog(null);
+                if (file != null) {
+                    app.setCurrentProductList(newList, file.getAbsolutePath());
+                    FileManager fileManager = new FileManager();
+                    try {
+                        fileManager.writeProductList(newList, file.getAbsolutePath());
+                    } catch (IOException e) {
+                        System.err.println("Error saving list: " + e.getMessage());
+                    }
+
+                    Tab newTab = new Tab(name);
+                    newTab.setUserData(newList);
+                    tabPane.getTabs().add(newTab);
+                    tabPane.getSelectionModel().select(newTab);
+                }
+            }
+        });
+    }
+
+    private void loadListIntoTab(TabPane tabPane) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open List");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            app.loadProductList(file.getAbsolutePath());
+
+            ProductList loadedList = app.getCurrentProductList();
+            if (loadedList != null) {
+                Tab newTab = new Tab(loadedList.getName());
+                newTab.setUserData(loadedList);
+                tabPane.getTabs().add(newTab);
+                tabPane.getSelectionModel().select(newTab);
+            }
+        }
+    }
+
+    private void loadProductsIntoUI(ProductList productList) {
+        clearProductUI();
+        for (Product product : productList.getProducts()) {
+            addProductToUI(product);
+        }
     }
 
     private void openAddProductDialog() {
