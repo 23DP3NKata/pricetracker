@@ -1,13 +1,9 @@
 .root {
-    -fx-background-color: #024CAA;
-}
-
-.start-window {
-    -fx-background-color: #F1F0E9;
+    -fx-background-color: #191A19;
 }
 
 .button {
-    -fx-background-color: #4a7dbd;
+    -fx-background-color: #4E9F3D;
     -fx-text-fill: #ffffff;
     -fx-font-size: 14px;
     -fx-font-family: "Poppins";
@@ -17,7 +13,7 @@
 }
 
 .button:hover {
-    -fx-background-color: #7a9eca;
+    -fx-background-color: #1E5128;
 }
 
 .label {
@@ -26,7 +22,7 @@
 }
 
 .hbox {
-    -fx-background-color: #F1F0E9;
+    -fx-background-color: #4E9F3D;
     -fx-padding: 10;
     -fx-spacing: 10;
     -fx-border-radius: 10;
@@ -34,16 +30,16 @@
 }
 
 .scroll-pane {
-    -fx-background-color: #F1F0E9;
+    -fx-background-color: #e7f1e7;
 }
 
 .scroll-pane .viewport {
-    -fx-background: #F1F0E9;
-    -fx-background-color: #F1F0E9;
+    -fx-background: #e7f1e7;
+    -fx-background-color: #e7f1e7;
 }
 
 .searchField {
-    -fx-background-color: #4a7dbd;
+    -fx-background-color: #1E5128;
     -fx-font-size: 14px;
     -fx-font-family: "Poppins";
     -fx-padding: 10;
@@ -57,7 +53,7 @@
 }
 
 .sortChoiceBox {
-    -fx-background-color: #4a7dbd;
+    -fx-background-color: #1E5128;
     -fx-text-fill: #ffffff;
     -fx-font-size: 14px;
     -fx-font-family: "Arial";
@@ -71,7 +67,7 @@
 }
 
 .sortChoiceBox .list-cell {
-    -fx-background-color: #4a7dbd;
+    -fx-background-color: #1E5128;
     -fx-text-fill: white;
     -fx-font-size: 14px;
     -fx-font-family: "Arial";
@@ -79,7 +75,7 @@
 
 
 .sortChoiceBox .context-menu {
-    -fx-background-color: #4a7dbd;
+    -fx-background-color: #1E5128;
     -fx-text-fill: #ffffff;
     -fx-font-size: 14px;
     -fx-font-family: "Poppins";
@@ -88,20 +84,20 @@
 }
 
 .sortChoiceBox .menu-item {
-    -fx-background-color: #4a7dbd;
+    -fx-background-color: #1E5128;
     -fx-text-fill: #ffffff;
 }
 
 .sortChoiceBox .menu-item:hover {
-    -fx-background-color: #7a9eca;
+    -fx-background-color: #4E9F3D;
 }
 
 .sortChoiceBox .arrow-button {
-    -fx-background-color: #4a7dbd;
+    -fx-background-color: #4E9F3D;
 }
 
 .sortChoiceBox .arrow {
-    -fx-background-color: #ffffff;
+    -fx-background-color: #4E9F3D;
 }
 
 .lastUpdateText {
@@ -110,8 +106,10 @@
     -fx-font-family: "Poppins";
 }
 
+/* ========================= */
+
 .tab {
-    -fx-background-color: #7a9eca;
+    -fx-background-color: #4E9F3D;
     -fx-text-fill: #ffffff;
     -fx-font-size: 14px;
     -fx-font-family: "Poppins";
@@ -121,12 +119,12 @@
 }
 
 .tab:selected {
-    -fx-background-color: #4a7dbd;
+    -fx-background-color: #1E5128;
     -fx-text-fill: #ffffff;
 }
 
 .tab:hover {
-    -fx-background-color: #77a6df;
+    -fx-background-color: #3A7D44;
 }
 
 .tab-label {

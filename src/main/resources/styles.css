@@ -109,3 +109,31 @@
     -fx-font-size: 16px;
     -fx-font-family: "Poppins";
 }
+
+.tab {
+    -fx-background-color: #7a9eca;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Poppins";
+    -fx-padding: 10 20;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.tab:selected {
+    -fx-background-color: #4a7dbd;
+    -fx-text-fill: #ffffff;
+}
+
+.tab:hover {
+    -fx-background-color: #77a6df;
+}
+
+.tab-label {
+    -fx-text-fill: #ffffff;
+}
+
+.tab-header-background {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}

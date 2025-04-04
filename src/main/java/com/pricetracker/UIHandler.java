@@ -33,6 +33,7 @@ public class UIHandler {
     private final VBox productContainer = new VBox(10);
     private final Text lastUpdateText = new Text("Last update: N/A");
     private List<HBox> allProducts;
+    private String style = "/styles.css";
 
     public UIHandler(PriceTrackerApp app) {
         this.app = app;
@@ -87,6 +88,8 @@ public class UIHandler {
             }
         });
 
+        tabPane.getStyleClass().add("tab-pane");
+
         Button newListButton = new Button("New List");
         newListButton.setOnAction(e -> createNewTab(tabPane));
 
@@ -104,8 +107,24 @@ public class UIHandler {
         updateButton.setOnAction(e -> app.updatePricesManually());
         lastUpdateText.getStyleClass().add("lastUpdateText");
         lastUpdateText.setTextAlignment(TextAlignment.CENTER);
+
+
+        Button switchThemeButton = new Button("Switch Theme");
+        switchThemeButton.setOnAction(e -> {
+            if (style.equals("/styles.css")) {
+                style = "/stylesDark.css";
+            } else {
+                style = "/styles.css";
+            }
+            Scene currentScene = switchThemeButton.getScene();
+            currentScene.getStylesheets().clear();
+            currentScene.getStylesheets().add(getClass().getResource(style).toExternalForm());
+        });
         
-        HBox bottomMenu = new HBox(10, lastUpdateText, updateButton);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        HBox bottomMenu = new HBox(10, lastUpdateText, updateButton, spacer, switchThemeButton);
         bottomMenu.setPadding(new Insets(10));
         bottomMenu.setAlignment(Pos.CENTER_LEFT);
 
@@ -115,7 +134,7 @@ public class UIHandler {
 
         Scene scene = new Scene(root, 1200, 600);
 
-        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource(style).toExternalForm());
 
         return scene;
     }
