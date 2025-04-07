@@ -137,3 +137,52 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
+
+.dialog-pane {
+    -fx-background-color: #024caa;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-family: "Poppins";
+}
+
+.dialog-pane .label, .dialog-pane .text-field {
+    -fx-text-fill: white;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #4a7dbd;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-family: "Poppins";
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #77a6df;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: black;
+}
+
+.dialog-pane .content.label {
+    -fx-text-fill: white;
+}
+
+.dialog-pane .text-field {
+    -fx-background-color: white;
+
+    -fx-padding: 8;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: black;
+}
+
+.text-area:focused {
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}

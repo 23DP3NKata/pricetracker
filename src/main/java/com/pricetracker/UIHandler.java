@@ -145,6 +145,9 @@ public class UIHandler {
         dialog.setHeaderText("Enter a name for the new list:");
         dialog.setContentText("List Name:");
 
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource(style).toExternalForm());
+        dialog.getDialogPane().getStyleClass().add("dialog-pane");
+
         dialog.showAndWait().ifPresent(name -> {
             if (!name.trim().isEmpty()) {
                 ProductList newList = new ProductList(name);
@@ -292,7 +295,17 @@ public class UIHandler {
                    .append(", Date: ").append(entry.getDate().format(formatter)).append("\n");
         }
 
-        alert.setContentText(history.toString());
+        TextArea textArea = new TextArea(history.toString());
+        textArea.setWrapText(true);
+        textArea.setEditable(false);
+        textArea.setFocusTraversable(false);
+        textArea.setPrefWidth(400);
+        textArea.setPrefHeight(200);
+
+        alert.getDialogPane().setContent(textArea);
+        alert.getDialogPane().getStylesheets().add(getClass().getResource(style).toExternalForm());
+        alert.getDialogPane().getStyleClass().add("dialog-pane");
+
         alert.showAndWait();
     }
 
@@ -301,7 +314,11 @@ public class UIHandler {
         dialog.setTitle("Product Settings");
 
         Text createDate = new Text("Created: " + product.getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
+        createDate.setStyle("-fx-fill: white;");
+        
         Text updateDate = new Text("Last updated: " + product.getUpdatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
+        updateDate.setStyle("-fx-fill: white;");
+        
 
         ButtonType deleteButtonType = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -316,6 +333,9 @@ public class UIHandler {
         grid.add(updateDate, 0, 1);
 
         dialog.getDialogPane().setContent(grid);
+
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource(style).toExternalForm());
+        dialog.getDialogPane().getStyleClass().add("dialog-pane");
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == deleteButtonType) {
