@@ -17,6 +17,8 @@ public class Product {
     @JsonProperty
     private String imageUrl;
     @JsonProperty
+    private String shop;
+    @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm")
     private LocalDateTime createdAt;
     @JsonProperty
@@ -28,11 +30,12 @@ public class Product {
     public Product() {
     }
 
-    public Product(String name, String url, double price, String imageUrl) {
+    public Product(String name, String url, double price, String imageUrl, String shop) {
         this.name = name;
         this.url = url;
         this.price = price;
         this.imageUrl = imageUrl;
+        this.shop = shop;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -51,6 +54,10 @@ public class Product {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    public String getShop() {
+        return shop;
     }
 
     public LocalDateTime getCreatedAt() {

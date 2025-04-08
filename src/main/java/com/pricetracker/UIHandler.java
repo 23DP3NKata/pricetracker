@@ -249,7 +249,10 @@ public class UIHandler {
 
         Label priceLabel = new Label("€" + product.getPrice());
 
-        VBox textContainer = new VBox(5, nameLabel, priceLabel);
+        Label shopLabel = new Label(product.getShop());
+        shopLabel.setStyle("-fx-font-size: 14px;");
+
+        VBox textContainer = new VBox(5, nameLabel, priceLabel, shopLabel);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

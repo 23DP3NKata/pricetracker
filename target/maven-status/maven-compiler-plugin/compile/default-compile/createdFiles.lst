@@ -5,6 +5,5 @@ com\pricetracker\Product.class
 com\pricetracker\PriceChecker.class
 com\pricetracker\ProductList.class
 com\pricetracker\FileManager.class
-com\pricetracker\StartWindow.class
 com\pricetracker\PriceTrackerApp.class
 com\pricetracker\UIHandler$1.class

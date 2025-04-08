@@ -28,7 +28,7 @@ public class PriceChecker {
                 Element imageElement = doc.selectFirst(".products-gallery-slider__slide-inner img");
                 return extractDetails(nameElement, priceElement, imageElement, url);
             } else {
-                return new Product("Unknown Product", url, 0.0, "https://cdn2.iconfinder.com/data/icons/packing/80/shipping-34-512.png");
+                return new Product("Unknown Product", url, 0.0, "https://cdn2.iconfinder.com/data/icons/packing/80/shipping-34-512.png", "Unknown Shop");
             }
         } catch (Exception e) {
             return null;
@@ -74,7 +74,7 @@ public class PriceChecker {
                         }
                     });
                 }
-                break; // Exit the loop if successful
+                break;
             } catch (IOException e) {
                 attempt++;
                 System.err.println("Attempt " + attempt + " failed for product: " + product.getName());
@@ -108,6 +108,7 @@ public class PriceChecker {
         String name = "Unknown Product";
         double price = 0.0;
         String imageUrl = "https://cdn2.iconfinder.com/data/icons/packing/80/shipping-34-512.png";
+        String shop = "Unknown Shop";
 
         if (nameElement != null) {
             name = capitalize(nameElement.text());
@@ -121,7 +122,13 @@ public class PriceChecker {
             imageUrl = imageElement.absUrl("src");
         }
 
-        Product product = new Product(name, url, price, imageUrl);
+        if (url.contains("rdveikals.lv")) {
+            shop = "RD Electronics";
+        } else if (url.contains("1a.lv")) {
+            shop = "1a.lv";
+        }
+
+        Product product = new Product(name, url, price, imageUrl, shop);
         product.setCreatedAt(LocalDateTime.now());
         product.setUpdatedAt(LocalDateTime.now());
         product.addPriceHistoryEntry(new PriceHistoryEntry(price, LocalDateTime.now()));
