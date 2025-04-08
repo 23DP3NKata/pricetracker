@@ -96,11 +96,11 @@ public class UIHandler {
         Button loadListButton = new Button("Load List");
         loadListButton.setOnAction(e -> loadListIntoTab(tabPane));
 
-        HBox tabControls = new HBox(10, tabPane, newListButton, loadListButton);
+        HBox tabControls = new HBox(10, tabPane);
         tabControls.setPadding(new Insets(10));
         tabControls.setAlignment(Pos.CENTER_LEFT);
 
-        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox);
+        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox, newListButton, loadListButton);
         topMenu.setPadding(new Insets(10));
 
         Button updateButton = new Button("Update Prices");
