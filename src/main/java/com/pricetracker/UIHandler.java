@@ -217,6 +217,9 @@ public class UIHandler {
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource(style).toExternalForm());
+        dialog.getDialogPane().getStyleClass().add("dialog-pane");
+
         dialog.setResultConverter(button -> button == ButtonType.OK ? linkField.getText() : null);
         dialog.showAndWait().ifPresent(url -> {
             Task<Product> task = new Task<>() {

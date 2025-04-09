@@ -106,8 +106,6 @@
     -fx-font-family: "Poppins";
 }
 
-/* ========================= */
-
 .tab {
     -fx-background-color: #4E9F3D;
     -fx-text-fill: #ffffff;
@@ -135,6 +133,8 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
+
+/* ========================= */
 
 .dialog-pane {
     -fx-background-color: #191a19;
