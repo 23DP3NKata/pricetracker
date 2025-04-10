@@ -27,11 +27,6 @@ public class PriceChecker {
                 Element priceElement = doc.selectFirst(".price span");
                 Element imageElement = doc.selectFirst(".products-gallery-slider__slide-inner img");
                 return extractDetails(nameElement, priceElement, imageElement, url);
-            } else if (url.contains("amazon")) {
-                Element nameElement = doc.selectFirst("#productTitle");
-                Element priceElement = doc.selectFirst(".a-price .a-price-whole");
-                Element imageElement = doc.selectFirst(".imgTagWrapper img");
-                return extractDetails(nameElement, priceElement, imageElement, url);
             } else {
                 return new Product("Unknown Product", url, 0.0, "https://cdn2.iconfinder.com/data/icons/packing/80/shipping-34-512.png", "Unknown Shop");
             }
@@ -131,8 +126,6 @@ public class PriceChecker {
             shop = "RD Electronics";
         } else if (url.contains("1a.lv")) {
             shop = "1a.lv";
-        } else if (url.contains("amazon")) {
-            shop = "Amazon";
         }
 
         Product product = new Product(name, url, price, imageUrl, shop);

@@ -33,7 +33,7 @@ public class UIHandler {
     private final VBox productContainer = new VBox(10);
     private final Text lastUpdateText = new Text("Last update: N/A");
     private List<HBox> allProducts;
-    private String style = "/styles.css";
+    private String style = "/stylesDark.css";
 
     public UIHandler(PriceTrackerApp app) {
         this.app = app;
@@ -210,7 +210,7 @@ public class UIHandler {
         linkField.setPromptText("Enter product URL");
 
         Text availableShops = new Text();
-        availableShops.setText("Available shops: rdveikals.lv, 1a.lv, amazon");
+        availableShops.setText("Available shops: rdveikals.lv, 1a.lv");
         availableShops.setStyle("-fx-fill: white; -fx-font-size: 12px;");
 
         GridPane grid = new GridPane();
@@ -268,16 +268,22 @@ public class UIHandler {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        Button deleteButton = new Button("Delete");
+        deleteButton.setOnAction(e -> {
+            productContainer.getChildren().remove(productBox);
+            app.removeProduct(product);
+        });
+
         Button priceHistoryButton = new Button("Price History");
         priceHistoryButton.setOnAction(e -> showPriceHistory(product));
 
-        Button settingsButton = new Button("Settings");
+        Button settingsButton = new Button("Info");
         settingsButton.setOnAction(e -> showSettingsDialog(product, productBox));
 
         priceHistoryButton.setPrefWidth(150);
         settingsButton.setPrefWidth(100);
 
-        HBox buttonBox = new HBox(10, priceHistoryButton, settingsButton);
+        HBox buttonBox = new HBox(10, priceHistoryButton, deleteButton, settingsButton);
         productBox.getChildren().addAll(imageView, textContainer, spacer, buttonBox);
 
         productBox.setUserData(product);
@@ -333,10 +339,8 @@ public class UIHandler {
         Text updateDate = new Text("Last updated: " + product.getUpdatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
         updateDate.setStyle("-fx-fill: white;");
         
-
-        ButtonType deleteButtonType = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(deleteButtonType, cancelButtonType);
+        dialog.getDialogPane().getButtonTypes().addAll(cancelButtonType);
 
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10));
@@ -350,14 +354,6 @@ public class UIHandler {
 
         dialog.getDialogPane().getStylesheets().add(getClass().getResource(style).toExternalForm());
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == deleteButtonType) {
-                productContainer.getChildren().remove(productBox);
-                app.removeProduct(product);
-            }
-            return null;
-        });
 
         dialog.showAndWait();
     }
