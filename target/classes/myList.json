@@ -2,11 +2,11 @@
   "products" : [ {
     "name" : "SSD disks Samsung 990 PRO 2TB MZ-V9P2T0BW",
     "url" : "https://www.rdveikals.lv/products/lv/416/497240/sort/5/filter/0_0_0_0/990-PRO-2TB-MZ-V9P2T0BW-SSD-disks.html",
-    "price" : 178.49,
+    "price" : 179.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/94ff90d01696f25eb186e1d7747fa2d5.jpg",
     "shop" : null,
     "createdAt" : "21.03.2025 08:42",
-    "updatedAt" : "04.04.2025 23:16",
+    "updatedAt" : "10.04.2025 21:52",
     "priceHistory" : [ {
       "price" : 178.8,
       "date" : "21.03.2025 08:42"
@@ -16,6 +16,9 @@
     }, {
       "price" : 178.49,
       "date" : "04.04.2025 23:16"
+    }, {
+      "price" : 179.99,
+      "date" : "10.04.2025 21:52"
     } ]
   }, {
     "name" : "Monitors Dell UltraSharp U2723QE, 27\", 5 ms",
@@ -32,11 +35,11 @@
   }, {
     "name" : "Procesors amd ryzen 7 9800x3d 100-100001084wof box",
     "url" : "https://www.rdveikals.lv/products/lv/428/689076/sort/5/filter/0_0_0_0/Ryzen-7-9800X3D-100-100001084WOF-Box-procesors.html",
-    "price" : 597.99,
+    "price" : 599.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/21b1c1eccbbbb1e2ac3dcdbadc2849bf.jpg",
     "shop" : null,
     "createdAt" : "21.03.2025 09:47",
-    "updatedAt" : "01.04.2025 10:44",
+    "updatedAt" : "10.04.2025 21:52",
     "priceHistory" : [ {
       "price" : 608.49,
       "date" : "21.03.2025 09:47"
@@ -46,18 +49,24 @@
     }, {
       "price" : 597.99,
       "date" : "01.04.2025 10:44"
+    }, {
+      "price" : 599.99,
+      "date" : "10.04.2025 21:52"
     } ]
   }, {
     "name" : "Dzesētājs deepcool ak400 zero dark plus 120 mm cpu cooler r-ak400-bknnmd-g-1",
     "url" : "https://www.rdveikals.lv/products/lv/437/547972/sort/5/filter/0_0_0_0/AK400-Zero-Dark-Plus-120-mm-CPU-Cooler-R-AK400-BKNNMD-G-1-dzes%C4%93t%C4%81js.html",
-    "price" : 46.89,
+    "price" : 44.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/2b5bfa334c82c216feabc07a14d4f858.jpg",
     "shop" : null,
     "createdAt" : "21.03.2025 09:48",
-    "updatedAt" : "21.03.2025 09:48",
+    "updatedAt" : "10.04.2025 21:52",
     "priceHistory" : [ {
       "price" : 46.89,
       "date" : "21.03.2025 09:48"
+    }, {
+      "price" : 44.99,
+      "date" : "10.04.2025 21:52"
     } ]
   }, {
     "name" : "Zvejas zābaki vīriešu paliutis 900pkomb, ar stulmu, bez siltinājuma, zaļa, 45 izmērs",
@@ -98,26 +107,29 @@
   }, {
     "name" : "Videokarte msi geforce rtx 5070 gaming trio oc 12gb gddr7 192bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/721738/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Gaming-Trio-OC-12GB-GDDR7-192bit-videokarte.html",
-    "price" : 835.99,
+    "price" : 802.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/9a1de101d1020b99bdf61b0247e859c6.jpg",
     "shop" : null,
     "createdAt" : "23.03.2025 10:14",
-    "updatedAt" : "08.04.2025 13:10",
+    "updatedAt" : "10.04.2025 21:52",
     "priceHistory" : [ {
       "price" : 818.99,
       "date" : "23.03.2025 10:14"
     }, {
       "price" : 835.99,
       "date" : "08.04.2025 13:10"
+    }, {
+      "price" : 802.99,
+      "date" : "10.04.2025 21:52"
     } ]
   }, {
     "name" : "Videokarte gigabyte geforce rtx 5070 ti aero oc 16gb gddr7 256bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/721743/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Ti-AERO-OC-16GB-GDDR7-256bit-videokarte.html",
-    "price" : 1220.22,
+    "price" : 1180.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/07b12f8dc42e58d71d41c7728f5e5e43.jpg",
     "shop" : null,
     "createdAt" : "23.03.2025 10:14",
-    "updatedAt" : "04.04.2025 23:16",
+    "updatedAt" : "10.04.2025 21:52",
     "priceHistory" : [ {
       "price" : 1188.99,
       "date" : "23.03.2025 10:14"
@@ -130,6 +142,9 @@
     }, {
       "price" : 1220.22,
       "date" : "04.04.2025 23:16"
+    }, {
+      "price" : 1180.99,
+      "date" : "10.04.2025 21:52"
     } ]
   }, {
     "name" : "Videokarte gigabyte geforce rtx 5070 gaming oc, 12 gb, gddr7",
@@ -158,11 +173,11 @@
   }, {
     "name" : "Videokarte gigabyte geforce rtx 4060 windforce oc 8gb gddr6 128bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/525409/sort/5/filter/0_0_0_0/GeForce-RTX-4060-WindForce-OC-8GB-GDDR6-128bit-videokarte.html",
-    "price" : 341.0,
+    "price" : 331.46,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/1c405782a35fe110b580144ed5f40e59.jpg",
     "shop" : null,
     "createdAt" : "23.03.2025 14:51",
-    "updatedAt" : "01.04.2025 10:44",
+    "updatedAt" : "10.04.2025 21:53",
     "priceHistory" : [ {
       "price" : 362.47,
       "date" : "23.03.2025 14:51"
@@ -178,6 +193,9 @@
     }, {
       "price" : 341.0,
       "date" : "01.04.2025 10:44"
+    }, {
+      "price" : 331.46,
+      "date" : "10.04.2025 21:53"
     } ]
   }, {
     "name" : "Videokarte asus geforce rtx 4060 dual evo oc 8gb gddr6 128bit",
@@ -194,11 +212,11 @@
   }, {
     "name" : "Videokarte gigabyte geforce rtx 4060 eagle oc 8gb gddr6 128bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/523212/sort/5/filter/0_0_0_0/GeForce-RTX-4060-Eagle-OC-8GB-GDDR6-128bit-videokarte.html",
-    "price" : 374.0,
+    "price" : 368.0,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/807aad94d98b2f0fec7c9e3caa598a8e.jpg",
     "shop" : null,
     "createdAt" : "23.03.2025 14:51",
-    "updatedAt" : "04.04.2025 23:16",
+    "updatedAt" : "10.04.2025 21:53",
     "priceHistory" : [ {
       "price" : 371.0,
       "date" : "23.03.2025 14:51"
@@ -211,15 +229,18 @@
     }, {
       "price" : 374.0,
       "date" : "04.04.2025 23:16"
+    }, {
+      "price" : 368.0,
+      "date" : "10.04.2025 21:53"
     } ]
   }, {
     "name" : "Operatīvā atmiņa adata xpg lancer blade rgb 2x16gb ddr5 6000mhz udimm ax5u6000c3016g-dtlabrwh",
     "url" : "https://www.rdveikals.lv/products/lv/433/642860/sort/5/filter/0_0_0_0/XPG-Lancer-Blade-RGB-2x16GB-DDR5-6000MHZ-UDIMM-AX5U6000C3016G-DTLABRWH-operat%C4%ABv%C4%81-atmi%C5%86a.html",
-    "price" : 121.49,
+    "price" : 118.49,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/6e77f3ef402c8efcd2f18d39f74ac69b.jpg",
     "shop" : null,
     "createdAt" : "23.03.2025 14:52",
-    "updatedAt" : "01.04.2025 10:44",
+    "updatedAt" : "10.04.2025 21:53",
     "priceHistory" : [ {
       "price" : 126.49,
       "date" : "23.03.2025 14:52"
@@ -232,21 +253,27 @@
     }, {
       "price" : 121.49,
       "date" : "01.04.2025 10:44"
+    }, {
+      "price" : 118.49,
+      "date" : "10.04.2025 21:53"
     } ]
   }, {
     "name" : "Operatīvā atmiņa adata xpg lancer blade rgb 2x16gb ddr5 6000mhz dimm ax5u6000c3016g-dtlabrbk",
     "url" : "https://www.rdveikals.lv/products/lv/433/600373/sort/5/filter/0_0_0_0/XPG-Lancer-Blade-RGB-2x16GB-DDR5-6000MHZ-DIMM-AX5U6000C3016G-DTLABRBK-operat%C4%ABv%C4%81-atmi%C5%86a.html",
-    "price" : 111.49,
+    "price" : 110.49,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/d2b249dedf54cd078ba410451355e8db.jpg",
     "shop" : null,
     "createdAt" : "23.03.2025 14:52",
-    "updatedAt" : "28.03.2025 09:01",
+    "updatedAt" : "10.04.2025 21:53",
     "priceHistory" : [ {
       "price" : 110.49,
       "date" : "23.03.2025 14:52"
     }, {
       "price" : 111.49,
       "date" : "28.03.2025 09:01"
+    }, {
+      "price" : 110.49,
+      "date" : "10.04.2025 21:53"
     } ]
   }, {
     "name" : "Cietais disks (hdd) seagate barracuda st2000lm015, 2.5\", 2 tb",

@@ -209,10 +209,16 @@ public class UIHandler {
         TextField linkField = new TextField();
         linkField.setPromptText("Enter product URL");
 
+        Text availableShops = new Text();
+        availableShops.setText("Available shops: rdveikals.lv, 1a.lv, amazon");
+        availableShops.setStyle("-fx-fill: white; -fx-font-size: 12px;");
+
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10));
+        grid.setVgap(10);
         grid.add(new Label("Product URL: "), 0, 0);
         grid.add(linkField, 1, 0);
+        grid.add(availableShops, 0, 1, 2, 1);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -248,6 +254,8 @@ public class UIHandler {
 
         Label nameLabel = new Label(product.getName());
         nameLabel.setCursor(Cursor.HAND);
+        nameLabel.setWrapText(true);
+        nameLabel.setMaxWidth(700);
         nameLabel.setOnMouseClicked(event -> copyToClipboard(product.getUrl()));
 
         Label priceLabel = new Label("€" + product.getPrice());
