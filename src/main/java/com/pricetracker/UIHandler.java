@@ -18,6 +18,7 @@ import javafx.scene.Node;
 import javafx.stage.FileChooser;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import org.controlsfx.control.RangeSlider;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,6 +74,47 @@ public class UIHandler {
         sortProducts("Price High-Low");
         sortChoiceBox.getStyleClass().add("sortChoiceBox");
 
+        // Price filter
+        Label priceFilterLabel = new Label("");
+        TextField minPriceField = new TextField();
+        minPriceField.setPromptText("Min");
+        minPriceField.setPrefWidth(60);
+
+        TextField maxPriceField = new TextField();
+        maxPriceField.setPromptText("Max");
+        maxPriceField.setPrefWidth(60);
+
+        RangeSlider priceRangeSlider = new RangeSlider(0, 5000, 0, 1000);
+        priceRangeSlider.setShowTickLabels(true);
+        priceRangeSlider.setShowTickMarks(true);
+        priceRangeSlider.setMajorTickUnit(500);
+        priceRangeSlider.setBlockIncrement(50);
+
+        priceRangeSlider.lowValueProperty().addListener((observable, oldValue, newValue) -> {
+            minPriceField.setText(String.format("%.0f", newValue.doubleValue()));
+            filterProductsByPrice(minPriceField.getText(), maxPriceField.getText());
+        });
+
+        priceRangeSlider.highValueProperty().addListener((observable, oldValue, newValue) -> {
+            maxPriceField.setText(String.format("%.0f", newValue.doubleValue()));
+            filterProductsByPrice(minPriceField.getText(), maxPriceField.getText());
+        });
+
+        minPriceField.textProperty().addListener((observable, oldValue, newValue) -> {
+            double minValue = newValue.isEmpty() ? 0 : Double.parseDouble(newValue);
+            priceRangeSlider.setLowValue(minValue);
+            filterProductsByPrice(newValue, maxPriceField.getText());
+        });
+
+        maxPriceField.textProperty().addListener((observable, oldValue, newValue) -> {
+            double maxValue = newValue.isEmpty() ? 1000 : Double.parseDouble(newValue);
+            priceRangeSlider.setHighValue(maxValue);
+            filterProductsByPrice(minPriceField.getText(), newValue);
+        });
+
+        HBox priceFilterBox = new HBox(10, priceFilterLabel, minPriceField, priceRangeSlider, maxPriceField);
+        priceFilterBox.setAlignment(Pos.CENTER_LEFT);
+
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
 
@@ -100,7 +142,7 @@ public class UIHandler {
         tabControls.setPadding(new Insets(10));
         tabControls.setAlignment(Pos.CENTER_LEFT);
 
-        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox, newListButton, loadListButton);
+        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox, priceFilterBox, newListButton, loadListButton);
         topMenu.setPadding(new Insets(10));
 
         Button updateButton = new Button("Update Prices");
@@ -452,6 +494,22 @@ public class UIHandler {
                     VBox textContainer = (VBox) hbox.getChildren().get(1);
                     Label nameLabel = (Label) textContainer.getChildren().get(0);
                     return nameLabel.getText().toLowerCase().contains(searchText.toLowerCase());
+                })
+                .collect(Collectors.toList());
+
+        productContainer.getChildren().setAll(filteredProducts);
+    }
+
+    private void filterProductsByPrice(String minPriceText, String maxPriceText) {
+        double minPrice = minPriceText.isEmpty() ? 0 : Double.parseDouble(minPriceText);
+        double maxPrice = maxPriceText.isEmpty() ? Double.MAX_VALUE : Double.parseDouble(maxPriceText);
+
+        List<HBox> filteredProducts = allProducts.stream()
+                .filter(hbox -> {
+                    VBox textContainer = (VBox) hbox.getChildren().get(1);
+                    Label priceLabel = (Label) textContainer.getChildren().get(1);
+                    double price = Double.parseDouble(priceLabel.getText().replace("€", ""));
+                    return price >= minPrice && price <= maxPrice;
                 })
                 .collect(Collectors.toList());
 
