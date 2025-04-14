@@ -185,10 +185,19 @@ public class UIHandler {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("New List");
         dialog.setHeaderText("Enter a name for the new list:");
-        dialog.setContentText("List Name:");
+
+        TextField inputField = dialog.getEditor();
+        inputField.setPromptText("Enter list name");
+
+        VBox contentBox = new VBox(10, inputField);
+        contentBox.setPadding(new Insets(10));
+
+        dialog.getDialogPane().setContent(contentBox);
 
         dialog.getDialogPane().getStylesheets().add(getClass().getResource(style).toExternalForm());
         dialog.getDialogPane().getStyleClass().add("dialog-pane");
+
+        dialog.setResultConverter(button -> button == ButtonType.OK ? inputField.getText() : null);
 
         dialog.showAndWait().ifPresent(name -> {
             if (!name.trim().isEmpty()) {
@@ -258,7 +267,9 @@ public class UIHandler {
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10));
         grid.setVgap(10);
-        grid.add(new Label("Product URL: "), 0, 0);
+        Label productUrlLabel = new Label("Product URL: ");
+        productUrlLabel.setStyle("-fx-text-fill: white;");
+        grid.add(productUrlLabel, 0, 0);
         grid.add(linkField, 1, 0);
         grid.add(availableShops, 0, 1, 2, 1);
 

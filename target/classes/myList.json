@@ -42,21 +42,6 @@
       "date" : "10.04.2025 21:52"
     } ]
   }, {
-    "name" : "Dzesētājs deepcool ak400 zero dark plus 120 mm cpu cooler r-ak400-bknnmd-g-1",
-    "url" : "https://www.rdveikals.lv/products/lv/437/547972/sort/5/filter/0_0_0_0/AK400-Zero-Dark-Plus-120-mm-CPU-Cooler-R-AK400-BKNNMD-G-1-dzes%C4%93t%C4%81js.html",
-    "price" : 44.99,
-    "imageUrl" : "https://www.rdveikals.lv/images/midi/2b5bfa334c82c216feabc07a14d4f858.jpg",
-    "shop" : "RD Electronics",
-    "createdAt" : "21.03.2025 09:48",
-    "updatedAt" : "10.04.2025 21:52",
-    "priceHistory" : [ {
-      "price" : 46.89,
-      "date" : "21.03.2025 09:48"
-    }, {
-      "price" : 44.99,
-      "date" : "10.04.2025 21:52"
-    } ]
-  }, {
     "name" : "Zvejas zābaki vīriešu paliutis 900pkomb, ar stulmu, bez siltinājuma, zaļa, 45 izmērs",
     "url" : "https://www.1a.lv/p/zvejas-zabaki-viriesu-paliutis-900pkomb-ar-stulmu-bez-siltinajuma-zala-45-izmers/3rzb?mtd=search-popup&pos=autocoplete&src=lupasearch",
     "price" : 54.99,
@@ -95,11 +80,11 @@
   }, {
     "name" : "Videokarte msi geforce rtx 5070 gaming trio oc 12gb gddr7 192bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/721738/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Gaming-Trio-OC-12GB-GDDR7-192bit-videokarte.html",
-    "price" : 802.99,
+    "price" : 749.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/9a1de101d1020b99bdf61b0247e859c6.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 10:14",
-    "updatedAt" : "10.04.2025 21:52",
+    "updatedAt" : "14.04.2025 21:16",
     "priceHistory" : [ {
       "price" : 818.99,
       "date" : "23.03.2025 10:14"
@@ -109,6 +94,9 @@
     }, {
       "price" : 802.99,
       "date" : "10.04.2025 21:52"
+    }, {
+      "price" : 749.99,
+      "date" : "14.04.2025 21:16"
     } ]
   }, {
     "name" : "Videokarte gigabyte geforce rtx 5070 ti aero oc 16gb gddr7 256bit",
@@ -274,6 +262,18 @@
     "priceHistory" : [ {
       "price" : 89.9,
       "date" : "08.04.2025 13:59"
+    } ]
+  }, {
+    "name" : "Austiņas apple airpods pro (2nd generation) (usb-c) mtjv3",
+    "url" : "https://www.rdveikals.lv/products/lv/203/538649/sort/5/filter/0_0_0_0/AirPods-Pro-2nd-generation-USB-C-MTJV3-austi%C5%86as.html",
+    "price" : 239.0,
+    "imageUrl" : "https://www.rdveikals.lv/images/midi/759434c8956570b7827a422208227657.jpg",
+    "shop" : "RD Electronics",
+    "createdAt" : "14.04.2025 21:17",
+    "updatedAt" : "14.04.2025 21:17",
+    "priceHistory" : [ {
+      "price" : 239.0,
+      "date" : "14.04.2025 21:17"
     } ]
   } ],
   "name" : "myList"
