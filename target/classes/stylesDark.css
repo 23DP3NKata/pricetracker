@@ -145,3 +145,11 @@
 .range-slider .range-bar {
     -fx-background-color: green;
 }
+
+.dialog-pane .content {
+    -fx-text-fill: white;
+}
+
+.dialog-pane.price-history .content {
+    -fx-text-fill: black;
+}

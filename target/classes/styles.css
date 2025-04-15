@@ -153,3 +153,11 @@
     -fx-font-size: 14px;
     -fx-font-family: "Poppins";
 }
+
+.dialog-pane .content {
+    -fx-text-fill: white;
+}
+
+.dialog-pane.price-history .content {
+    -fx-text-fill: black;
+}

@@ -319,8 +319,23 @@ public class UIHandler {
 
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction(e -> {
-            productContainer.getChildren().remove(productBox);
-            app.removeProduct(product);
+            Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmationAlert.getDialogPane().getStylesheets().add(getClass().getResource(style).toExternalForm());
+            confirmationAlert.getDialogPane().getStyleClass().add("dialog-pane");
+            confirmationAlert.setTitle("Confirm Deletion");
+            confirmationAlert.setHeaderText("Are you sure you want to delete this product?");
+            confirmationAlert.setContentText("This action cannot be undone.");
+        
+            ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+            ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+            confirmationAlert.getButtonTypes().setAll(yesButton, noButton);
+        
+            confirmationAlert.showAndWait().ifPresent(response -> {
+                if (response == yesButton) {
+                    productContainer.getChildren().remove(productBox);
+                    app.removeProduct(product);
+                }
+            });
         });
 
         Button priceHistoryButton = new Button("Price History");
@@ -374,6 +389,7 @@ public class UIHandler {
         alert.getDialogPane().setContent(textArea);
         alert.getDialogPane().getStylesheets().add(getClass().getResource(style).toExternalForm());
         alert.getDialogPane().getStyleClass().add("dialog-pane");
+        alert.getDialogPane().getStyleClass().add("price-history");
 
         alert.showAndWait();
     }
@@ -390,7 +406,7 @@ public class UIHandler {
         
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(cancelButtonType);
-
+        
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10));
         grid.setHgap(10);
