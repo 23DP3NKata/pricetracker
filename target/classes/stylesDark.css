@@ -135,3 +135,13 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
+
+.info-date {
+    -fx-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-family: "Poppins";
+}
+
+.range-slider .range-bar {
+    -fx-background-color: green;
+}

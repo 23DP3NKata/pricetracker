@@ -69,12 +69,11 @@ public class UIHandler {
             "Updated New-Old",
             "Updated Old-New"
         );
-        sortChoiceBox.setValue("Price High-Low");
+        sortChoiceBox.setValue("Date Old-New");
         sortChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> sortProducts(newValue));
-        sortProducts("Price High-Low");
+        sortProducts("Date Old-New");
         sortChoiceBox.getStyleClass().add("sortChoiceBox");
 
-        // Price filter
         Label priceFilterLabel = new Label("");
         TextField minPriceField = new TextField();
         minPriceField.setPromptText("Min");
@@ -84,11 +83,8 @@ public class UIHandler {
         maxPriceField.setPromptText("Max");
         maxPriceField.setPrefWidth(60);
 
-        RangeSlider priceRangeSlider = new RangeSlider(0, 5000, 0, 1000);
-        priceRangeSlider.setShowTickLabels(true);
-        priceRangeSlider.setShowTickMarks(true);
-        priceRangeSlider.setMajorTickUnit(500);
-        priceRangeSlider.setBlockIncrement(50);
+        RangeSlider priceRangeSlider = new RangeSlider(0, 2000, 0, 2000);
+        priceRangeSlider.getStyleClass().add("range-slider");
 
         priceRangeSlider.lowValueProperty().addListener((observable, oldValue, newValue) -> {
             minPriceField.setText(String.format("%.0f", newValue.doubleValue()));
@@ -138,11 +134,11 @@ public class UIHandler {
         Button loadListButton = new Button("Load List");
         loadListButton.setOnAction(e -> loadListIntoTab(tabPane));
 
-        HBox tabControls = new HBox(10, tabPane);
+        HBox tabControls = new HBox(10, newListButton, loadListButton, tabPane);
         tabControls.setPadding(new Insets(10));
         tabControls.setAlignment(Pos.CENTER_LEFT);
 
-        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox, priceFilterBox, newListButton, loadListButton);
+        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox, priceFilterBox);
         topMenu.setPadding(new Insets(10));
 
         Button updateButton = new Button("Update Prices");
@@ -387,10 +383,10 @@ public class UIHandler {
         dialog.setTitle("Product Settings");
 
         Text createDate = new Text("Created: " + product.getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
-        createDate.setStyle("-fx-fill: white;");
+        createDate.getStyleClass().add("info-date");
         
         Text updateDate = new Text("Last updated: " + product.getUpdatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
-        updateDate.setStyle("-fx-fill: white;");
+        updateDate.getStyleClass().add("info-date");
         
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(cancelButtonType);
