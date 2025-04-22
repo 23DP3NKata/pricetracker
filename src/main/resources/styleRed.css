@@ -1,0 +1,155 @@
+.root {
+    -fx-background-color: #A31D1D;
+}
+
+.button {
+    -fx-background-color: #D84040;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Poppins";
+    -fx-padding: 10 20;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.button:hover {
+    -fx-background-color: #db6c6c;
+}
+
+.label {
+    -fx-font-size: 16px;
+    -fx-font-family: "Poppins";
+}
+
+.hbox {
+    -fx-background-color: #D84040;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.scroll-pane {
+    -fx-background-color: #F8F2DE;
+}
+
+.scroll-pane .viewport {
+    -fx-background: #F8F2DE;
+    -fx-background-color: #F8F2DE;
+}
+
+.searchField {
+    -fx-background-color: #D84040;
+    -fx-font-size: 14px;
+    -fx-font-family: "Poppins";
+    -fx-padding: 10;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: white;
+}
+
+.searchField .text-input {
+    -fx-text-fill: white;
+}
+
+.sortChoiceBox {
+    -fx-background-color: #D84040;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 3;
+}
+
+.sortChoiceBox .label {
+    -fx-text-fill: white;
+}
+
+.sortChoiceBox .list-cell {
+    -fx-background-color: #D84040;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+}
+
+
+.sortChoiceBox .context-menu {
+    -fx-background-color: #D84040;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Poppins";
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.sortChoiceBox .menu-item {
+    -fx-background-color: #D84040;
+    -fx-text-fill: #ffffff;
+}
+
+.sortChoiceBox .menu-item:hover {
+    -fx-background-color: #A31D1D;
+}
+
+.sortChoiceBox .arrow-button {
+    -fx-background-color: #A31D1D;
+}
+
+.sortChoiceBox .arrow {
+    -fx-background-color: #A31D1D;
+}
+
+.lastUpdateText {
+    -fx-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-family: "Poppins";
+}
+
+/* ========================= */
+
+.tab {
+    -fx-background-color: #D84040;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-family: "Poppins";
+    -fx-padding: 10 20;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.tab:selected {
+    -fx-background-color: #D84040;
+    -fx-text-fill: #ffffff;
+}
+
+.tab:hover {
+    -fx-background-color: #db6c6c;
+}
+
+.tab-label {
+    -fx-text-fill: #ffffff;
+}
+
+.tab-header-background {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.info-date {
+    -fx-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-family: "Poppins";
+}
+
+.range-slider .range-bar {
+    -fx-background-color: #F8F2DE;
+}
+
+.dialog-pane .content {
+    -fx-text-fill: white;
+}
+
+.dialog-pane.price-history .content {
+    -fx-text-fill: black;
+}

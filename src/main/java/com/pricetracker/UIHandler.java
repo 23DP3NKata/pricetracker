@@ -153,6 +153,8 @@ public class UIHandler {
                 style = "/stylesDark.css";
             } else if (style.equals("/stylesDark.css")) {
                 style = "/stylePink.css";
+            } else if (style.equals("/stylePink.css")) {
+                style = "/styleRed.css";
             } else {
                 style = "/styles.css";
             }
