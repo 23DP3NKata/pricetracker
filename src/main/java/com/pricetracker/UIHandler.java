@@ -34,7 +34,7 @@ public class UIHandler {
     private final VBox productContainer = new VBox(10);
     private final Text lastUpdateText = new Text("Last update: N/A");
     private List<HBox> allProducts;
-    private String style = "/stylesDark.css";
+    private String style = "/styles.css";
 
     public UIHandler(PriceTrackerApp app) {
         this.app = app;
@@ -151,6 +151,8 @@ public class UIHandler {
         switchThemeButton.setOnAction(e -> {
             if (style.equals("/styles.css")) {
                 style = "/stylesDark.css";
+            } else if (style.equals("/stylesDark.css")) {
+                style = "/stylePink.css";
             } else {
                 style = "/styles.css";
             }

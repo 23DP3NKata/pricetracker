@@ -80,11 +80,11 @@
   }, {
     "name" : "Videokarte msi geforce rtx 5070 gaming trio oc 12gb gddr7 192bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/721738/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Gaming-Trio-OC-12GB-GDDR7-192bit-videokarte.html",
-    "price" : 749.99,
+    "price" : 764.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/9a1de101d1020b99bdf61b0247e859c6.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 10:14",
-    "updatedAt" : "14.04.2025 21:16",
+    "updatedAt" : "22.04.2025 12:46",
     "priceHistory" : [ {
       "price" : 818.99,
       "date" : "23.03.2025 10:14"
@@ -97,6 +97,9 @@
     }, {
       "price" : 749.99,
       "date" : "14.04.2025 21:16"
+    }, {
+      "price" : 764.99,
+      "date" : "22.04.2025 12:46"
     } ]
   }, {
     "name" : "Videokarte gigabyte geforce rtx 5070 ti aero oc 16gb gddr7 256bit",
@@ -125,26 +128,32 @@
   }, {
     "name" : "Videokarte gigabyte geforce rtx 5070 gaming oc, 12 gb, gddr7",
     "url" : "https://www.1a.lv/p/videokarte-gigabyte-geforce-rtx-5070-gaming-oc-12-gb-gddr7/ufeb?mtd=search-popup&pos=autocoplete&src=lupasearch",
-    "price" : 909.0,
+    "price" : 789.0,
     "imageUrl" : "https://images.1a.lv/display/aikido/cache/1dad281f609ead66bd04e2efe3c96c8a.jpeg?w=816",
     "shop" : "1a.lv",
     "createdAt" : "23.03.2025 11:27",
-    "updatedAt" : "23.03.2025 11:27",
+    "updatedAt" : "22.04.2025 12:46",
     "priceHistory" : [ {
       "price" : 909.0,
       "date" : "23.03.2025 11:27"
+    }, {
+      "price" : 789.0,
+      "date" : "22.04.2025 12:46"
     } ]
   }, {
     "name" : "Procesors amd amd ryzen™ 7 7800x3d 100-100000910wof, 4.2ghz, am5, 8mb",
     "url" : "https://www.1a.lv/p/procesors-amd-amd-ryzen-7-7800x3d-100-100000910wof-4-2ghz-am5-8mb/kxj4?mtd=search-popup&pos=autocoplete&src=lupasearch",
-    "price" : 569.0,
+    "price" : 509.0,
     "imageUrl" : "https://images.1a.lv/display/aikido/cache/db1696985b4416ea8ff1bc11c7bff914.jpeg?w=816",
     "shop" : "1a.lv",
     "createdAt" : "23.03.2025 11:28",
-    "updatedAt" : "23.03.2025 11:28",
+    "updatedAt" : "22.04.2025 12:46",
     "priceHistory" : [ {
       "price" : 569.0,
       "date" : "23.03.2025 11:28"
+    }, {
+      "price" : 509.0,
+      "date" : "22.04.2025 12:46"
     } ]
   }, {
     "name" : "Videokarte gigabyte geforce rtx 4060 windforce oc 8gb gddr6 128bit",
