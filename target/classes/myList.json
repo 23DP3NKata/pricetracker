@@ -167,11 +167,11 @@
   }, {
     "name" : "Videokarte gigabyte geforce rtx 4060 windforce oc 8gb gddr6 128bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/525409/sort/5/filter/0_0_0_0/GeForce-RTX-4060-WindForce-OC-8GB-GDDR6-128bit-videokarte.html",
-    "price" : 333.58,
+    "price" : 333.54,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/1c405782a35fe110b580144ed5f40e59.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 14:51",
-    "updatedAt" : "22.04.2025 13:50",
+    "updatedAt" : "25.04.2025 08:40",
     "priceHistory" : [ {
       "price" : 362.47,
       "date" : "23.03.2025 14:51"
@@ -193,6 +193,9 @@
     }, {
       "price" : 333.58,
       "date" : "22.04.2025 13:50"
+    }, {
+      "price" : 333.54,
+      "date" : "25.04.2025 08:40"
     } ]
   }, {
     "name" : "Videokarte asus geforce rtx 4060 dual evo oc 8gb gddr6 128bit",

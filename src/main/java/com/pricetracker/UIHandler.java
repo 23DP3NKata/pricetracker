@@ -111,6 +111,12 @@ public class UIHandler {
         HBox priceFilterBox = new HBox(10, priceFilterLabel, minPriceField, priceRangeSlider, maxPriceField);
         priceFilterBox.setAlignment(Pos.CENTER_LEFT);
 
+        ChoiceBox<String> shopFilterBox = new ChoiceBox<>();
+        shopFilterBox.getItems().addAll("All Shops", "RD Electronics", "1a.lv");
+        shopFilterBox.setValue("All Shops");
+        shopFilterBox.setOnAction(e -> filterProductsByShop(shopFilterBox.getValue()));
+        shopFilterBox.getStyleClass().add("sortChoiceBox");
+
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
 
@@ -138,7 +144,7 @@ public class UIHandler {
         tabControls.setPadding(new Insets(10));
         tabControls.setAlignment(Pos.CENTER_LEFT);
 
-        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox, priceFilterBox);
+        HBox topMenu = new HBox(10, addButton, searchField, sortChoiceBox, shopFilterBox,priceFilterBox);
         topMenu.setPadding(new Insets(10));
 
         Button updateButton = new Button("Update Prices");
@@ -537,6 +543,21 @@ public class UIHandler {
                     Label priceLabel = (Label) textContainer.getChildren().get(1);
                     double price = Double.parseDouble(priceLabel.getText().replace("€", ""));
                     return price >= minPrice && price <= maxPrice;
+                })
+                .collect(Collectors.toList());
+
+        productContainer.getChildren().setAll(filteredProducts);
+    }
+
+    private void filterProductsByShop(String selectedShop) {
+        if (allProducts == null || allProducts.isEmpty()) {
+            return;
+        }
+
+        List<HBox> filteredProducts = allProducts.stream()
+                .filter(hbox -> {
+                    Product product = (Product) hbox.getUserData();
+                    return "All Shops".equals(selectedShop) || product.getShop().equalsIgnoreCase(selectedShop);
                 })
                 .collect(Collectors.toList());
 
