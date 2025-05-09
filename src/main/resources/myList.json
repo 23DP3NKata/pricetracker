@@ -29,11 +29,11 @@
   }, {
     "name" : "Procesors amd ryzen 7 9800x3d 100-100001084wof box",
     "url" : "https://www.rdveikals.lv/products/lv/428/689076/sort/5/filter/0_0_0_0/Ryzen-7-9800X3D-100-100001084WOF-Box-procesors.html",
-    "price" : 550.25,
+    "price" : 550.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/21b1c1eccbbbb1e2ac3dcdbadc2849bf.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "21.03.2025 09:47",
-    "updatedAt" : "04.05.2025 18:02",
+    "updatedAt" : "09.05.2025 09:18",
     "priceHistory" : [ {
       "price" : 608.49,
       "date" : "21.03.2025 09:47"
@@ -52,6 +52,9 @@
     }, {
       "price" : 550.25,
       "date" : "04.05.2025 18:02"
+    }, {
+      "price" : 550.99,
+      "date" : "09.05.2025 09:18"
     } ]
   }, {
     "name" : "Zvejas zābaki vīriešu paliutis 900pkomb, ar stulmu, bez siltinājuma, zaļa, 45 izmērs",
@@ -83,23 +86,26 @@
   }, {
     "name" : "Datorpele logitech g305 white 910-005291",
     "url" : "https://www.rdveikals.lv/products/lv/161/248782/sort/5/filter/0_0_0_0/G305-White-910-005291-datorpele.html",
-    "price" : 59.99,
+    "price" : 57.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/eaeb45ac180f831e7e553eba048ff968.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 10:14",
-    "updatedAt" : "23.03.2025 10:14",
+    "updatedAt" : "09.05.2025 09:18",
     "priceHistory" : [ {
       "price" : 59.99,
       "date" : "23.03.2025 10:14"
+    }, {
+      "price" : 57.99,
+      "date" : "09.05.2025 09:18"
     } ]
   }, {
     "name" : "Videokarte msi geforce rtx 5070 gaming trio oc 12gb gddr7 192bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/721738/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Gaming-Trio-OC-12GB-GDDR7-192bit-videokarte.html",
-    "price" : 764.99,
+    "price" : 744.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/9a1de101d1020b99bdf61b0247e859c6.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 10:14",
-    "updatedAt" : "22.04.2025 12:46",
+    "updatedAt" : "09.05.2025 09:18",
     "priceHistory" : [ {
       "price" : 818.99,
       "date" : "23.03.2025 10:14"
@@ -115,15 +121,18 @@
     }, {
       "price" : 764.99,
       "date" : "22.04.2025 12:46"
+    }, {
+      "price" : 744.99,
+      "date" : "09.05.2025 09:18"
     } ]
   }, {
     "name" : "Videokarte gigabyte geforce rtx 5070 ti aero oc 16gb gddr7 256bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/721743/sort/5/filter/0_0_0_0/GeForce-RTX-5070-Ti-AERO-OC-16GB-GDDR7-256bit-videokarte.html",
-    "price" : 1152.99,
+    "price" : 1084.18,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/07b12f8dc42e58d71d41c7728f5e5e43.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 10:14",
-    "updatedAt" : "04.05.2025 18:02",
+    "updatedAt" : "09.05.2025 09:18",
     "priceHistory" : [ {
       "price" : 1188.99,
       "date" : "23.03.2025 10:14"
@@ -145,6 +154,9 @@
     }, {
       "price" : 1152.99,
       "date" : "04.05.2025 18:02"
+    }, {
+      "price" : 1084.18,
+      "date" : "09.05.2025 09:18"
     } ]
   }, {
     "name" : "Videokarte gigabyte geforce rtx 5070 gaming oc, 12 gb, gddr7",
@@ -179,11 +191,11 @@
   }, {
     "name" : "Videokarte gigabyte geforce rtx 4060 windforce oc 8gb gddr6 128bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/525409/sort/5/filter/0_0_0_0/GeForce-RTX-4060-WindForce-OC-8GB-GDDR6-128bit-videokarte.html",
-    "price" : 324.0,
+    "price" : 344.0,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/1c405782a35fe110b580144ed5f40e59.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 14:51",
-    "updatedAt" : "04.05.2025 18:02",
+    "updatedAt" : "09.05.2025 09:18",
     "priceHistory" : [ {
       "price" : 362.47,
       "date" : "23.03.2025 14:51"
@@ -211,6 +223,9 @@
     }, {
       "price" : 324.0,
       "date" : "04.05.2025 18:02"
+    }, {
+      "price" : 344.0,
+      "date" : "09.05.2025 09:18"
     } ]
   }, {
     "name" : "Videokarte asus geforce rtx 4060 dual evo oc 8gb gddr6 128bit",
@@ -233,11 +248,11 @@
   }, {
     "name" : "Videokarte gigabyte geforce rtx 4060 eagle oc 8gb gddr6 128bit",
     "url" : "https://www.rdveikals.lv/products/lv/417/523212/sort/5/filter/0_0_0_0/GeForce-RTX-4060-Eagle-OC-8GB-GDDR6-128bit-videokarte.html",
-    "price" : 363.0,
+    "price" : 336.54,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/807aad94d98b2f0fec7c9e3caa598a8e.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 14:51",
-    "updatedAt" : "22.04.2025 13:50",
+    "updatedAt" : "09.05.2025 09:18",
     "priceHistory" : [ {
       "price" : 371.0,
       "date" : "23.03.2025 14:51"
@@ -256,15 +271,18 @@
     }, {
       "price" : 363.0,
       "date" : "22.04.2025 13:50"
+    }, {
+      "price" : 336.54,
+      "date" : "09.05.2025 09:18"
     } ]
   }, {
     "name" : "Operatīvā atmiņa adata xpg lancer blade rgb 2x16gb ddr5 6000mhz udimm ax5u6000c3016g-dtlabrwh",
     "url" : "https://www.rdveikals.lv/products/lv/433/642860/sort/5/filter/0_0_0_0/XPG-Lancer-Blade-RGB-2x16GB-DDR5-6000MHZ-UDIMM-AX5U6000C3016G-DTLABRWH-operat%C4%ABv%C4%81-atmi%C5%86a.html",
-    "price" : 130.49,
+    "price" : 120.99,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/6e77f3ef402c8efcd2f18d39f74ac69b.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "23.03.2025 14:52",
-    "updatedAt" : "04.05.2025 18:02",
+    "updatedAt" : "09.05.2025 09:18",
     "priceHistory" : [ {
       "price" : 126.49,
       "date" : "23.03.2025 14:52"
@@ -286,6 +304,9 @@
     }, {
       "price" : 130.49,
       "date" : "04.05.2025 18:02"
+    }, {
+      "price" : 120.99,
+      "date" : "09.05.2025 09:18"
     } ]
   }, {
     "name" : "Operatīvā atmiņa adata xpg lancer blade rgb 2x16gb ddr5 6000mhz dimm ax5u6000c3016g-dtlabrbk",
@@ -323,14 +344,17 @@
   }, {
     "name" : "Austiņas apple airpods pro (2nd generation) (usb-c) mtjv3",
     "url" : "https://www.rdveikals.lv/products/lv/203/538649/sort/5/filter/0_0_0_0/AirPods-Pro-2nd-generation-USB-C-MTJV3-austi%C5%86as.html",
-    "price" : 239.0,
+    "price" : 279.0,
     "imageUrl" : "https://www.rdveikals.lv/images/midi/759434c8956570b7827a422208227657.jpg",
     "shop" : "RD Electronics",
     "createdAt" : "14.04.2025 21:17",
-    "updatedAt" : "14.04.2025 21:17",
+    "updatedAt" : "09.05.2025 09:18",
     "priceHistory" : [ {
       "price" : 239.0,
       "date" : "14.04.2025 21:17"
+    }, {
+      "price" : 279.0,
+      "date" : "09.05.2025 09:18"
     } ]
   } ],
   "name" : "myList"
