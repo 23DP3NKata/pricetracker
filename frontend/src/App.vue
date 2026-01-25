@@ -1,97 +1,177 @@
-<script setup>
-import { RouterView } from 'vue-router'
-</script>
-
 <template>
   <v-app>
-    <v-app-bar color="primary" prominent>
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
-      <v-toolbar-title>Price Tracker</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn icon="mdi-magnify"></v-btn>
-      <v-btn icon="mdi-account"></v-btn>
+    <!-- Navigation -->
+    <v-app-bar :elevation="scrolled ? 2 : 0" :class="{ scrolled }" height="70" flat>
+      <v-container class="d-flex align-center">
+        <div class="logo" @click="$router.push('/')">
+          <v-icon color="primary" size="28">mdi-chart-line-variant</v-icon>
+          <span>PriceTracker</span>
+        </div>
+
+        <v-spacer />
+
+        <div class="nav d-none d-md-flex">
+          <v-btn to="/" variant="text" rounded>Home</v-btn>
+          <v-btn to="/about" variant="text" rounded>About</v-btn>
+        </div>
+
+        <div class="d-none d-md-flex ml-4 ga-2">
+          <v-btn variant="text" rounded>Sign In</v-btn>
+          <v-btn color="primary" rounded>Get Started</v-btn>
+        </div>
+
+        <v-btn :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'" 
+               variant="text" @click="toggleTheme" class="ml-2" />
+
+        <v-btn icon="mdi-menu" variant="text" class="d-md-none ml-2" @click="drawer = true" />
+      </v-container>
     </v-app-bar>
 
+    <!-- Mobile Menu -->
+    <v-navigation-drawer v-model="drawer" temporary location="right" width="280">
+      <v-list class="pa-4">
+        <v-list-item to="/" rounded>Home</v-list-item>
+        <v-list-item to="/about" rounded>About</v-list-item>
+        <v-divider class="my-3" />
+        <v-list-item rounded>Sign In</v-list-item>
+        <v-btn color="primary" block rounded class="mt-2">Get Started</v-btn>
+      </v-list>
+    </v-navigation-drawer>
+
+    <!-- Content -->
     <v-main>
-      <RouterView />
+      <router-view />
     </v-main>
 
-    <v-footer color="primary" app>
+    <!-- Footer -->
+    <footer class="footer">
       <v-container>
-        <v-row>
-          <v-col class="text-center white--text">
-            {{ new Date().getFullYear() }} — <strong>Price Tracker</strong>
-          </v-col>
-        </v-row>
+        <div class="footer-content">
+          <div class="logo">
+            <v-icon color="primary" size="24">mdi-chart-line-variant</v-icon>
+            <span>PriceTracker</span>
+          </div>
+
+          <div class="footer-links">
+            <router-link to="/">Home</router-link>
+            <router-link to="/about">About</router-link>
+          </div>
+
+          <div class="socials">
+            <v-btn icon="mdi-github" variant="text" size="small" />
+          </div>
+        </div>
+
+        <v-divider class="my-4" />
+
+        <p class="copyright">© {{ new Date().getFullYear() }} PriceTracker. All rights reserved.</p>
       </v-container>
-    </v-footer>
+    </footer>
   </v-app>
 </template>
 
-<style>
-/* Global styles */
-</style>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useTheme } from 'vuetify'
+
+const theme = useTheme()
+const drawer = ref(false)
+const scrolled = ref(false)
+
+const isDark = computed(() => theme.global.current.value.dark)
+const toggleTheme = () => theme.global.name.value = isDark.value ? 'light' : 'dark'
+
+const handleScroll = () => scrolled.value = window.scrollY > 20
+onMounted(() => window.addEventListener('scroll', handleScroll))
+onUnmounted(() => window.removeEventListener('scroll', handleScroll))
+</script>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+/* App Bar */
+.v-app-bar {
+  backdrop-filter: blur(10px);
+  background: rgba(var(--v-theme-surface), 0.8) !important;
+  transition: all 0.3s;
+}
+
+.v-app-bar.scrolled {
+  background: rgba(var(--v-theme-surface), 0.95) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08) !important;
 }
 
 .logo {
-  display: block;
-  margin: 0 auto 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
+.logo span {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav { gap: 0.5rem; }
+
+.nav .v-btn, .v-app-bar .v-btn {
+  text-transform: none;
+  font-weight: 500;
+}
+
+/* Footer */
+.footer {
+  background: rgba(var(--v-theme-surface), 1);
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  padding: 2rem 0 1rem;
+  margin-top: 4rem;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-links a {
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.footer-links a:hover {
+  color: rgb(var(--v-theme-primary));
+}
+
+.socials {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.copyright {
   text-align: center;
-  margin-top: 2rem;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  font-size: 0.875rem;
+  margin: 0;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
   }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
+  .footer-links {
     flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
+    justify-content: center;
   }
 }
 </style>
