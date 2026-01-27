@@ -1,28 +1,19 @@
 <template>
   <div class="home-view">
-    <!-- Hero Section -->
+    <!-- hero -->
     <section class="hero">
       <div class="hero-content">
         <div class="badge">
-          <v-icon size="14">mdi-chart-line-variant</v-icon>
-          Track. Save. Repeat.
+          <v-icon size="14">mdi-chart-line-variant</v-icon>Track. Save. Repeat.
         </div>
         
-        <h1 class="title">
-          Never Miss a <span class="gradient">Price Drop</span> Again
-        </h1>
+        <h1 class="title">Never Miss a <span class="gradient">Price Drop</span> Again</h1>
         
-        <p class="subtitle">
-          Track prices across thousands of stores. Get instant alerts when products go on sale.
-        </p>
+        <p class="subtitle">Track prices across thousands of stores. Get instant alerts when products go on sale.</p>
         
         <div class="actions">
-          <v-btn color="primary" size="large" rounded="xl" prepend-icon="mdi-plus">
-            Start Tracking Free
-          </v-btn>
-          <v-btn variant="outlined" size="large" rounded="xl" append-icon="mdi-play">
-            See Demo
-          </v-btn>
+          <v-btn color="primary" size="large" rounded="xl" prepend-icon="mdi-plus">Start Tracking Free</v-btn>
+          <v-btn variant="outlined" size="large" rounded="xl" append-icon="mdi-play">See Demo</v-btn>
         </div>
 
         <div class="stats">
@@ -47,7 +38,7 @@
       </div>
     </section>
 
-    <!-- Features -->
+    <!-- second section -->
     <section class="features">
       <div class="section-header">
         <div class="badge secondary">Features</div>
@@ -55,15 +46,40 @@
       </div>
 
       <div class="grid">
-        <div class="card" v-for="f in features" :key="f.title">
-          <v-icon :color="f.color" size="32">{{ f.icon }}</v-icon>
-          <h3>{{ f.title }}</h3>
-          <p>{{ f.desc }}</p>
+        <div class="card">
+          <v-icon color="primary" size="32">mdi-bell-ring</v-icon>
+          <h3>Instant Alerts</h3>
+          <p>Get notified when prices drop</p>
+        </div>
+        <div class="card">
+          <v-icon color="success" size="32">mdi-chart-timeline-variant</v-icon>
+          <h3>Price History</h3>
+          <p>View detailed trends</p>
+        </div>
+        <div class="card">
+          <v-icon color="warning" size="32">mdi-lightning-bolt</v-icon>
+          <h3>Smart Tracking</h3>
+          <p>AI predicts best time to buy</p>
+        </div>
+        <div class="card">
+          <v-icon color="info" size="32">mdi-store</v-icon>
+          <h3>Multi-Store</h3>
+          <p>Track across 2 stores</p>
+        </div>
+        <div class="card">
+          <v-icon color="error" size="32">mdi-shield-check</v-icon>
+          <h3>Privacy First</h3>
+          <p>Your data is encrypted</p>
+        </div>
+        <div class="card">
+          <v-icon color="secondary" size="32">mdi-devices</v-icon>
+          <h3>Cross-Platform</h3>
+          <p>Access from any device</p>
         </div>
       </div>
     </section>
 
-    <!-- Steps -->
+    <!-- third section -->
     <section class="steps">
       <div class="section-header">
         <div class="badge secondary">How It Works</div>
@@ -71,17 +87,31 @@
       </div>
 
       <div class="steps-list">
-        <div class="step" v-for="(s, i) in steps" :key="i">
-          <div class="step-num">{{ i + 1 }}</div>
+        <div class="step">
+          <div class="step-num">1</div>
           <div>
-            <h3>{{ s.title }}</h3>
-            <p>{{ s.desc }}</p>
+            <h3>Add Product URL</h3>
+            <p>Paste the link of any product</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <h3>Set Target Price</h3>
+            <p>Tell us your ideal price</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <h3>Get Notified</h3>
+            <p>Receive alerts on price drops</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA -->
+    <!-- last section -->
     <section class="cta">
       <h2>Ready to Start Saving?</h2>
       <p>Join thousands tracking prices and saving money daily.</p>
@@ -93,26 +123,13 @@
 </template>
 
 <script setup>
-const features = [
-  { icon: 'mdi-bell-ring', color: 'primary', title: 'Instant Alerts', desc: 'Get notified when prices drop' },
-  { icon: 'mdi-chart-timeline-variant', color: 'success', title: 'Price History', desc: 'View detailed trends' },
-  { icon: 'mdi-lightning-bolt', color: 'warning', title: 'Smart Tracking', desc: 'AI predicts best time to buy' },
-  { icon: 'mdi-store', color: 'info', title: 'Multi-Store', desc: 'Track across 2 stores' },
-  { icon: 'mdi-shield-check', color: 'error', title: 'Privacy First', desc: 'Your data is encrypted' },
-  { icon: 'mdi-devices', color: 'secondary', title: 'Cross-Platform', desc: 'Access from any device' }
-]
 
-const steps = [
-  { title: 'Add Product URL', desc: 'Paste the link of any product' },
-  { title: 'Set Target Price', desc: 'Tell us your ideal price' },
-  { title: 'Get Notified', desc: 'Receive alerts on price drops' }
-]
 </script>
 
 <style scoped>
 .home-view { width: 100%; overflow-x: hidden; }
 
-/* Hero */
+/* hero */
 .hero {
   position: relative;
   min-height: 85vh;
@@ -212,7 +229,7 @@ const steps = [
   color: rgba(var(--v-theme-on-surface), 0.6);
 }
 
-/* Background */
+/* background */
 .bg {
   position: absolute;
   inset: 0;
@@ -245,7 +262,7 @@ const steps = [
   animation-delay: -7s;
 }
 
-/* Features */
+/* features */
 .features {
   padding: 5rem 1.5rem;
   max-width: 1200px;
@@ -293,7 +310,7 @@ const steps = [
   line-height: 1.5;
 }
 
-/* Steps */
+/* steps */
 .steps {
   padding: 5rem 1.5rem;
   background: rgba(var(--v-theme-primary), 0.03);
@@ -344,7 +361,7 @@ const steps = [
   color: rgba(var(--v-theme-on-surface), 0.7);
 }
 
-/* CTA */
+/* ready to start */
 .cta {
   padding: 5rem 1.5rem;
   text-align: center;
@@ -371,7 +388,7 @@ const steps = [
   color: rgb(var(--v-theme-primary)) !important;
 }
 
-/* Animations */
+/* animations */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -382,7 +399,7 @@ const steps = [
   50% { transform: translate(20px, -20px); }
 }
 
-/* Responsive */
+/* responsive */
 @media (max-width: 600px) {
   .actions { flex-direction: column; width: 100%; }
   .actions .v-btn { width: 100%; }

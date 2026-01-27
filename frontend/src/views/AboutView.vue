@@ -1,12 +1,10 @@
 <template>
   <div class="about">
-    <!-- Header -->
     <div class="header">
       <h1>About <span class="red">PriceTracker</span></h1>
       <p>We help people save money by tracking product prices</p>
     </div>
 
-    <!-- Stats -->
     <v-container>
       <div class="stats">
         <div class="stat">
@@ -23,7 +21,6 @@
         </div>
       </div>
 
-      <!-- Contact Form -->
       <div class="form-section">
         <h2>Get in Touch</h2>
         <p>We'll reply within 24 hours</p>
@@ -64,15 +61,13 @@
           </v-btn>
         </v-form>
 
-        <!-- Success Message -->
         <v-alert
           v-if="success"
           type="success"
           variant="tonal"
           rounded="lg"
-          class="mt-4"
-        >
-          Thank you! We received your message 🎉
+          class="mt-4">
+          Thank you! We received your message!
         </v-alert>
       </div>
     </v-container>
@@ -82,28 +77,23 @@
 <script setup>
 import { ref } from 'vue'
 
-// Form data
 const name = ref('')
 const email = ref('')
 const message = ref('')
 const loading = ref(false)
 const success = ref(false)
 
-// Send form
 function send() {
   loading.value = true
 
-  // Simulate sending (after 1.5 sec)
   setTimeout(() => {
     loading.value = false
     success.value = true
 
-    // Clear form
     name.value = ''
     email.value = ''
     message.value = ''
 
-    // Hide message after 5 sec
     setTimeout(() => {
       success.value = false
     }, 5000)
@@ -112,7 +102,7 @@ function send() {
 </script>
 
 <style scoped>
-/* Header */
+/* header */
 .header {
   background: linear-gradient(135deg, #ffe6e6, #e6f2ff);
   padding: 4rem 2rem 3rem;
@@ -136,7 +126,7 @@ function send() {
   color: #666;
 }
 
-/* Stats */
+/* stats */
 .stats {
   display: flex;
   justify-content: center;
@@ -160,7 +150,7 @@ function send() {
   margin-top: 0.5rem;
 }
 
-/* Form */
+/* forms */
 .form-section {
   max-width: 600px;
   margin: 3rem auto;
@@ -184,13 +174,13 @@ function send() {
   margin-bottom: 2rem;
 }
 
-/* Spacing between fields */
+
 .v-text-field,
 .v-textarea {
   margin-bottom: 1rem;
 }
 
-/* Responsive */
+/* responsive */
 @media (max-width: 600px) {
   .header h1 {
     font-size: 2rem;

@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <!-- Navigation -->
+    <!-- nav -->
     <v-app-bar :elevation="scrolled ? 2 : 0" :class="{ scrolled }" height="70" flat>
       <v-container class="d-flex align-center">
         <div class="logo" @click="$router.push('/')">
@@ -27,7 +27,7 @@
       </v-container>
     </v-app-bar>
 
-    <!-- Mobile Menu -->
+    <!-- burger menu -->
     <v-navigation-drawer v-model="drawer" temporary location="right" width="280">
       <v-list class="pa-4">
         <v-list-item to="/" rounded>Home</v-list-item>
@@ -38,12 +38,12 @@
       </v-list>
     </v-navigation-drawer>
 
-    <!-- Content -->
+    <!-- main content -->
     <v-main>
       <router-view />
     </v-main>
 
-    <!-- Footer -->
+    <!-- footer -->
     <footer class="footer">
       <v-container>
         <div class="footer-content">
@@ -87,7 +87,7 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 </script>
 
 <style scoped>
-/* App Bar */
+/* nav ber */
 .v-app-bar {
   backdrop-filter: blur(10px);
   background: rgba(var(--v-theme-surface), 0.8) !important;
@@ -121,7 +121,7 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
   font-weight: 500;
 }
 
-/* Footer */
+/* footer */
 .footer {
   background: rgba(var(--v-theme-surface), 1);
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
