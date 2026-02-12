@@ -55,10 +55,11 @@
           <div class="footer-links">
             <router-link to="/">Home</router-link>
             <router-link to="/about">About</router-link>
+            <router-link to="#">Terms</router-link>
           </div>
 
           <div class="socials">
-            <v-btn icon="mdi-github" variant="text" size="small" />
+            <v-btn icon="mdi-github" variant="text" href="https://github.com/23DP3NKata" target="_blank"/>
           </div>
         </div>
 

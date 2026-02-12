@@ -365,8 +365,8 @@
 .cta {
   padding: 5rem 1.5rem;
   text-align: center;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
-  color: white;
+  /* background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
+  color: white; */
 }
 
 .cta h2 {
