@@ -47,7 +47,11 @@
         </v-btn>
       </v-form>
 
-      <div class="text-center mt-4">
+      <div class="text-center mt-3">
+        <router-link to="/forgot-password" class="text-medium-emphasis text-body-2">Forgot password?</router-link>
+      </div>
+
+      <div class="text-center mt-3">
         <span class="text-medium-emphasis">Don't have an account?</span>
         <router-link to="/register" class="ml-1 text-primary font-weight-medium">Sign Up</router-link>
       </div>

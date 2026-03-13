@@ -28,6 +28,18 @@ const router = createRouter({
       component: () => import('../views/RegisterView.vue'),
       meta: { guest: true },
     },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('../views/ForgotPasswordView.vue'),
+      meta: { guest: true },
+    },
+    {
+      path: '/password-reset/:token',
+      name: 'password-reset',
+      component: () => import('../views/ResetPasswordView.vue'),
+      meta: { guest: true },
+    },
     // Protected
     {
       path: '/verify-email',
