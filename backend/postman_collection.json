@@ -1,0 +1,413 @@
+{
+	"info": {
+		"name": "PriceTracker Auth API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "xsrf_token",
+			"value": ""
+		},
+		{
+			"key": "user_email",
+			"value": ""
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Always set Origin + Referer so Sanctum treats request as stateful SPA",
+					"pm.request.headers.upsert({ key: 'Origin', value: 'http://localhost:5173' });",
+					"pm.request.headers.upsert({ key: 'Referer', value: 'http://localhost:5173/' });",
+					"pm.request.headers.upsert({ key: 'Accept', value: 'application/json' });",
+					"",
+					"// Auto-attach XSRF token for mutating requests",
+					"if (['POST','PUT','PATCH','DELETE'].includes(pm.request.method)) {",
+					"    var token = pm.cookies.get('XSRF-TOKEN');",
+					"    if (token) {",
+					"        token = decodeURIComponent(token);",
+					"    } else {",
+					"        token = pm.collectionVariables.get('xsrf_token');",
+					"    }",
+					"    if (token) {",
+					"        pm.request.headers.upsert({ key: 'X-XSRF-TOKEN', value: token });",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"item": [
+		{
+			"name": "1. CSRF Cookie",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/sanctum/csrf-cookie",
+				"header": []
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 204', function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"pm.test('XSRF-TOKEN cookie set', function () {",
+							"    var raw = pm.cookies.get('XSRF-TOKEN');",
+							"    pm.expect(raw).to.exist;",
+							"    pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));",
+							"    console.log('XSRF token saved to variable');",
+							"});",
+							"pm.test('laravel_session cookie set', function () {",
+							"    pm.expect(pm.cookies.get('laravel_session')).to.exist;",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Register",
+			"request": {
+				"method": "POST",
+				"url": "{{base_url}}/api/register",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Nick\",\n  \"email\": \"nick_test_{{$timestamp}}@example.com\",\n  \"password\": \"Password123!\",\n  \"password_confirmation\": \"Password123!\"\n}"
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 204 (registered)', function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"// Save refreshed XSRF token if present",
+							"var raw = pm.cookies.get('XSRF-TOKEN');",
+							"if (raw) pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Get User (after register)",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/user",
+				"header": []
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Has email', function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json.email).to.exist;",
+							"    pm.collectionVariables.set('user_email', json.email);",
+							"});",
+							"pm.test('email_verified_at is null', function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json.email_verified_at).to.be.null;",
+							"});",
+							"// Save refreshed XSRF token if present",
+							"var raw = pm.cookies.get('XSRF-TOKEN');",
+							"if (raw) pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Resend Verification Email",
+			"request": {
+				"method": "POST",
+				"url": "{{base_url}}/api/email/verification-notification",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				]
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Has status', function () {",
+							"    pm.expect(pm.response.json().status).to.eql('verification-link-sent');",
+							"});",
+							"var raw = pm.cookies.get('XSRF-TOKEN');",
+							"if (raw) pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Change Password",
+			"request": {
+				"method": "PUT",
+				"url": "{{base_url}}/api/password",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"current_password\": \"Password123!\",\n  \"password\": \"NewPassword456!\",\n  \"password_confirmation\": \"NewPassword456!\"\n}"
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Password updated', function () {",
+							"    pm.expect(pm.response.json().status).to.eql('password-updated');",
+							"});",
+							"var raw = pm.cookies.get('XSRF-TOKEN');",
+							"if (raw) pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Logout",
+			"request": {
+				"method": "POST",
+				"url": "{{base_url}}/api/logout",
+				"header": []
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 204 (logged out)', function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"// Clear saved token after logout",
+							"pm.collectionVariables.set('xsrf_token', '');"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Get User (after logout = 401)",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/user",
+				"header": []
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 401 (unauthenticated)', function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "7.5 CSRF Cookie (fresh after logout)",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/sanctum/csrf-cookie",
+				"header": []
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 204', function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"var raw = pm.cookies.get('XSRF-TOKEN');",
+							"if (raw) {",
+							"    pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));",
+							"    console.log('Fresh XSRF token saved after logout');",
+							"}"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Login (with new password)",
+			"request": {
+				"method": "POST",
+				"url": "{{base_url}}/api/login",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"NewPassword456!\"\n}"
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 204 (logged in)', function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"var raw = pm.cookies.get('XSRF-TOKEN');",
+							"if (raw) pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Get User (after login)",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/user",
+				"header": []
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Has email', function () {",
+							"    pm.expect(pm.response.json().email).to.exist;",
+							"});",
+							"var raw = pm.cookies.get('XSRF-TOKEN');",
+							"if (raw) pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "10. Forgot Password",
+			"request": {
+				"method": "POST",
+				"url": "{{base_url}}/api/forgot-password",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"{{user_email}}\"\n}"
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Reset link sent', function () {",
+							"    pm.expect(pm.response.json().status).to.exist;",
+							"});",
+							"var raw = pm.cookies.get('XSRF-TOKEN');",
+							"if (raw) pm.collectionVariables.set('xsrf_token', decodeURIComponent(raw));"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "11. Reset Password (token from log)",
+			"request": {
+				"method": "POST",
+				"url": "{{base_url}}/api/reset-password",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"token\": \"PASTE_TOKEN_FROM_LARAVEL_LOG\",\n  \"email\": \"{{user_email}}\",\n  \"password\": \"Password123!\",\n  \"password_confirmation\": \"Password123!\"\n}"
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Password reset', function () {",
+							"    pm.expect(pm.response.json().status).to.exist;",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Health: Ping",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/ping",
+				"header": []
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('Status ok', function () {",
+							"    pm.expect(pm.response.json().status).to.eql('ok');",
+							"});"
+						]
+					}
+				}
+			]
+		}
+	]
+}

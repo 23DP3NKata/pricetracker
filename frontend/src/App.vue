@@ -13,11 +13,27 @@
         <div class="nav d-none d-md-flex">
           <v-btn to="/" variant="text" rounded>Home</v-btn>
           <v-btn to="/about" variant="text" rounded>About</v-btn>
+          <template v-if="auth.isAuthenticated">
+            <v-btn to="/dashboard" variant="text" rounded>Dashboard</v-btn>
+            <v-btn to="/products" variant="text" rounded>Products</v-btn>
+            <v-btn to="/notifications" variant="text" rounded>
+              Notifications
+              <v-badge v-if="notificationsStore.unreadCount > 0"
+                       :content="notificationsStore.unreadCount"
+                       color="error" floating />
+            </v-btn>
+            <v-btn to="/settings" variant="text" rounded>Settings</v-btn>
+          </template>
         </div>
 
         <div class="d-none d-md-flex ml-4 ga-2">
-          <v-btn variant="text" rounded>Sign In</v-btn>
-          <v-btn color="primary" rounded>Get Started</v-btn>
+          <template v-if="auth.isAuthenticated">
+            <v-btn variant="text" rounded @click="handleLogout">Logout</v-btn>
+          </template>
+          <template v-else>
+            <v-btn to="/login" variant="text" rounded>Sign In</v-btn>
+            <v-btn to="/register" color="primary" rounded>Get Started</v-btn>
+          </template>
         </div>
 
         <v-btn :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'" 
@@ -32,9 +48,19 @@
       <v-list class="pa-4">
         <v-list-item to="/" rounded>Home</v-list-item>
         <v-list-item to="/about" rounded>About</v-list-item>
-        <v-divider class="my-3" />
-        <v-list-item rounded>Sign In</v-list-item>
-        <v-btn color="primary" block rounded class="mt-2">Get Started</v-btn>
+        <template v-if="auth.isAuthenticated">
+          <v-list-item to="/dashboard" rounded>Dashboard</v-list-item>
+          <v-list-item to="/products" rounded>Products</v-list-item>
+          <v-list-item to="/notifications" rounded>Notifications</v-list-item>
+          <v-list-item to="/settings" rounded>Settings</v-list-item>
+          <v-divider class="my-3" />
+          <v-list-item rounded @click="handleLogout">Logout</v-list-item>
+        </template>
+        <template v-else>
+          <v-divider class="my-3" />
+          <v-list-item to="/login" rounded>Sign In</v-list-item>
+          <v-btn to="/register" color="primary" block rounded class="mt-2">Get Started</v-btn>
+        </template>
       </v-list>
     </v-navigation-drawer>
 
@@ -74,13 +100,33 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useTheme } from 'vuetify'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const theme = useTheme()
+const router = useRouter()
+const auth = useAuthStore()
+const notificationsStore = useNotificationsStore()
 const drawer = ref(false)
 const scrolled = ref(false)
 
 const isDark = computed(() => theme.global.current.value.dark)
 const toggleTheme = () => theme.global.name.value = isDark.value ? 'light' : 'dark'
+
+async function handleLogout() {
+  await auth.logout()
+  router.push('/')
+}
+
+// Poll unread count when authenticated
+let pollInterval = null
+onMounted(() => {
+  pollInterval = setInterval(() => {
+    if (auth.isAuthenticated) notificationsStore.fetchUnreadCount()
+  }, 30000)
+})
+onUnmounted(() => clearInterval(pollInterval))
 
 const handleScroll = () => scrolled.value = window.scrollY > 20
 onMounted(() => window.addEventListener('scroll', handleScroll))
