@@ -51,6 +51,7 @@
                       :key="n.id"
                       rounded="lg"
                       :class="{ 'notification-unread': !n.is_read }"
+                      @click="openNotification(n)"
                     >
                       <v-list-item-title class="text-body-2">{{ notificationText(n) }}</v-list-item-title>
                       <v-list-item-subtitle class="text-caption">{{ notificationDate(n.created_at) }}</v-list-item-subtitle>
@@ -64,7 +65,7 @@
                 <v-divider />
 
                 <v-card-actions>
-                  <v-btn to="/notifications" variant="text" @click="notificationsMenu = false">View all</v-btn>
+                  <v-btn to="/notifications" variant="text" block @click="notificationsMenu = false">View all</v-btn>
                 </v-card-actions>
               </v-card>
             </v-menu>
@@ -250,18 +251,6 @@
             :disabled="addLoading"
           />
 
-          <v-text-field
-            v-model="addForm.targetPrice"
-            label="Track price below"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-currency-eur"
-            placeholder="Optional"
-            disabled
-            hint="This field is a UI placeholder for upcoming alert threshold support"
-            persistent-hint
-          />
-
           <v-select
             v-model="addForm.checkInterval"
             label="Check frequency"
@@ -354,7 +343,7 @@ const urlRules = [
 ]
 
 const isDark = computed(() => theme.global.current.value.dark)
-const currentLanguageLabel = computed(() => language.value === 'ru' ? 'Russian' : 'English')
+const currentLanguageLabel = computed(() => language.value === 'lv' ? 'Latvian' : 'English')
 const recentNotifications = computed(() => notificationsStore.notifications.slice(0, 5))
 
 function notificationText(notification) {
@@ -373,6 +362,27 @@ async function handleNotificationsMenu(isOpen) {
   }
 }
 
+async function openNotification(notification) {
+  if (!notification) return
+
+  if (!notification.is_read) {
+    try {
+      await notificationsStore.markRead(notification.id)
+    } catch (_) {
+      // Keep navigation even if mark-read request fails.
+    }
+  }
+
+  notificationsMenu.value = false
+
+  if (notification.product_id) {
+    router.push({ name: 'product-detail', params: { id: notification.product_id } })
+    return
+  }
+
+  router.push({ name: 'notifications' })
+}
+
 function openAddProduct() {
   showAddDialog.value = true
   drawer.value = false
@@ -381,6 +391,10 @@ function openAddProduct() {
 function closeAddProduct() {
   showAddDialog.value = false
   addError.value = null
+  addForm.url = ''
+  addForm.targetPrice = ''
+  addForm.checkInterval = 1440
+  addFormRef.value?.resetValidation()
 }
 
 async function handleAddProduct() {
@@ -390,14 +404,14 @@ async function handleAddProduct() {
   addLoading.value = true
   addError.value = null
   try {
-    await productsStore.addProduct({
+    const result = await productsStore.addProduct({
       url: addForm.url,
       check_interval: addForm.checkInterval,
     })
     closeAddProduct()
-    addForm.url = ''
-    addForm.targetPrice = ''
-    addForm.checkInterval = 1440
+    if (result?.product?.id) {
+      router.push({ name: 'product-detail', params: { id: result.product.id } })
+    }
   } catch (e) {
     addError.value = e.response?.data?.message || 'Failed to add product'
   } finally {
@@ -412,7 +426,7 @@ function toggleTheme() {
 }
 
 function toggleLanguage() {
-  language.value = language.value === 'en' ? 'ru' : 'en'
+  language.value = language.value === 'en' ? 'lv' : 'en'
   localStorage.setItem('pt-language', language.value)
   showLanguageNotice.value = true
 }

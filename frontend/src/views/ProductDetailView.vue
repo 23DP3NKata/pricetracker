@@ -15,9 +15,18 @@
             <div class="text-medium-emphasis mb-3">
               <v-icon size="16">mdi-store</v-icon> {{ product.store_name || 'Unknown' }}
             </div>
-            <a :href="product.url" target="_blank" rel="noopener" class="text-primary text-decoration-none">
-              <v-icon size="16">mdi-open-in-new</v-icon> Open product page
-            </a>
+            <v-btn
+              :href="productPageUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="text"
+              rounded="xl"
+              prepend-icon="mdi-open-in-new"
+              class="px-0"
+              :disabled="!productPageUrl"
+            >
+              Open product page
+            </v-btn>
           </div>
           <div class="text-right">
             <div class="text-h4 font-weight-bold">{{ formatPrice(product.current_price) }}</div>
@@ -76,15 +85,15 @@
         <v-row v-if="historyStats" class="mb-4">
           <v-col cols="6" sm="3">
             <div class="text-caption text-medium-emphasis">Min</div>
-            <div class="text-subtitle-1 font-weight-bold text-success">{{ formatPrice(historyStats.min_price) }}</div>
+            <div class="text-subtitle-1 font-weight-bold text-success">{{ formatPrice(historyStats.min) }}</div>
           </v-col>
           <v-col cols="6" sm="3">
             <div class="text-caption text-medium-emphasis">Max</div>
-            <div class="text-subtitle-1 font-weight-bold text-error">{{ formatPrice(historyStats.max_price) }}</div>
+            <div class="text-subtitle-1 font-weight-bold text-error">{{ formatPrice(historyStats.max) }}</div>
           </v-col>
           <v-col cols="6" sm="3">
             <div class="text-caption text-medium-emphasis">Average</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ formatPrice(historyStats.avg_price) }}</div>
+            <div class="text-subtitle-1 font-weight-bold">{{ formatPrice(historyStats.avg) }}</div>
           </v-col>
           <v-col cols="6" sm="3">
             <div class="text-caption text-medium-emphasis">Data Points</div>
@@ -141,7 +150,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { getPriceHistory } from '@/api'
@@ -172,7 +181,20 @@ const intervalOptions = [
   { text: 'Every day', value: 1440 },
 ]
 
+const productPageUrl = computed(() => {
+  const url = (product.value?.product_page_url || product.value?.url || '').trim()
+
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+
+  return `https://${url.replace(/^\/+/, '')}`
+})
+
 function formatPrice(price) {
+  if (price === null || price === undefined || Number.isNaN(Number(price))) {
+    return 'No data'
+  }
+
   return Number(price).toFixed(2) + ' €'
 }
 
@@ -200,6 +222,7 @@ async function loadHistory() {
     historyStats.value = data.stats || null
   } catch {
     historyData.value = []
+    historyStats.value = null
   }
 }
 

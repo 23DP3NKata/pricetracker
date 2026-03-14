@@ -96,8 +96,11 @@ function formatDate(dateStr) {
   const d = new Date(dateStr)
   const now = new Date()
   const diff = now - d
-  if (diff < 3600000) return Math.round(diff / 60000) + ' min ago'
-  if (diff < 86400000) return Math.round(diff / 3600000) + 'h ago'
+
+  if (Number.isNaN(d.getTime())) return ''
+  if (diff <= 0) return 'just now'
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago'
+  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago'
   return d.toLocaleDateString()
 }
 

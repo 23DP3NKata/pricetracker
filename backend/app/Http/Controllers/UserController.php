@@ -58,7 +58,7 @@ class UserController extends Controller
     }
 
     /**
-     * Update email (requires re-verification).
+     * Update email while keeping current verification status.
      */
     public function updateEmail(Request $request): JsonResponse
     {
@@ -74,10 +74,9 @@ class UserController extends Controller
         }
 
         $user->email = $validated['email'];
-        $user->email_verified_at = null;
         $user->save();
 
-        return response()->json(['message' => 'Email updated. Please verify your new email.', 'user' => $user]);
+        return response()->json(['message' => 'Email updated.', 'user' => $user]);
     }
 
     /**

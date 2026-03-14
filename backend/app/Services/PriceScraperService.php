@@ -141,7 +141,7 @@ class PriceScraperService
     /**
      * Fetch full product details from a URL (used when user adds a product).
      *
-     * @return array{title: string, current_price: float, currency: string, image_url: ?string, store_name: string, url: string}
+    * @return array{title: string, current_price: float, currency: string, image_url: ?string, store_name: string, canonical_url: string, product_page_url: string}
      */
     public function fetchProductDetails(string $url): array
     {
@@ -186,7 +186,8 @@ class PriceScraperService
             'currency' => $currency,
             'image_url' => $imageUrl ? $this->resolveImageUrl($imageUrl, $url) : null,
             'store_name' => $config['name'],
-            'url' => $this->normalizeUrl($url),
+            'canonical_url' => $this->normalizeUrl($url),
+            'product_page_url' => $url,
         ];
     }
 
@@ -210,19 +211,22 @@ class PriceScraperService
     /**
      * Check prices for all products that are due for a check.
      */
-    public function checkDuePrices(): array
+    public function checkDuePrices(bool $force = false): array
     {
-        $dueItems = UserProduct::where('is_active', true)
-            ->where(function ($q) {
+        $query = UserProduct::where('is_active', true);
+
+        if (!$force) {
+            $query->where(function ($q) {
                 $q->whereNull('next_check_at')
                     ->orWhere('next_check_at', '<=', now());
-            })
-            ->with('product')
-            ->get()
-            ->unique('product_id');
+            });
+        }
+
+        $dueItems = $query->with('product')->get()->unique('product_id');
 
         $checked = 0;
         $errors = 0;
+        $errorDetails = [];
 
         foreach ($dueItems as $userProduct) {
             $product = $userProduct->product;
@@ -231,18 +235,24 @@ class PriceScraperService
                 continue;
             }
 
+            // Prefer product_page_url (original user URL) over url (may be canonical)
+            $scrapeUrl = $product->product_page_url ?: $product->url;
+
             try {
-                $newPrice = $this->scrapePrice($product->url);
+                $newPrice = $this->scrapePrice($scrapeUrl);
 
                 if ($newPrice !== null) {
                     $this->recordPrice($product, $newPrice);
                     $checked++;
                 } else {
-                    $this->recordError($product, 'Could not extract price from page.');
+                    $msg = 'Could not extract price from page.';
+                    $this->recordError($product, $msg);
+                    $errorDetails[] = ['product_id' => $product->id, 'url' => $scrapeUrl, 'message' => $msg];
                     $errors++;
                 }
             } catch (\Throwable $e) {
                 $this->recordError($product, $e->getMessage());
+                $errorDetails[] = ['product_id' => $product->id, 'url' => $scrapeUrl, 'message' => $e->getMessage()];
                 $errors++;
             }
 
@@ -261,7 +271,7 @@ class PriceScraperService
             usleep(random_int(500_000, 1_500_000));
         }
 
-        return ['checked' => $checked, 'errors' => $errors];
+        return ['checked' => $checked, 'errors' => $errors, 'error_details' => $errorDetails];
     }
 
     // ─── HTTP ────────────────────────────────────────────────
@@ -466,6 +476,10 @@ class PriceScraperService
                 ->pluck('user_id');
 
             foreach ($trackingUserIds as $userId) {
+                if (!$this->shouldCreateNotification((int) $userId, $product->id, (float) $oldPrice, $newPrice)) {
+                    continue;
+                }
+
                 Notification::create([
                     'user_id' => $userId,
                     'product_id' => $product->id,
@@ -475,6 +489,23 @@ class PriceScraperService
                 ]);
             }
         }
+    }
+
+    protected function shouldCreateNotification(int $userId, int $productId, float $oldPrice, float $newPrice): bool
+    {
+        $lastNotification = Notification::where('user_id', $userId)
+            ->where('product_id', $productId)
+            ->latest('created_at')
+            ->first();
+
+        if (!$lastNotification) {
+            return true;
+        }
+
+        return !(
+            abs((float) $lastNotification->old_price - $oldPrice) < 0.01
+            && abs((float) $lastNotification->new_price - $newPrice) < 0.01
+        );
     }
 
     protected function recordError(Product $product, string $errorMessage): void

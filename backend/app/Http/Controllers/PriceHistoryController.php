@@ -35,6 +35,14 @@ class PriceHistoryController extends Controller
             ->orderBy('checked_at')
             ->get(['id', 'price', 'checked_at']);
 
+        if ($history->isEmpty() && $product->current_price !== null) {
+            $history = collect([[
+                'id' => null,
+                'price' => $product->current_price,
+                'checked_at' => $product->last_successful_check ?? $product->created_at,
+            ]]);
+        }
+
         // Compute stats
         $prices = $history->pluck('price');
         $stats = [

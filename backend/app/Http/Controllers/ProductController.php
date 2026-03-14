@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PriceHistory;
 use App\Models\Product;
 use App\Models\UserProduct;
 use App\Services\PriceScraperService;
@@ -65,7 +66,11 @@ class ProductController extends Controller
         }
 
         // Check if user already tracks this product
-        $existingProduct = Product::where('url', $canonicalUrl)->first();
+        $existingProduct = Product::where('canonical_url', $canonicalUrl)
+            ->orWhere(function ($query) use ($canonicalUrl) {
+                $query->whereNull('canonical_url')->where('url', $canonicalUrl);
+            })
+            ->first();
         if ($existingProduct) {
             $alreadyTracking = UserProduct::where('user_id', $user->id)
                 ->where('product_id', $existingProduct->id)
@@ -86,8 +91,10 @@ class ProductController extends Controller
 
         // Find or create the global product record
         $product = Product::firstOrCreate(
-            ['url' => $details['url']],
+            ['canonical_url' => $details['canonical_url']],
             [
+                'url' => $details['product_page_url'],
+                'product_page_url' => $details['product_page_url'],
                 'title' => $details['title'],
                 'current_price' => $details['current_price'],
                 'currency' => $details['currency'],
@@ -95,6 +102,22 @@ class ProductController extends Controller
                 'image_url' => $details['image_url'],
             ]
         );
+
+        if (!$product->product_page_url) {
+            $product->update(['product_page_url' => $details['product_page_url']]);
+        }
+
+        if (!$product->url) {
+            $product->update(['url' => $details['product_page_url']]);
+        }
+
+        if (!PriceHistory::where('product_id', $product->id)->exists() && $product->current_price !== null) {
+            PriceHistory::create([
+                'product_id' => $product->id,
+                'price' => $product->current_price,
+                'checked_at' => now(),
+            ]);
+        }
 
         // Double-check user isn't already tracking (race condition guard)
         $exists = UserProduct::where('user_id', $user->id)
