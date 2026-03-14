@@ -118,4 +118,30 @@ export function resendVerification() {
   return api.post('/api/email/verification-notification')
 }
 
+// Admin - Users
+export function getAdminUsers(params = {}) {
+  return api.get('/api/admin/users', { params })
+}
+
+export function updateAdminUserStatus(userId, data) {
+  return api.patch(`/api/admin/users/${userId}/status`, data)
+}
+
+export function updateAdminUserLimit(userId, data) {
+  return api.patch(`/api/admin/users/${userId}/limit`, data)
+}
+
+export function updateAdminUserRole(userId, data) {
+  return api.patch(`/api/admin/users/${userId}/role`, data)
+}
+
+// Admin - Logs / Actions
+export function getAdminLogs(params = {}) {
+  return api.get('/api/admin/logs', { params })
+}
+
+export function getAdminActions(params = {}) {
+  return api.get('/api/admin/actions', { params })
+}
+
 export default api

@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminActionController;
+use App\Http\Controllers\Admin\AdminLogController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PriceHistoryController;
@@ -39,6 +42,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+
+    // Admin APIs
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus']);
+        Route::patch('/users/{user}/limit', [AdminUserController::class, 'updateLimit']);
+        Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole']);
+
+        Route::get('/logs', [AdminLogController::class, 'index']);
+        Route::get('/actions', [AdminActionController::class, 'index']);
+    });
 });
 
 require __DIR__.'/auth.php';

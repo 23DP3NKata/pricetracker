@@ -77,6 +77,24 @@ const router = createRouter({
       component: () => import('../views/SettingsView.vue'),
       meta: { auth: true },
     },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('../views/AdminUsersView.vue'),
+      meta: { auth: true, admin: true },
+    },
+    {
+      path: '/admin/logs',
+      name: 'admin-logs',
+      component: () => import('../views/AdminLogsView.vue'),
+      meta: { auth: true, admin: true },
+    },
+    {
+      path: '/admin/actions',
+      name: 'admin-actions',
+      component: () => import('../views/AdminActionsView.vue'),
+      meta: { auth: true, admin: true },
+    },
   ],
 })
 
@@ -90,6 +108,10 @@ router.beforeEach(async (to) => {
 
   if (to.meta.auth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  if (to.meta.admin && !auth.isAdmin) {
+    return { name: 'dashboard' }
   }
 
   if (to.meta.guest && auth.isAuthenticated) {
