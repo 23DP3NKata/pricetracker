@@ -360,7 +360,7 @@ function notificationText(notification) {
 
 function notificationDate(value) {
   if (!value) return ''
-  return new Date(value).toLocaleString()
+  return new Date(value).toLocaleString(undefined, { timeZone: 'UTC' })
 }
 
 async function handleNotificationsMenu(isOpen) {

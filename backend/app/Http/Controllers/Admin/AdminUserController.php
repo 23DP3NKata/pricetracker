@@ -79,10 +79,18 @@ class AdminUserController extends Controller
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $oldLimit = (int) $user->monthly_limit;
         $newLimit = (int) $validated['monthly_limit'];
 
-        if ((int) $user->monthly_limit !== $newLimit) {
+        if ($oldLimit !== $newLimit) {
             $user->update(['monthly_limit' => $newLimit]);
+
+            AdminAction::create([
+                'admin_user_id' => $request->user()->id,
+                'action_type' => 'change_user_limit',
+                'target_user_id' => $user->id,
+                'reason' => "Monthly limit changed from {$oldLimit} to {$newLimit}" . ($validated['reason'] ? '. ' . $validated['reason'] : ''),
+            ]);
         }
 
         return response()->json([
@@ -102,16 +110,17 @@ class AdminUserController extends Controller
             return response()->json(['message' => 'You cannot remove your own admin role.'], 422);
         }
 
+        $oldRole = $user->role;
         $newRole = $validated['role'];
 
-        if ($user->role !== $newRole) {
+        if ($oldRole !== $newRole) {
             $user->update(['role' => $newRole]);
 
             AdminAction::create([
                 'admin_user_id' => $request->user()->id,
-                'action_type' => 'change_user_role',
+                'action_type' => $newRole === 'admin' ? 'promote_user' : 'demote_user',
                 'target_user_id' => $user->id,
-                'reason' => 'Role changed to ' . $newRole . ($validated['reason'] ? '. ' . $validated['reason'] : ''),
+                'reason' => 'Role changed from ' . $oldRole . ' to ' . $newRole . ($validated['reason'] ? '. ' . $validated['reason'] : ''),
             ]);
         }
 

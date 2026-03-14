@@ -23,45 +23,47 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return $request->user();
     });
 
-    // User settings
-    Route::get('/user/profile', [UserController::class, 'profile']);
-    Route::put('/user/name', [UserController::class, 'updateName']);
-    Route::put('/user/email', [UserController::class, 'updateEmail']);
-    Route::put('/user/password', [UserController::class, 'updatePassword']);
+    Route::middleware('active')->group(function () {
+        // User settings
+        Route::get('/user/profile', [UserController::class, 'profile']);
+        Route::put('/user/name', [UserController::class, 'updateName']);
+        Route::put('/user/email', [UserController::class, 'updateEmail']);
+        Route::put('/user/password', [UserController::class, 'updatePassword']);
 
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index']);
 
-    // Products CRUD
-    Route::get('/products/supported-stores', [ProductController::class, 'supportedStores']);
-    Route::apiResource('products', ProductController::class);
+        // Products CRUD
+        Route::get('/products/supported-stores', [ProductController::class, 'supportedStores']);
+        Route::apiResource('products', ProductController::class);
 
-    // Price history for a product
-    Route::get('/products/{product}/prices', [PriceHistoryController::class, 'index']);
+        // Price history for a product
+        Route::get('/products/{product}/prices', [PriceHistoryController::class, 'index']);
 
-    // Notifications
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
-    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+        // Notifications
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
 
-    // Admin APIs
-    Route::middleware('admin')->prefix('admin')->group(function () {
-        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+        // Admin APIs
+        Route::middleware('admin')->prefix('admin')->group(function () {
+            Route::get('/dashboard', [AdminDashboardController::class, 'index']);
 
-        Route::get('/users', [AdminUserController::class, 'index']);
-        Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus']);
-        Route::patch('/users/{user}/limit', [AdminUserController::class, 'updateLimit']);
-        Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole']);
+            Route::get('/users', [AdminUserController::class, 'index']);
+            Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus']);
+            Route::patch('/users/{user}/limit', [AdminUserController::class, 'updateLimit']);
+            Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole']);
 
-        Route::get('/products', [AdminProductController::class, 'index']);
-        Route::patch('/products/{product}/status', [AdminProductController::class, 'updateStatus']);
+            Route::get('/products', [AdminProductController::class, 'index']);
+            Route::patch('/products/{product}/status', [AdminProductController::class, 'updateStatus']);
 
-        Route::get('/logs', [AdminLogController::class, 'index']);
-        Route::get('/logs/export', [AdminLogController::class, 'exportCsv']);
+            Route::get('/logs', [AdminLogController::class, 'index']);
+            Route::get('/logs/export', [AdminLogController::class, 'exportCsv']);
 
-        Route::get('/actions', [AdminActionController::class, 'index']);
-        Route::get('/actions/export', [AdminActionController::class, 'exportCsv']);
+            Route::get('/actions', [AdminActionController::class, 'index']);
+            Route::get('/actions/export', [AdminActionController::class, 'exportCsv']);
+        });
     });
 });
 

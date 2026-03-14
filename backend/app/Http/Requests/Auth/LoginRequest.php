@@ -49,6 +49,14 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (Auth::user()?->status === 'blocked') {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Your account has been blocked.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

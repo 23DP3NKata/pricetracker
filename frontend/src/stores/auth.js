@@ -22,10 +22,29 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUser() {
     try {
       const { data } = await getUser()
+
+      if (data?.status === 'blocked') {
+        user.value = null
+        error.value = 'Your account has been blocked.'
+        clearSessionStores()
+
+        try {
+          await apiLogout()
+        } catch {
+          // Ignore logout failure when clearing blocked sessions.
+        }
+
+        return
+      }
+
       user.value = data
-    } catch {
+    } catch (e) {
       user.value = null
       clearSessionStores()
+
+      if (e.response?.status === 403) {
+        error.value = e.response?.data?.message || 'Access denied.'
+      }
     } finally {
       initialCheckDone.value = true
     }

@@ -120,7 +120,7 @@ const pagination = reactive({
 
 function formatDate(value) {
   if (!value) return '-'
-  return new Date(value).toLocaleString()
+  return new Date(value).toLocaleString(undefined, { timeZone: 'UTC' })
 }
 
 function levelColor(level) {

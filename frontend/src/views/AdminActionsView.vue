@@ -106,6 +106,9 @@ const actionTypes = [
   'hide_product',
   'delete_product',
   'restore_product',
+  'promote_user',
+  'demote_user',
+  'change_user_limit',
   'change_user_role',
 ]
 
@@ -124,7 +127,7 @@ const pagination = reactive({
 
 function formatDate(value) {
   if (!value) return '-'
-  return new Date(value).toLocaleString()
+  return new Date(value).toLocaleString(undefined, { timeZone: 'UTC' })
 }
 
 async function loadActions(page = 1) {

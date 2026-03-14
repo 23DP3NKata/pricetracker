@@ -189,7 +189,7 @@ const passwordForm = reactive({ current_password: '', password: '', password_con
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString()
+  return new Date(dateStr).toLocaleDateString(undefined, { timeZone: 'UTC' })
 }
 
 async function loadProfile() {

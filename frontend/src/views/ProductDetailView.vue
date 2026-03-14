@@ -199,7 +199,7 @@ function formatPrice(price) {
 }
 
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleString()
+  return new Date(dateStr).toLocaleString(undefined, { timeZone: 'UTC' })
 }
 
 function priceDiff(current, previous) {

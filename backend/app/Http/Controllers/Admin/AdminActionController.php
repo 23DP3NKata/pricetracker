@@ -14,7 +14,8 @@ class AdminActionController extends Controller
 {
     protected const ACTION_TYPES = [
         'block_user', 'unblock_user', 'delete_user', 'restore_user',
-        'hide_product', 'delete_product', 'restore_product', 'change_user_role',
+        'hide_product', 'delete_product', 'restore_product',
+        'change_user_role', 'promote_user', 'demote_user', 'change_user_limit',
     ];
 
     public function index(Request $request): JsonResponse
