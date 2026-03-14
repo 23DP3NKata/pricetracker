@@ -1,12 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getCsrfCookie, login as apiLogin, register as apiRegister, logout as apiLogout, getUser } from '@/api'
+import { useNotificationsStore } from '@/stores/notifications'
+import { useProductsStore } from '@/stores/products'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
   const loading = ref(false)
   const error = ref(null)
   const initialCheckDone = ref(false)
+
+  function clearSessionStores() {
+    useProductsStore().reset()
+    useNotificationsStore().reset()
+  }
 
   const isAuthenticated = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
@@ -18,6 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = data
     } catch {
       user.value = null
+      clearSessionStores()
     } finally {
       initialCheckDone.value = true
     }
@@ -26,6 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials) {
     loading.value = true
     error.value = null
+    clearSessionStores()
     try {
       await getCsrfCookie()
       await apiLogin(credentials)
@@ -41,6 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function register(data) {
     loading.value = true
     error.value = null
+    clearSessionStores()
     try {
       await getCsrfCookie()
       await apiRegister(data)
@@ -58,6 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
       await apiLogout()
     } finally {
       user.value = null
+      clearSessionStores()
     }
   }
 

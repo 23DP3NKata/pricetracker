@@ -14,6 +14,14 @@ export const useNotificationsStore = defineStore('notifications', () => {
   const loading = ref(false)
   let _pollingInFlight = false
 
+  function reset() {
+    notifications.value = []
+    pagination.value = { current_page: 1, last_page: 1, total: 0 }
+    unreadCount.value = 0
+    loading.value = false
+    _pollingInFlight = false
+  }
+
   async function fetchNotifications(page = 1) {
     loading.value = true
     try {
@@ -55,6 +63,6 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   return {
     notifications, pagination, unreadCount, loading,
-    fetchNotifications, fetchUnreadCount, markRead, markAllRead,
+    fetchNotifications, fetchUnreadCount, markRead, markAllRead, reset,
   }
 })

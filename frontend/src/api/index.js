@@ -119,6 +119,10 @@ export function resendVerification() {
 }
 
 // Admin - Users
+export function getAdminDashboard() {
+  return api.get('/api/admin/dashboard')
+}
+
 export function getAdminUsers(params = {}) {
   return api.get('/api/admin/users', { params })
 }
@@ -140,8 +144,31 @@ export function getAdminLogs(params = {}) {
   return api.get('/api/admin/logs', { params })
 }
 
+export function exportAdminLogs(params = {}) {
+  return api.get('/api/admin/logs/export', {
+    params,
+    responseType: 'blob',
+  })
+}
+
 export function getAdminActions(params = {}) {
   return api.get('/api/admin/actions', { params })
+}
+
+export function exportAdminActions(params = {}) {
+  return api.get('/api/admin/actions/export', {
+    params,
+    responseType: 'blob',
+  })
+}
+
+// Admin - Products
+export function getAdminProducts(params = {}) {
+  return api.get('/api/admin/products', { params })
+}
+
+export function updateAdminProductStatus(productId, data) {
+  return api.patch(`/api/admin/products/${productId}/status`, data)
 }
 
 export default api

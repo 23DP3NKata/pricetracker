@@ -16,6 +16,14 @@ export const useProductsStore = defineStore('products', () => {
   const priceHistory = ref(null)
   const loading = ref(false)
 
+  function reset() {
+    products.value = []
+    pagination.value = { current_page: 1, last_page: 1, total: 0 }
+    currentProduct.value = null
+    priceHistory.value = null
+    loading.value = false
+  }
+
   async function fetchProducts(page = 1) {
     loading.value = true
     try {
@@ -66,6 +74,6 @@ export const useProductsStore = defineStore('products', () => {
 
   return {
     products, pagination, currentProduct, priceHistory, loading,
-    fetchProducts, fetchProduct, addProduct, updateProduct, removeProduct, fetchPriceHistory,
+    fetchProducts, fetchProduct, addProduct, updateProduct, removeProduct, fetchPriceHistory, reset,
   }
 })

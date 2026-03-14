@@ -86,6 +86,18 @@
             :disabled="addLoading"
           />
 
+          <v-select
+            v-model="addForm.checkInterval"
+            label="Check frequency"
+            variant="outlined"
+            rounded="lg"
+            prepend-inner-icon="mdi-timer-outline"
+            :items="checkIntervalOptions"
+            item-title="label"
+            item-value="value"
+            :disabled="addLoading"
+          />
+
           <div class="text-caption text-medium-emphasis mb-4">
             <v-icon size="14">mdi-information-outline</v-icon>
             Supported stores: Amazon, eBay, rdveikals.lv, 1a.lv, 220.lv
@@ -116,7 +128,16 @@ const addError = ref(null)
 
 const addForm = reactive({
   url: '',
+  checkInterval: 1440,
 })
+
+const checkIntervalOptions = [
+  { label: 'Every 30 minutes', value: 30 },
+  { label: 'Every 1 hour', value: 60 },
+  { label: 'Every 6 hours', value: 360 },
+  { label: 'Every 12 hours', value: 720 },
+  { label: 'Every 24 hours', value: 1440 },
+]
 
 function formatPrice(price) {
   return Number(price).toFixed(2) + ' €'
@@ -136,9 +157,13 @@ async function handleAdd() {
   addLoading.value = true
   addError.value = null
   try {
-    await store.addProduct({ url: addForm.url })
+    await store.addProduct({
+      url: addForm.url,
+      check_interval: addForm.checkInterval,
+    })
     showAddDialog.value = false
     addForm.url = ''
+    addForm.checkInterval = 1440
     await store.fetchProducts(currentPage.value)
   } catch (e) {
     addError.value = e.response?.data?.message || 'Failed to add product'

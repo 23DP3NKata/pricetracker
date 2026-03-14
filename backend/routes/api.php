@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminActionController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLogController;
+use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
@@ -45,13 +47,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Admin APIs
     Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+
         Route::get('/users', [AdminUserController::class, 'index']);
         Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus']);
         Route::patch('/users/{user}/limit', [AdminUserController::class, 'updateLimit']);
         Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole']);
 
+        Route::get('/products', [AdminProductController::class, 'index']);
+        Route::patch('/products/{product}/status', [AdminProductController::class, 'updateStatus']);
+
         Route::get('/logs', [AdminLogController::class, 'index']);
+        Route::get('/logs/export', [AdminLogController::class, 'exportCsv']);
+
         Route::get('/actions', [AdminActionController::class, 'index']);
+        Route::get('/actions/export', [AdminActionController::class, 'exportCsv']);
     });
 });
 

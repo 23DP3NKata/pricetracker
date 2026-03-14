@@ -78,9 +78,21 @@ const router = createRouter({
       meta: { auth: true },
     },
     {
+      path: '/admin/dashboard',
+      name: 'admin-dashboard',
+      component: () => import('../views/AdminDashboardView.vue'),
+      meta: { auth: true, admin: true },
+    },
+    {
       path: '/admin/users',
       name: 'admin-users',
       component: () => import('../views/AdminUsersView.vue'),
+      meta: { auth: true, admin: true },
+    },
+    {
+      path: '/admin/products',
+      name: 'admin-products',
+      component: () => import('../views/AdminProductsView.vue'),
       meta: { auth: true, admin: true },
     },
     {

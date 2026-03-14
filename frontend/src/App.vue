@@ -19,7 +19,7 @@
           <template v-else>
             <v-btn to="/dashboard" variant="text" rounded>Dashboard</v-btn>
             <v-btn to="/products" variant="text" rounded>Products</v-btn>
-            <v-btn v-if="auth.isAdmin" to="/admin/users" variant="text" rounded>Admin</v-btn>
+            <v-btn v-if="auth.isAdmin" to="/admin/dashboard" variant="text" rounded>Admin</v-btn>
           </template>
         </div>
 
@@ -189,7 +189,9 @@
             </template>
           </v-list-item>
           <template v-if="auth.isAdmin">
-            <v-list-item to="/admin/users" rounded prepend-icon="mdi-shield-account" title="Admin users" />
+            <v-list-item to="/admin/dashboard" rounded prepend-icon="mdi-shield-account" title="Admin dashboard" />
+            <v-list-item to="/admin/users" rounded prepend-icon="mdi-account-group-outline" title="Admin users" />
+            <v-list-item to="/admin/products" rounded prepend-icon="mdi-package-variant-closed" title="Admin products" />
             <v-list-item to="/admin/logs" rounded prepend-icon="mdi-text-box-search-outline" title="Admin logs" />
             <v-list-item to="/admin/actions" rounded prepend-icon="mdi-history" title="Admin actions" />
           </template>

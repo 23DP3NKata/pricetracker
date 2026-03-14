@@ -2,7 +2,13 @@
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6 ga-3 flex-wrap">
       <h1 class="text-h4 font-weight-bold">Admin: Users</h1>
-      <v-btn to="/admin/logs" variant="tonal" rounded="xl" prepend-icon="mdi-text-box-search-outline">Logs</v-btn>
+      <div class="d-flex ga-2 flex-wrap">
+        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">Dashboard</v-btn>
+        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">Users</v-btn>
+        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="isTabActive('admin-products') ? 'flat' : 'tonal'" :color="isTabActive('admin-products') ? 'primary' : undefined">Products</v-btn>
+        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="isTabActive('admin-logs') ? 'flat' : 'tonal'" :color="isTabActive('admin-logs') ? 'primary' : undefined">Logs</v-btn>
+        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="isTabActive('admin-actions') ? 'flat' : 'tonal'" :color="isTabActive('admin-actions') ? 'primary' : undefined">Actions</v-btn>
+      </div>
     </div>
 
     <v-card rounded="xl" class="pa-4 mb-4">
@@ -78,7 +84,7 @@
                   <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props" />
                 </template>
                 <v-list density="compact">
-                  <v-list-item @click="toggleStatus(u)">
+                  <v-list-item @click="openStatusDialog(u)">
                     <v-list-item-title>{{ u.status === 'active' ? 'Block user' : 'Unblock user' }}</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="toggleRole(u)">
@@ -123,16 +129,41 @@
         </div>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="statusDialog.open" max-width="460">
+      <v-card rounded="xl" class="pa-5">
+        <h3 class="text-h6 mb-4">{{ statusDialog.nextStatus === 'blocked' ? 'Block user' : 'Unblock user' }}</h3>
+        <div class="text-body-2 mb-4">{{ statusDialog.user?.name }} ({{ statusDialog.user?.email }})</div>
+        <v-textarea
+          v-model="statusDialog.reason"
+          label="Reason"
+          variant="outlined"
+          rows="3"
+          auto-grow
+          placeholder="Why are you changing this user's status?"
+        />
+        <div class="d-flex justify-end ga-2 mt-2">
+          <v-btn variant="text" @click="statusDialog.open = false">Cancel</v-btn>
+          <v-btn color="primary" :loading="saving" @click="saveStatus">Save</v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { getAdminUsers, updateAdminUserLimit, updateAdminUserRole, updateAdminUserStatus } from '@/api'
 
 const loading = ref(false)
 const saving = ref(false)
 const users = ref([])
+const route = useRoute()
+
+function isTabActive(name) {
+  return route.name === name
+}
 
 const filters = reactive({
   search: '',
@@ -162,6 +193,13 @@ const limitDialog = reactive({
   value: 0,
 })
 
+const statusDialog = reactive({
+  open: false,
+  user: null,
+  nextStatus: 'active',
+  reason: '',
+})
+
 async function loadUsers(page = 1) {
   loading.value = true
   try {
@@ -181,11 +219,23 @@ async function loadUsers(page = 1) {
   }
 }
 
-async function toggleStatus(user) {
+function openStatusDialog(user) {
+  statusDialog.user = user
+  statusDialog.nextStatus = user.status === 'active' ? 'blocked' : 'active'
+  statusDialog.reason = ''
+  statusDialog.open = true
+}
+
+async function saveStatus() {
+  if (!statusDialog.user) return
+
   saving.value = true
   try {
-    const status = user.status === 'active' ? 'blocked' : 'active'
-    await updateAdminUserStatus(user.id, { status })
+    await updateAdminUserStatus(statusDialog.user.id, {
+      status: statusDialog.nextStatus,
+      reason: statusDialog.reason || undefined,
+    })
+    statusDialog.open = false
     await loadUsers(pagination.current_page)
   } finally {
     saving.value = false
