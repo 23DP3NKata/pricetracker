@@ -213,7 +213,10 @@ class PriceScraperService
      */
     public function checkDuePrices(bool $force = false): array
     {
-        $query = UserProduct::where('is_active', true);
+        $query = UserProduct::where('is_active', true)
+            ->whereHas('product', function ($q) {
+                $q->where('status', 'active');
+            });
 
         if (!$force) {
             $query->where(function ($q) {
@@ -231,7 +234,7 @@ class PriceScraperService
         foreach ($dueItems as $userProduct) {
             $product = $userProduct->product;
 
-            if ($product->status !== 'active') {
+            if (!$product || $product->status !== 'active') {
                 continue;
             }
 
