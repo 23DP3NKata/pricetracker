@@ -18,10 +18,26 @@ class AdminUserController extends Controller
             'status' => ['nullable', Rule::in(['active', 'blocked'])],
             'role' => ['nullable', Rule::in(['user', 'admin'])],
             'per_page' => ['nullable', 'integer', 'min:5', 'max:100'],
+            'sort_by' => ['nullable', Rule::in(['id', 'name', 'email', 'role', 'status', 'monthly_limit', 'checks_used', 'created_at'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
 
         $perPage = $validated['per_page'] ?? 20;
         $search = trim((string) ($validated['search'] ?? ''));
+
+        $sortMap = [
+            'id' => 'id',
+            'name' => 'name',
+            'email' => 'email',
+            'role' => 'role',
+            'status' => 'status',
+            'monthly_limit' => 'monthly_limit',
+            'checks_used' => 'checks_used',
+            'created_at' => 'created_at',
+        ];
+        $sortBy = $validated['sort_by'] ?? 'id';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $sortColumn = $sortMap[$sortBy] ?? 'id';
 
         $users = User::query()
             ->when($search !== '', function ($query) use ($search) {
@@ -32,7 +48,7 @@ class AdminUserController extends Controller
             })
             ->when(isset($validated['status']), fn($query) => $query->where('status', $validated['status']))
             ->when(isset($validated['role']), fn($query) => $query->where('role', $validated['role']))
-            ->orderByDesc('id')
+            ->orderBy($sortColumn, $sortDir)
             ->paginate($perPage);
 
         return response()->json($users);

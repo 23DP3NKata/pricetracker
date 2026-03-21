@@ -48,9 +48,19 @@
       <v-table>
         <thead>
           <tr>
-            <th>Time</th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('created_at')">
+                Time
+                <v-icon end size="16">{{ sortIcon('created_at') }}</v-icon>
+              </v-btn>
+            </th>
             <th>Admin</th>
-            <th>Action</th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('action_type')">
+                Action
+                <v-icon end size="16">{{ sortIcon('action_type') }}</v-icon>
+              </v-btn>
+            </th>
             <th>Target user</th>
             <th>Target product</th>
             <th>Reason</th>
@@ -117,6 +127,8 @@ const filters = reactive({
   action_type: null,
   from: '',
   to: '',
+  sort_by: 'created_at',
+  sort_dir: 'desc',
 })
 
 const pagination = reactive({
@@ -130,6 +142,21 @@ function formatDate(value) {
   return new Date(value).toLocaleString(undefined, { timeZone: 'UTC' })
 }
 
+function toggleSort(field) {
+  if (filters.sort_by === field) {
+    filters.sort_dir = filters.sort_dir === 'asc' ? 'desc' : 'asc'
+  } else {
+    filters.sort_by = field
+    filters.sort_dir = 'asc'
+  }
+  loadActions(1)
+}
+
+function sortIcon(field) {
+  if (filters.sort_by !== field) return 'mdi-swap-vertical'
+  return filters.sort_dir === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+}
+
 async function loadActions(page = 1) {
   loading.value = true
   try {
@@ -139,6 +166,8 @@ async function loadActions(page = 1) {
       action_type: filters.action_type || undefined,
       from: filters.from || undefined,
       to: filters.to || undefined,
+      sort_by: filters.sort_by,
+      sort_dir: filters.sort_dir,
     })
     actions.value = data.data
     pagination.current_page = data.current_page
@@ -157,6 +186,8 @@ async function downloadCsv() {
       action_type: filters.action_type || undefined,
       from: filters.from || undefined,
       to: filters.to || undefined,
+      sort_by: filters.sort_by,
+      sort_dir: filters.sort_dir,
     })
 
     const url = URL.createObjectURL(new Blob([data], { type: 'text/csv;charset=utf-8;' }))

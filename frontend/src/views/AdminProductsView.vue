@@ -11,6 +11,15 @@
       </div>
     </div>
 
+    <v-card v-if="activeProductId" rounded="xl" class="pa-3 mb-4" color="info" variant="tonal">
+      <div class="d-flex align-center justify-space-between ga-3 flex-wrap">
+        <div class="text-body-2">
+          Showing product with ID: <strong>#{{ activeProductId }}</strong>
+        </div>
+        <v-btn size="small" variant="text" @click="clearProductIdFilter">Clear</v-btn>
+      </div>
+    </v-card>
+
     <v-card rounded="xl" class="pa-4 mb-4">
       <v-row>
         <v-col cols="12" md="5">
@@ -39,12 +48,42 @@
       <v-table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Product</th>
-            <th>Store</th>
-            <th>Status</th>
-            <th>Price</th>
-            <th>Tracking count</th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('id')">
+                ID
+                <v-icon end size="16">{{ sortIcon('id') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('title')">
+                Product
+                <v-icon end size="16">{{ sortIcon('title') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('store_name')">
+                Store
+                <v-icon end size="16">{{ sortIcon('store_name') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('status')">
+                Status
+                <v-icon end size="16">{{ sortIcon('status') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('current_price')">
+                Price
+                <v-icon end size="16">{{ sortIcon('current_price') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('tracking_count')">
+                Tracking count
+                <v-icon end size="16">{{ sortIcon('tracking_count') }}</v-icon>
+              </v-btn>
+            </th>
             <th class="text-right">Actions</th>
           </tr>
         </thead>
@@ -89,13 +128,15 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { getAdminProducts, updateAdminProductStatus } from '@/api'
 
 const loading = ref(false)
 const saving = ref(false)
 const products = ref([])
 const route = useRoute()
+const router = useRouter()
 
 function isTabActive(name) {
   return route.name === name
@@ -105,9 +146,17 @@ const filters = reactive({
   search: '',
   status: null,
   store_name: '',
+  sort_by: 'id',
+  sort_dir: 'desc',
 })
 
 const statusOptions = ['active', 'hidden', 'deleted']
+
+const activeProductId = computed(() => {
+  const raw = route.query.product_id
+  const value = Number(Array.isArray(raw) ? raw[0] : raw)
+  return Number.isInteger(value) && value > 0 ? value : null
+})
 
 const pagination = reactive({
   current_page: 1,
@@ -122,14 +171,37 @@ function statusColor(status) {
   return 'default'
 }
 
+function toggleSort(field) {
+  if (filters.sort_by === field) {
+    filters.sort_dir = filters.sort_dir === 'asc' ? 'desc' : 'asc'
+  } else {
+    filters.sort_by = field
+    filters.sort_dir = 'asc'
+  }
+  loadProducts(1)
+}
+
+function sortIcon(field) {
+  if (filters.sort_by !== field) return 'mdi-swap-vertical'
+  return filters.sort_dir === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+}
+
+async function clearProductIdFilter() {
+  await router.push({ path: '/admin/products' })
+  await loadProducts(1)
+}
+
 async function loadProducts(page = 1) {
   loading.value = true
   try {
     const { data } = await getAdminProducts({
       page,
+      product_id: activeProductId.value || undefined,
       search: filters.search || undefined,
       status: filters.status || undefined,
       store_name: filters.store_name || undefined,
+      sort_by: filters.sort_by,
+      sort_dir: filters.sort_dir,
     })
 
     products.value = data.data

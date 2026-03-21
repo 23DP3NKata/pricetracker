@@ -14,16 +14,32 @@ class AdminProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'product_id' => ['nullable', 'integer', 'min:1'],
             'search' => ['nullable', 'string', 'max:180'],
             'status' => ['nullable', Rule::in(['active', 'hidden', 'deleted'])],
             'store_name' => ['nullable', 'string', 'max:100'],
             'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
+            'sort_by' => ['nullable', Rule::in(['id', 'title', 'store_name', 'status', 'current_price', 'tracking_count', 'created_at'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
 
         $search = trim((string) ($validated['search'] ?? ''));
         $perPage = $validated['per_page'] ?? 20;
+        $sortMap = [
+            'id' => 'id',
+            'title' => 'title',
+            'store_name' => 'store_name',
+            'status' => 'status',
+            'current_price' => 'current_price',
+            'tracking_count' => 'tracking_count',
+            'created_at' => 'created_at',
+        ];
+        $sortBy = $validated['sort_by'] ?? 'id';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $sortColumn = $sortMap[$sortBy] ?? 'id';
 
         $products = Product::query()
+            ->when(isset($validated['product_id']), fn($query) => $query->where('id', $validated['product_id']))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
@@ -33,7 +49,7 @@ class AdminProductController extends Controller
             })
             ->when(isset($validated['status']), fn($query) => $query->where('status', $validated['status']))
             ->when(isset($validated['store_name']), fn($query) => $query->where('store_name', $validated['store_name']))
-            ->orderByDesc('id')
+            ->orderBy($sortColumn, $sortDir)
             ->paginate($perPage);
 
         return response()->json($products);

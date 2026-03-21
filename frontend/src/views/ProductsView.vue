@@ -9,6 +9,31 @@
 
     <v-progress-linear v-if="store.loading" indeterminate color="primary" class="mb-4" />
 
+    <v-card rounded="xl" class="pa-4 mb-4">
+      <v-row>
+        <v-col cols="12" sm="6" md="4">
+          <v-select
+            v-model="sort.by"
+            :items="sortByOptions"
+            label="Sort by"
+            variant="outlined"
+            density="comfortable"
+            @update:model-value="loadProducts(1)"
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="sort.dir"
+            :items="sortDirOptions"
+            label="Direction"
+            variant="outlined"
+            density="comfortable"
+            @update:model-value="loadProducts(1)"
+          />
+        </v-col>
+      </v-row>
+    </v-card>
+
     <!-- Empty state -->
     <v-card v-if="!store.loading && store.products.length === 0" rounded="xl" class="pa-8 text-center">
       <v-icon size="64" color="primary" class="mb-4">mdi-package-variant-plus</v-icon>
@@ -61,7 +86,7 @@
         v-model="currentPage"
         :length="store.pagination.last_page"
         rounded="circle"
-        @update:model-value="store.fetchProducts($event)"
+        @update:model-value="loadProducts"
       />
     </div>
 
@@ -131,6 +156,25 @@ const addForm = reactive({
   checkInterval: 1440,
 })
 
+const sort = reactive({
+  by: 'created_at',
+  dir: 'desc',
+})
+
+const sortByOptions = [
+  { title: 'Added date', value: 'created_at' },
+  { title: 'Title', value: 'title' },
+  { title: 'Current price', value: 'current_price' },
+  { title: 'Store', value: 'store_name' },
+  { title: 'Next check', value: 'next_check_at' },
+  { title: 'Last checked', value: 'last_checked_at' },
+]
+
+const sortDirOptions = [
+  { title: 'Descending', value: 'desc' },
+  { title: 'Ascending', value: 'asc' },
+]
+
 const checkIntervalOptions = [
   { label: 'Every 30 minutes', value: 30 },
   { label: 'Every 1 hour', value: 60 },
@@ -150,6 +194,16 @@ function formatInterval(minutes) {
   return Math.round(minutes / 1440) + 'd'
 }
 
+async function loadProducts(page = 1) {
+  currentPage.value = page
+  await store.fetchProducts({
+    page,
+    sort_by: sort.by,
+    sort_dir: sort.dir,
+  })
+  currentPage.value = store.pagination.current_page
+}
+
 async function handleAdd() {
   const { valid } = await addFormRef.value.validate()
   if (!valid) return
@@ -164,7 +218,7 @@ async function handleAdd() {
     showAddDialog.value = false
     addForm.url = ''
     addForm.checkInterval = 1440
-    await store.fetchProducts(currentPage.value)
+    await loadProducts(currentPage.value)
   } catch (e) {
     addError.value = e.response?.data?.message || 'Failed to add product'
   } finally {
@@ -172,7 +226,7 @@ async function handleAdd() {
   }
 }
 
-onMounted(() => store.fetchProducts(1))
+onMounted(() => loadProducts(1))
 </script>
 
 <style scoped>

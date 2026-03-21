@@ -24,10 +24,16 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = false
   }
 
-  async function fetchProducts(page = 1) {
+  async function fetchProducts(params = {}) {
+    const query = typeof params === 'number' ? { page: params } : params
+
     loading.value = true
     try {
-      const { data } = await apiGetProducts(page)
+      const { data } = await apiGetProducts({
+        page: query.page ?? 1,
+        sort_by: query.sort_by,
+        sort_dir: query.sort_dir,
+      })
       products.value = data.data
       pagination.value = {
         current_page: data.current_page,

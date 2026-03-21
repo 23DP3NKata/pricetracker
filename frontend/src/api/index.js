@@ -67,8 +67,8 @@ export function getDashboard() {
 }
 
 // Products
-export function getProducts(page = 1) {
-  return api.get('/api/products', { params: { page } })
+export function getProducts(params = {}) {
+  return api.get('/api/products', { params })
 }
 
 export function getProduct(id) {

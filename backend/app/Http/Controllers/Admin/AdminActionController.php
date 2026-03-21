@@ -23,6 +23,14 @@ class AdminActionController extends Controller
         $validated = $this->validateFilters($request);
 
         $perPage = $validated['per_page'] ?? 20;
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $sortColumn = match ($sortBy) {
+            'id' => 'id',
+            'action_type' => 'action_type',
+            'created_at' => 'created_at',
+            default => 'created_at',
+        };
 
         $actions = $this->baseQuery($validated)
             ->with([
@@ -30,7 +38,7 @@ class AdminActionController extends Controller
                 'targetUser:id,name,email',
                 'targetProduct:id,title',
             ])
-            ->orderByDesc('created_at')
+            ->orderBy($sortColumn, $sortDir)
             ->paginate($perPage);
 
         return response()->json($actions);
@@ -39,9 +47,17 @@ class AdminActionController extends Controller
     public function exportCsv(Request $request): StreamedResponse
     {
         $validated = $this->validateFilters($request);
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $sortColumn = match ($sortBy) {
+            'id' => 'id',
+            'action_type' => 'action_type',
+            'created_at' => 'created_at',
+            default => 'created_at',
+        };
         $fileName = 'admin-actions-' . now()->format('Ymd-His') . '.csv';
 
-        return response()->streamDownload(function () use ($validated) {
+        return response()->streamDownload(function () use ($validated, $sortColumn, $sortDir) {
             $handle = fopen('php://output', 'wb');
             fputcsv($handle, [
                 'id', 'created_at', 'action_type', 'admin_user_id', 'admin_email',
@@ -50,7 +66,7 @@ class AdminActionController extends Controller
 
             $this->baseQuery($validated)
                 ->with(['admin:id,email', 'targetUser:id,email', 'targetProduct:id,title'])
-                ->orderByDesc('created_at')
+                ->orderBy($sortColumn, $sortDir)
                 ->chunk(500, function ($actions) use ($handle) {
                     foreach ($actions as $action) {
                         fputcsv($handle, [
@@ -83,6 +99,8 @@ class AdminActionController extends Controller
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date'],
             'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
+            'sort_by' => ['nullable', Rule::in(['id', 'action_type', 'created_at'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
     }
 

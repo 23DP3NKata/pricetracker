@@ -51,9 +51,24 @@
       <v-table>
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Level</th>
-            <th>Category</th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('created_at')">
+                Time
+                <v-icon end size="16">{{ sortIcon('created_at') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('level')">
+                Level
+                <v-icon end size="16">{{ sortIcon('level') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('category')">
+                Category
+                <v-icon end size="16">{{ sortIcon('category') }}</v-icon>
+              </v-btn>
+            </th>
             <th>Message</th>
             <th>User</th>
             <th>Product</th>
@@ -68,7 +83,16 @@
             <td>{{ log.category }}</td>
             <td class="log-message">{{ log.message }}</td>
             <td>{{ log.user?.email || '-' }}</td>
-            <td>{{ log.product?.title || '-' }}</td>
+            <td>
+              <router-link
+                v-if="log.product?.id"
+                :to="{ path: '/admin/products', query: { product_id: String(log.product.id) } }"
+                class="text-primary text-decoration-none"
+              >
+                {{ log.product.title || ('Product #' + log.product.id) }}
+              </router-link>
+              <span v-else>-</span>
+            </td>
           </tr>
           <tr v-if="!loading && logs.length === 0">
             <td colspan="6" class="text-center py-8 text-medium-emphasis">No logs found</td>
@@ -107,6 +131,8 @@ const filters = reactive({
   category: null,
   from: '',
   to: '',
+  sort_by: 'created_at',
+  sort_dir: 'desc',
 })
 
 const levelOptions = ['info', 'warning', 'error', 'critical']
@@ -130,6 +156,21 @@ function levelColor(level) {
   return 'default'
 }
 
+function toggleSort(field) {
+  if (filters.sort_by === field) {
+    filters.sort_dir = filters.sort_dir === 'asc' ? 'desc' : 'asc'
+  } else {
+    filters.sort_by = field
+    filters.sort_dir = 'asc'
+  }
+  loadLogs(1)
+}
+
+function sortIcon(field) {
+  if (filters.sort_by !== field) return 'mdi-swap-vertical'
+  return filters.sort_dir === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+}
+
 async function loadLogs(page = 1) {
   loading.value = true
   try {
@@ -140,6 +181,8 @@ async function loadLogs(page = 1) {
       category: filters.category || undefined,
       from: filters.from || undefined,
       to: filters.to || undefined,
+      sort_by: filters.sort_by,
+      sort_dir: filters.sort_dir,
     })
 
     logs.value = data.data
@@ -160,6 +203,8 @@ async function downloadCsv() {
       category: filters.category || undefined,
       from: filters.from || undefined,
       to: filters.to || undefined,
+      sort_by: filters.sort_by,
+      sort_dir: filters.sort_dir,
     })
 
     const url = URL.createObjectURL(new Blob([data], { type: 'text/csv;charset=utf-8;' }))

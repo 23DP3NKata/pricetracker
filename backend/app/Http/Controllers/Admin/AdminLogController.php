@@ -20,10 +20,19 @@ class AdminLogController extends Controller
 
         $search = trim((string) ($validated['search'] ?? ''));
         $perPage = $validated['per_page'] ?? 20;
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $sortColumn = match ($sortBy) {
+            'id' => 'id',
+            'level' => 'level',
+            'category' => 'category',
+            'created_at' => 'created_at',
+            default => 'created_at',
+        };
 
         $logs = $this->baseQuery($validated, $search)
             ->with(['user:id,name,email', 'product:id,title'])
-            ->orderByDesc('created_at')
+            ->orderBy($sortColumn, $sortDir)
             ->paginate($perPage);
 
         return response()->json($logs);
@@ -33,16 +42,25 @@ class AdminLogController extends Controller
     {
         $validated = $this->validateFilters($request);
         $search = trim((string) ($validated['search'] ?? ''));
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $sortColumn = match ($sortBy) {
+            'id' => 'id',
+            'level' => 'level',
+            'category' => 'category',
+            'created_at' => 'created_at',
+            default => 'created_at',
+        };
 
         $fileName = 'admin-logs-' . now()->format('Ymd-His') . '.csv';
 
-        return response()->streamDownload(function () use ($validated, $search) {
+        return response()->streamDownload(function () use ($validated, $search, $sortColumn, $sortDir) {
             $handle = fopen('php://output', 'wb');
             fputcsv($handle, ['id', 'created_at', 'level', 'category', 'message', 'user_id', 'user_email', 'product_id', 'product_title']);
 
             $this->baseQuery($validated, $search)
                 ->with(['user:id,email', 'product:id,title'])
-                ->orderByDesc('created_at')
+                ->orderBy($sortColumn, $sortDir)
                 ->chunk(500, function ($logs) use ($handle) {
                     foreach ($logs as $log) {
                         fputcsv($handle, [
@@ -74,6 +92,8 @@ class AdminLogController extends Controller
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date'],
             'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
+            'sort_by' => ['nullable', Rule::in(['id', 'level', 'category', 'created_at'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
     }
 

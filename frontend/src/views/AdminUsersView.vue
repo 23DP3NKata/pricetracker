@@ -54,12 +54,42 @@
       <v-table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>User</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Monthly limit</th>
-            <th>Checks used</th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('id')">
+                ID
+                <v-icon end size="16">{{ sortIcon('id') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('name')">
+                User
+                <v-icon end size="16">{{ sortIcon('name') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('role')">
+                Role
+                <v-icon end size="16">{{ sortIcon('role') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('status')">
+                Status
+                <v-icon end size="16">{{ sortIcon('status') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('monthly_limit')">
+                Monthly limit
+                <v-icon end size="16">{{ sortIcon('monthly_limit') }}</v-icon>
+              </v-btn>
+            </th>
+            <th>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('checks_used')">
+                Checks used
+                <v-icon end size="16">{{ sortIcon('checks_used') }}</v-icon>
+              </v-btn>
+            </th>
             <th class="text-right">Actions</th>
           </tr>
         </thead>
@@ -169,6 +199,8 @@ const filters = reactive({
   search: '',
   status: null,
   role: null,
+  sort_by: 'id',
+  sort_dir: 'desc',
 })
 
 const statusOptions = [
@@ -200,6 +232,21 @@ const statusDialog = reactive({
   reason: '',
 })
 
+function toggleSort(field) {
+  if (filters.sort_by === field) {
+    filters.sort_dir = filters.sort_dir === 'asc' ? 'desc' : 'asc'
+  } else {
+    filters.sort_by = field
+    filters.sort_dir = 'asc'
+  }
+  loadUsers(1)
+}
+
+function sortIcon(field) {
+  if (filters.sort_by !== field) return 'mdi-swap-vertical'
+  return filters.sort_dir === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+}
+
 async function loadUsers(page = 1) {
   loading.value = true
   try {
@@ -208,6 +255,8 @@ async function loadUsers(page = 1) {
       search: filters.search || undefined,
       status: filters.status || undefined,
       role: filters.role || undefined,
+      sort_by: filters.sort_by,
+      sort_dir: filters.sort_dir,
     })
 
     users.value = data.data

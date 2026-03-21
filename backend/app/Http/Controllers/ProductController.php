@@ -8,6 +8,7 @@ use App\Models\UserProduct;
 use App\Services\PriceScraperService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -20,11 +21,29 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'sort_by' => ['nullable', Rule::in(['created_at', 'title', 'current_price', 'store_name', 'next_check_at', 'last_checked_at'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
+        ]);
+
+        $sortMap = [
+            'created_at' => 'user_products.created_at',
+            'title' => 'products.title',
+            'current_price' => 'products.current_price',
+            'store_name' => 'products.store_name',
+            'next_check_at' => 'user_products.next_check_at',
+            'last_checked_at' => 'user_products.last_checked_at',
+        ];
+
+        $sortBy = $validated['sort_by'] ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+        $sortColumn = $sortMap[$sortBy] ?? 'user_products.created_at';
+
         $products = $request->user()
             ->products()
             ->where('products.status', 'active')
             ->withPivot('check_interval', 'is_active', 'last_checked_at', 'next_check_at', 'created_at')
-            ->orderByDesc('user_products.created_at')
+            ->orderBy($sortColumn, $sortDir)
             ->paginate(20);
 
         return response()->json($products);
