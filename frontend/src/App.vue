@@ -14,7 +14,7 @@
         <div class="nav d-none d-md-flex">
           <template v-if="!auth.isAuthenticated">
             <v-btn to="/" variant="text" rounded>Home</v-btn>
-            <v-btn to="/about" variant="text" rounded>About</v-btn>
+            <v-btn to="/about" variant="text" rounded>About Us</v-btn>
           </template>
           <template v-else>
             <v-btn to="/dashboard" variant="text" rounded>Dashboard</v-btn>
@@ -219,7 +219,7 @@
       <template v-else>
         <v-list class="pa-4">
           <v-list-item to="/" rounded>Home</v-list-item>
-          <v-list-item to="/about" rounded>About</v-list-item>
+          <v-list-item to="/about" rounded>About Us</v-list-item>
           <v-divider class="my-3" />
           <v-list-item to="/login" rounded>Sign In</v-list-item>
           <v-btn to="/register" color="primary" block rounded class="mt-2">Get Started</v-btn>
@@ -291,12 +291,8 @@
 
           <div class="footer-links">
             <router-link to="/">Home</router-link>
-            <router-link to="/about">About</router-link>
+            <router-link to="/about">About Us</router-link>
             <router-link to="#">Terms</router-link>
-          </div>
-
-          <div class="socials">
-            <v-btn icon="mdi-github" variant="text" href="https://github.com/23DP3NKata" target="_blank"/>
           </div>
         </div>
 
@@ -528,15 +524,17 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
 .footer-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
   gap: 1.5rem;
+  flex-direction: column;
 }
 
 .footer-links {
   display: flex;
   gap: 1.5rem;
+  justify-content: center;
 }
 
 .footer-links a {

@@ -35,21 +35,18 @@
               <div class="card-mock card-1">
                 <div class="card-dot"></div>
                 <div class="card-text">
-                  <div class="card-label">Amazon</div>
                   <div class="card-price">€45,99 <span class="card-old-price">€62,00</span> <v-icon icon="mdi-arrow-down" class="price-down"></v-icon></div>
                 </div>
               </div>
               <div class="card-mock card-2">
                 <div class="card-dot alert"></div>
                 <div class="card-text">
-                  <div class="card-label">eBay</div>
                   <div class="card-price">€38,50 <span class="card-old-price">€49,99</span> <v-icon icon="mdi-arrow-down" class="price-down"></v-icon></div>
                 </div>
               </div>
               <div class="card-mock card-3">
                 <div class="card-dot"></div>
                 <div class="card-text">
-                  <div class="card-label">Local Store</div>
                   <div class="card-price">€41,20 <span class="card-old-price">€38,99</span> <v-icon icon="mdi-arrow-up" class="price-up"></v-icon></div>
                 </div>
               </div>
