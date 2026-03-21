@@ -7,6 +7,7 @@ use App\Models\PriceHistory;
 use App\Models\Product;
 use App\Models\SystemLog;
 use App\Models\UserProduct;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -14,6 +15,10 @@ class PriceScraperService
 {
     protected int $maxRetries = 3;
     protected int $retryDelay = 5; // seconds
+    protected int $domainMinIntervalMs = 20_000;
+    protected int $circuitFailThreshold = 4;
+    protected int $circuitWindowSeconds = 900;
+    protected int $circuitCooldownSeconds = 1800;
 
     protected array $userAgents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -238,17 +243,47 @@ class PriceScraperService
                 continue;
             }
 
-            // Prefer product_page_url (original user URL) over url (may be canonical)
-            $scrapeUrl = $product->product_page_url ?: $product->url;
+            $candidateUrls = $this->candidateUrlsForProduct($product);
+            $scrapeUrl = $candidateUrls[0] ?? ($product->product_page_url ?: $product->url);
 
             try {
-                $newPrice = $this->scrapePrice($scrapeUrl);
+                $newPrice = null;
+                $lastErrorMessage = null;
+                $notFoundCount = 0;
+
+                foreach ($candidateUrls as $candidateUrl) {
+                    $scrapeUrl = $candidateUrl;
+
+                    try {
+                        $newPrice = $this->scrapePrice($candidateUrl);
+
+                        if ($newPrice !== null) {
+                            break;
+                        }
+
+                        $lastErrorMessage = 'Could not extract price from page.';
+                    } catch (\Throwable $e) {
+                        $lastErrorMessage = $e->getMessage();
+
+                        if ($this->isNotFoundError($lastErrorMessage)) {
+                            $notFoundCount++;
+                            continue;
+                        }
+
+                        break;
+                    }
+                }
 
                 if ($newPrice !== null) {
                     $this->recordPrice($product, $newPrice);
                     $checked++;
                 } else {
-                    $msg = 'Could not extract price from page.';
+                    $msg = $lastErrorMessage ?: 'Could not extract price from page.';
+
+                    if ($notFoundCount > 0 && $notFoundCount === count($candidateUrls)) {
+                        $this->markProductUnavailable($product, $msg);
+                    }
+
                     $this->recordError($product, $msg);
                     $errorDetails[] = ['product_id' => $product->id, 'url' => $scrapeUrl, 'message' => $msg];
                     $errors++;
@@ -284,6 +319,14 @@ class PriceScraperService
      */
     protected function fetchHtml(string $url, int $attempt = 0): string
     {
+        $domain = $this->extractDomain($url);
+
+        if ($this->isDomainCircuitOpen($domain)) {
+            throw new \RuntimeException("Circuit breaker active for {$domain}. Skipping request temporarily.");
+        }
+
+        $this->enforceDomainPacing($domain);
+
         $headers = [
             'User-Agent' => $this->userAgents[array_rand($this->userAgents)],
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -297,8 +340,8 @@ class PriceScraperService
             'DNT' => '1',
         ];
 
-        // Small random delay before each request
-        usleep(random_int(1_000_000, 3_000_000));
+        // Small random delay before each request to avoid deterministic traffic patterns.
+        usleep(random_int(500_000, 1_200_000));
 
         $response = Http::timeout(20)
             ->withHeaders($headers)
@@ -309,13 +352,21 @@ class PriceScraperService
         }
 
         if (in_array($response->status(), [403, 429, 503]) && $attempt < $this->maxRetries) {
-            sleep($this->retryDelay * ($attempt + 1));
+            $this->registerDomainFailure($domain, $response->status());
+
+            // Exponential backoff + jitter to soften repeated retry patterns.
+            $backoffSeconds = $this->retryDelay * (2 ** $attempt);
+            $backoffMs = ($backoffSeconds * 1000) + random_int(300, 1500);
+            usleep($backoffMs * 1000);
+
             return $this->fetchHtml($url, $attempt + 1);
         }
 
         if (!$response->successful()) {
             throw new \RuntimeException("HTTP {$response->status()} fetching {$url}");
         }
+
+        $this->clearDomainFailures($domain);
 
         return $response->body();
     }
@@ -448,6 +499,127 @@ class PriceScraperService
         return null;
     }
 
+    protected function candidateUrlsForProduct(Product $product): array
+    {
+        $urls = [
+            $product->product_page_url,
+            $product->canonical_url,
+            $product->url,
+        ];
+
+        $urls = array_filter(array_map(static fn($u) => is_string($u) ? trim($u) : '', $urls));
+        return array_values(array_unique($urls));
+    }
+
+    protected function isNotFoundError(string $message): bool
+    {
+        $message = strtolower($message);
+        return str_contains($message, '404') || str_contains($message, 'removed');
+    }
+
+    protected function markProductUnavailable(Product $product, string $reason): void
+    {
+        if ($product->status !== 'deleted') {
+            $product->update(['status' => 'deleted']);
+        }
+
+        UserProduct::where('product_id', $product->id)
+            ->where('is_active', true)
+            ->update([
+                'is_active' => false,
+                'next_check_at' => null,
+            ]);
+
+        SystemLog::create([
+            'level' => 'warning',
+            'category' => 'scraper',
+            'message' => "Product #{$product->id} marked deleted after repeated not-found checks. Reason: {$reason}",
+            'product_id' => $product->id,
+        ]);
+    }
+
+    protected function extractDomain(string $url): string
+    {
+        $host = parse_url($url, PHP_URL_HOST) ?: 'unknown';
+        return preg_replace('/^www\./', '', strtolower($host));
+    }
+
+    protected function cacheKeyForDomain(string $domain, string $suffix): string
+    {
+        return "scraper:domain:{$domain}:{$suffix}";
+    }
+
+    protected function enforceDomainPacing(string $domain): void
+    {
+        if ($domain === 'unknown') {
+            return;
+        }
+
+        $lastAtKey = $this->cacheKeyForDomain($domain, 'last_request_at_ms');
+        $nowMs = (int) floor(microtime(true) * 1000);
+        $lastAtMs = (int) Cache::get($lastAtKey, 0);
+
+        if ($lastAtMs > 0) {
+            $elapsed = $nowMs - $lastAtMs;
+            $waitMs = max(0, $this->domainMinIntervalMs - $elapsed);
+
+            if ($waitMs > 0) {
+                // Add a small jitter so multiple domains do not align into bursts.
+                usleep(($waitMs + random_int(50, 300)) * 1000);
+            }
+        }
+
+        Cache::put($lastAtKey, (int) floor(microtime(true) * 1000), now()->addHours(2));
+    }
+
+    protected function registerDomainFailure(string $domain, int $statusCode): void
+    {
+        if ($domain === 'unknown') {
+            return;
+        }
+
+        if (!in_array($statusCode, [403, 429, 503], true)) {
+            return;
+        }
+
+        $failCountKey = $this->cacheKeyForDomain($domain, 'fail_count');
+        $circuitUntilKey = $this->cacheKeyForDomain($domain, 'circuit_open_until');
+
+        $failCount = (int) Cache::get($failCountKey, 0) + 1;
+        Cache::put($failCountKey, $failCount, now()->addSeconds($this->circuitWindowSeconds));
+
+        if ($failCount >= $this->circuitFailThreshold) {
+            Cache::put($circuitUntilKey, now()->addSeconds($this->circuitCooldownSeconds)->timestamp, now()->addSeconds($this->circuitCooldownSeconds));
+            Cache::forget($failCountKey);
+        }
+    }
+
+    protected function clearDomainFailures(string $domain): void
+    {
+        if ($domain === 'unknown') {
+            return;
+        }
+
+        Cache::forget($this->cacheKeyForDomain($domain, 'fail_count'));
+    }
+
+    protected function isDomainCircuitOpen(string $domain): bool
+    {
+        if ($domain === 'unknown') {
+            return false;
+        }
+
+        $circuitUntilKey = $this->cacheKeyForDomain($domain, 'circuit_open_until');
+        $untilTs = (int) Cache::get($circuitUntilKey, 0);
+
+        if ($untilTs <= time()) {
+            Cache::forget($circuitUntilKey);
+            return false;
+        }
+
+        return true;
+    }
+
     // ─── Price recording & notifications ─────────────────────
 
     protected function recordPrice(Product $product, float $newPrice): void
@@ -513,12 +685,18 @@ class PriceScraperService
 
     protected function recordError(Product $product, string $errorMessage): void
     {
+        $nextErrors = $product->consecutive_errors + 1;
         $product->update([
-            'consecutive_errors' => $product->consecutive_errors + 1,
+            'consecutive_errors' => $nextErrors,
         ]);
 
-        if ($product->consecutive_errors >= 5) {
-            $product->update(['status' => 'error']);
+        if ($nextErrors >= 5) {
+            SystemLog::create([
+                'level' => 'warning',
+                'category' => 'scraper',
+                'message' => "Product #{$product->id} reached {$nextErrors} consecutive scrape errors.",
+                'product_id' => $product->id,
+            ]);
         }
 
         SystemLog::create([
