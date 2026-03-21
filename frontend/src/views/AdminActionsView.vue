@@ -74,7 +74,16 @@
               <v-chip size="small" color="primary" variant="tonal">{{ action.action_type }}</v-chip>
             </td>
             <td>{{ action.target_user?.email || '-' }}</td>
-            <td>{{ action.target_product?.title || '-' }}</td>
+            <td>
+              <router-link
+                v-if="action.target_product?.id"
+                :to="{ path: '/admin/products', query: { product_id: String(action.target_product.id) } }"
+                class="text-primary text-decoration-none"
+              >
+                {{ action.target_product.title || ('Product #' + action.target_product.id) }}
+              </router-link>
+              <span v-else>-</span>
+            </td>
             <td>{{ action.reason || '-' }}</td>
           </tr>
           <tr v-if="!loading && actions.length === 0">
