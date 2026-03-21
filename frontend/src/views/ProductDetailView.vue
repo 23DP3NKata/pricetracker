@@ -1,7 +1,7 @@
 <template>
   <v-container class="py-8">
     <v-btn variant="text" rounded="xl" prepend-icon="mdi-arrow-left" class="mb-4" @click="$router.push('/products')">
-      Back to Products
+      {{ $t('productDetail.backToProducts') }}
     </v-btn>
 
     <v-progress-linear v-if="store.loading" indeterminate color="primary" class="mb-4" />
@@ -13,7 +13,7 @@
           <div>
             <h1 class="text-h5 font-weight-bold mb-1">{{ product.title }}</h1>
             <div class="text-medium-emphasis mb-3">
-              <v-icon size="16">mdi-store</v-icon> {{ product.store_name || 'Unknown' }}
+              <v-icon size="16">mdi-store</v-icon> {{ product.store_name || $t('productDetail.unknown') }}
             </div>
             <v-btn
               :href="productPageUrl"
@@ -25,13 +25,13 @@
               class="px-0"
               :disabled="!productPageUrl"
             >
-              Open product page
+              {{ $t('productDetail.openProductPage') }}
             </v-btn>
           </div>
           <div class="text-right">
             <div class="text-h4 font-weight-bold">{{ formatPrice(product.current_price) }}</div>
             <v-chip :color="product.status === 'active' ? 'success' : 'grey'" size="small" variant="tonal" class="mt-1">
-              {{ product.status }}
+              {{ statusLabel(product.status) }}
             </v-chip>
           </div>
         </div>
@@ -39,13 +39,13 @@
 
       <!-- Tracking settings -->
       <v-card rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-4">Tracking Settings</h3>
+        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('productDetail.trackingSettings') }}</h3>
         <v-row align="center">
           <v-col cols="12" sm="4">
             <v-select
               v-model="trackingForm.check_interval"
               :items="intervalOptions"
-              label="Check Interval"
+              :label="$t('productDetail.checkInterval')"
               variant="outlined"
               rounded="lg"
               item-title="text"
@@ -55,14 +55,14 @@
           <v-col cols="12" sm="4">
             <v-switch
               v-model="trackingForm.is_active"
-              label="Active"
+              :label="$t('productDetail.active')"
               color="primary"
               hide-details
             />
           </v-col>
           <v-col cols="12" sm="4" class="d-flex ga-2">
-            <v-btn color="primary" rounded="xl" :loading="saving" @click="saveSettings">Save</v-btn>
-            <v-btn color="error" variant="tonal" rounded="xl" @click="confirmDelete = true">Delete</v-btn>
+            <v-btn color="primary" rounded="xl" :loading="saving" @click="saveSettings">{{ $t('productDetail.save') }}</v-btn>
+            <v-btn color="error" variant="tonal" rounded="xl" @click="confirmDelete = true">{{ $t('productDetail.delete') }}</v-btn>
           </v-col>
         </v-row>
         <v-alert v-if="saveMsg" :type="saveMsg.type" variant="tonal" rounded="lg" class="mt-3" closable @click:close="saveMsg = null">
@@ -73,7 +73,7 @@
       <!-- Price History -->
       <v-card rounded="xl" class="pa-6">
         <div class="d-flex justify-space-between align-center mb-4">
-          <h3 class="text-h6 font-weight-bold">Price History</h3>
+          <h3 class="text-h6 font-weight-bold">{{ $t('productDetail.priceHistory') }}</h3>
           <v-btn-toggle v-model="historyDays" mandatory rounded="xl" density="compact" variant="outlined">
             <v-btn :value="7" size="small">7d</v-btn>
             <v-btn :value="30" size="small">30d</v-btn>
@@ -84,19 +84,19 @@
         <!-- Stats -->
         <v-row v-if="historyStats" class="mb-4">
           <v-col cols="6" sm="3">
-            <div class="text-caption text-medium-emphasis">Min</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('productDetail.min') }}</div>
             <div class="text-subtitle-1 font-weight-bold text-success">{{ formatPrice(historyStats.min) }}</div>
           </v-col>
           <v-col cols="6" sm="3">
-            <div class="text-caption text-medium-emphasis">Max</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('productDetail.max') }}</div>
             <div class="text-subtitle-1 font-weight-bold text-error">{{ formatPrice(historyStats.max) }}</div>
           </v-col>
           <v-col cols="6" sm="3">
-            <div class="text-caption text-medium-emphasis">Average</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('productDetail.average') }}</div>
             <div class="text-subtitle-1 font-weight-bold">{{ formatPrice(historyStats.avg) }}</div>
           </v-col>
           <v-col cols="6" sm="3">
-            <div class="text-caption text-medium-emphasis">Data Points</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('productDetail.dataPoints') }}</div>
             <div class="text-subtitle-1 font-weight-bold">{{ historyStats.data_points }}</div>
           </v-col>
         </v-row>
@@ -105,9 +105,9 @@
         <v-table v-if="historyData.length" density="compact">
           <thead>
             <tr>
-              <th>Date</th>
-              <th class="text-right">Price</th>
-              <th class="text-right">Change</th>
+              <th>{{ $t('productDetail.date') }}</th>
+              <th class="text-right">{{ $t('productDetail.price') }}</th>
+              <th class="text-right">{{ $t('productDetail.change') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -130,7 +130,7 @@
         </v-table>
 
         <div v-else class="text-center text-medium-emphasis pa-4">
-          No price data yet. Prices will be recorded when checks run.
+          {{ $t('productDetail.noPriceDataYet') }}
         </div>
       </v-card>
     </template>
@@ -138,11 +138,11 @@
     <!-- Delete confirm -->
     <v-dialog v-model="confirmDelete" max-width="400">
       <v-card rounded="xl" class="pa-6">
-        <h3 class="text-h6 font-weight-bold mb-2">Stop tracking?</h3>
-        <p class="text-medium-emphasis mb-4">This product will be removed from your tracking list.</p>
+        <h3 class="text-h6 font-weight-bold mb-2">{{ $t('productDetail.stopTrackingTitle') }}</h3>
+        <p class="text-medium-emphasis mb-4">{{ $t('productDetail.stopTrackingText') }}</p>
         <div class="d-flex ga-2 justify-end">
-          <v-btn variant="text" rounded="xl" @click="confirmDelete = false">Cancel</v-btn>
-          <v-btn color="error" rounded="xl" :loading="deleting" @click="handleDelete">Delete</v-btn>
+          <v-btn variant="text" rounded="xl" @click="confirmDelete = false">{{ $t('productDetail.cancel') }}</v-btn>
+          <v-btn color="error" rounded="xl" :loading="deleting" @click="handleDelete">{{ $t('productDetail.delete') }}</v-btn>
         </div>
       </v-card>
     </v-dialog>
@@ -152,11 +152,13 @@
 <script setup>
 import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useProductsStore } from '@/stores/products'
 import { getPriceHistory } from '@/api'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const store = useProductsStore()
 
 const product = ref(null)
@@ -173,13 +175,17 @@ const trackingForm = reactive({
   is_active: true,
 })
 
-const intervalOptions = [
-  { text: 'Every 30 min', value: 30 },
-  { text: 'Every hour', value: 60 },
-  { text: 'Every 6 hours', value: 360 },
-  { text: 'Every 12 hours', value: 720 },
-  { text: 'Every day', value: 1440 },
-]
+const intervalOptions = computed(() => [
+  { text: t('productDetail.every30min'), value: 30 },
+  { text: t('productDetail.everyHour'), value: 60 },
+  { text: t('productDetail.every6hours'), value: 360 },
+  { text: t('productDetail.every12hours'), value: 720 },
+  { text: t('productDetail.everyDay'), value: 1440 },
+])
+
+function statusLabel(status) {
+  return status === 'active' ? t('productDetail.active') : t('productDetail.paused')
+}
 
 const productPageUrl = computed(() => {
   const url = (product.value?.product_page_url || product.value?.url || '').trim()
@@ -192,7 +198,7 @@ const productPageUrl = computed(() => {
 
 function formatPrice(price) {
   if (price === null || price === undefined || Number.isNaN(Number(price))) {
-    return 'No data'
+    return t('productDetail.noData')
   }
 
   return Number(price).toFixed(2) + ' €'
@@ -231,9 +237,9 @@ async function saveSettings() {
   saveMsg.value = null
   try {
     await store.updateProduct(product.value.id, trackingForm)
-    saveMsg.value = { type: 'success', text: 'Settings saved' }
+    saveMsg.value = { type: 'success', text: t('productDetail.settingsSaved') }
   } catch {
-    saveMsg.value = { type: 'error', text: 'Failed to save' }
+    saveMsg.value = { type: 'error', text: t('productDetail.failedToSave') }
   } finally {
     saving.value = false
   }
