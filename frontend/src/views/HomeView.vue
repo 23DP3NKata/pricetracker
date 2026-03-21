@@ -2,87 +2,124 @@
   <div class="home-view">
     <!-- hero -->
     <section class="hero">
-      <div class="hero-content">
-        <div class="badge">
-          <v-icon size="14">mdi-chart-line-variant</v-icon>Track. Save. Repeat.
-        </div>
-        
-        <h1 class="title">Never Miss a <span class="gradient">Price Drop</span> Again</h1>
-        
-        <p class="subtitle">Track prices across thousands of stores. Get instant alerts when products go on sale.</p>
-        
-        <div class="actions">
-          <v-btn color="primary" size="large" rounded="xl" prepend-icon="mdi-plus">Start Tracking Free</v-btn>
-          <v-btn variant="outlined" size="large" rounded="xl" append-icon="mdi-play">See Demo</v-btn>
-        </div>
+      <v-container class="hero-container py-12 py-md-16">
+        <v-row class="align-center">
+          <v-col cols="12" md="6" class="hero-text">
 
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-value">...</div>
-            <div class="stat-label">Products</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value">...</div>
-            <div class="stat-label">Saved</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value">...</div>
-            <div class="stat-label">Users</div>
-          </div>
-        </div>
-      </div>
+            <h1 class="hero-title">
+              Stop checking prices.<br>
+              <span>Start saving money.</span>
+            </h1>
+            <p class="hero-desc">
+              Set it, forget it, get notified. Track prices on your favorite stores
+              and never miss a deal. Get instant alerts when prices drop.
+            </p>
 
-      <div class="bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-      </div>
+            <div class="hero-actions">
+              <v-btn to="/register" color="primary" rounded="xl" size="large" prepend-icon="mdi-rocket-launch">
+                Start Tracking
+              </v-btn>
+              <v-btn to="/about" variant="outlined" rounded="xl" size="large" append-icon="mdi-arrow-right">
+                Learn More
+              </v-btn>
+            </div>
+
+            <div class="hero-trust">
+              <span class="trust-icon">✓</span>
+              <span>Free forever. No credit card needed.</span>
+            </div>
+          </v-col>
+
+          <v-col cols="12" md="6" class="hero-visual">
+            <div class="visual-cards">
+              <div class="card-mock card-1">
+                <div class="card-dot"></div>
+                <div class="card-text">
+                  <div class="card-label">Amazon</div>
+                  <div class="card-price">€45,99 <span class="card-old-price">€62,00</span> <v-icon icon="mdi-arrow-down" class="price-down"></v-icon></div>
+                </div>
+              </div>
+              <div class="card-mock card-2">
+                <div class="card-dot alert"></div>
+                <div class="card-text">
+                  <div class="card-label">eBay</div>
+                  <div class="card-price">€38,50 <span class="card-old-price">€49,99</span> <v-icon icon="mdi-arrow-down" class="price-down"></v-icon></div>
+                </div>
+              </div>
+              <div class="card-mock card-3">
+                <div class="card-dot"></div>
+                <div class="card-text">
+                  <div class="card-label">Local Store</div>
+                  <div class="card-price">€41,20 <span class="card-old-price">€38,99</span> <v-icon icon="mdi-arrow-up" class="price-up"></v-icon></div>
+                </div>
+              </div>
+            </div>
+          </v-col>
+        </v-row>
+      </v-container>
     </section>
 
     <!-- second section -->
     <section class="features">
       <div class="section-header">
-        <div class="badge secondary">Features</div>
-        <h2>Everything You Need</h2>
+        <h2>Powerful Features</h2>
       </div>
 
       <div class="grid">
-        <div class="card">
-          <v-icon color="primary" size="32">mdi-bell-ring</v-icon>
-          <h3>Instant Alerts</h3>
-          <p>Get notified when prices drop</p>
-        </div>
-        <div class="card">
-          <v-icon color="success" size="32">mdi-chart-timeline-variant</v-icon>
-          <h3>Price History</h3>
-          <p>View detailed trends</p>
-        </div>
-        <div class="card">
-          <v-icon color="warning" size="32">mdi-lightning-bolt</v-icon>
-          <h3>Smart Tracking</h3>
-          <p>AI predicts best time to buy</p>
-        </div>
-        <div class="card">
-          <v-icon color="info" size="32">mdi-store</v-icon>
-          <h3>Multi-Store</h3>
-          <p>Track across 2 stores</p>
-        </div>
-        <div class="card">
-          <v-icon color="error" size="32">mdi-shield-check</v-icon>
-          <h3>Privacy First</h3>
-          <p>Your data is encrypted</p>
-        </div>
-        <div class="card">
-          <v-icon color="secondary" size="32">mdi-devices</v-icon>
-          <h3>Cross-Platform</h3>
-          <p>Access from any device</p>
-        </div>
+        <v-card class="feature-card" rounded="xl" variant="outlined">
+          <v-card-text class="pa-4">
+            <v-icon color="primary" size="32">mdi-bell-ring</v-icon>
+            <h3>Instant Alerts</h3>
+            <p>Get notified when prices drop</p>
+          </v-card-text>
+        </v-card>
+
+        <v-card class="feature-card" rounded="xl" variant="outlined">
+          <v-card-text class="pa-4">
+            <v-icon color="success" size="32">mdi-chart-timeline-variant</v-icon>
+            <h3>Price History</h3>
+            <p>View detailed trends</p>
+          </v-card-text>
+        </v-card>
+
+        <v-card class="feature-card" rounded="xl" variant="outlined">
+          <v-card-text class="pa-4">
+            <v-icon color="warning" size="32">mdi-lightning-bolt</v-icon>
+            <h3>Smart Tracking</h3>
+            <p>Never pay full price again</p>
+          </v-card-text>
+        </v-card>
+
+        <v-card class="feature-card" rounded="xl" variant="outlined">
+          <v-card-text class="pa-4">
+            <v-icon color="info" size="32">mdi-store</v-icon>
+            <h3>Multi-Store</h3>
+            <p>Compare across your favorites</p>
+          </v-card-text>
+        </v-card>
+
+        <v-card class="feature-card" rounded="xl" variant="outlined">
+          <v-card-text class="pa-4">
+            <v-icon color="error" size="32">mdi-shield-check</v-icon>
+            <h3>Privacy First</h3>
+            <p>Your data is always protected</p>
+          </v-card-text>
+        </v-card>
+
+        <v-card class="feature-card" rounded="xl" variant="outlined">
+          <v-card-text class="pa-4">
+            <v-icon color="secondary" size="32">mdi-devices</v-icon>
+            <h3>Cross-Platform</h3>
+            <p>Access from any device, anytime</p>
+          </v-card-text>
+        </v-card>
       </div>
     </section>
 
     <!-- third section -->
     <section class="steps">
       <div class="section-header">
-        <div class="badge secondary">How It Works</div>
+        <div class="eyebrow">How It Works</div>
         <h2>Start Saving in 3 Steps</h2>
       </div>
 
@@ -115,7 +152,7 @@
     <section class="cta">
       <h2>Ready to Start Saving?</h2>
       <p>Join thousands tracking prices and saving money daily.</p>
-      <v-btn color="white" size="x-large" rounded="xl" prepend-icon="mdi-rocket">
+      <v-btn to="/register" color="white" size="x-large" rounded="xl" prepend-icon="mdi-rocket">
         Get Started Free
       </v-btn>
     </section>
@@ -127,144 +164,193 @@
 </script>
 
 <style scoped>
-.home-view { width: 100%; overflow-x: hidden; }
+.home-view {
+  width: 100%;
+  overflow-x: hidden;
+}
 
-/* hero */
+/* Hero Section */
 .hero {
+  background:
+    radial-gradient(800px 380px at 90% -10%, rgba(var(--v-theme-primary), 0.16), transparent 70%),
+    radial-gradient(650px 300px at -10% 8%, rgba(var(--v-theme-secondary), 0.12), transparent 70%),
+    linear-gradient(180deg, rgba(var(--v-theme-background), 1) 0%, rgba(var(--v-theme-surface), 1) 45%, rgba(var(--v-theme-background), 1) 100%);
   position: relative;
-  min-height: 85vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1.5rem;
   overflow: hidden;
 }
 
-.hero-content {
+.hero-container {
+  max-width: 1280px;
   position: relative;
   z-index: 2;
-  max-width: 800px;
-  text-align: center;
-  animation: fadeUp 0.8s ease-out;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: rgba(var(--v-theme-primary), 0.1);
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
-  border-radius: 50px;
-  font-size: 0.875rem;
-  font-weight: 600;
+.hero-text {
+  animation: slideInLeft 0.6s ease-out;
+}
+
+.hero-visual {
+  animation: slideInRight 0.6s ease-out 0.2s both;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(var(--v-theme-primary), 0.12);
   color: rgb(var(--v-theme-primary));
-  margin-bottom: 2rem;
+  border: 1px solid rgba(var(--v-theme-primary), 0.22);
+  margin-bottom: 1rem;
+  font-weight: 600;
 }
 
-.badge.secondary {
-  background: rgba(var(--v-theme-secondary), 0.1);
-  border-color: rgba(var(--v-theme-secondary), 0.2);
-  color: rgb(var(--v-theme-secondary));
-}
-
-.title {
-  font-size: clamp(2.5rem, 5vw, 4rem);
+.hero-title {
+  font-size: clamp(2rem, 4.8vw, 3.2rem);
+  line-height: 1.2;
   font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: rgb(var(--v-theme-on-surface));
+  padding-bottom: 0.5rem;
 }
 
-.gradient {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
+.hero-title span {
+  display: inline-block;
+  background: linear-gradient(120deg, rgb(var(--v-theme-primary)), #ff8f3f);
+  line-height: 1.2;
+  padding-bottom: 0.08em;
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.subtitle {
-  font-size: 1.25rem;
-  line-height: 1.6;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 2.5rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+.hero-desc {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+  margin-bottom: 1.5rem;
+  max-width: 520px;
 }
 
-.actions {
+.hero-actions {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
+  gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
 }
 
-.actions .v-btn {
-  text-transform: none;
-  font-weight: 600;
-  letter-spacing: 0;
-  transition: transform 0.2s;
-}
-
-.actions .v-btn:hover { transform: translateY(-2px); }
-
-.stats {
+.hero-trust {
   display: flex;
-  gap: 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+}
+
+.trust-icon {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-}
-
-.stat { text-align: center; }
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: rgb(var(--v-theme-primary));
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-}
-
-/* background */
-.bg {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  opacity: 0.5;
-  overflow: hidden;
-}
-
-.orb {
-  position: absolute;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  filter: blur(80px);
-  animation: float 15s ease-in-out infinite;
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+  font-size: 0.8rem;
 }
 
-.orb-1 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgb(var(--v-theme-primary)), transparent);
-  top: -10%;
-  right: 10%;
+.visual-cards {
+  position: relative;
+  height: 420px;
 }
 
-.orb-2 {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgb(var(--v-theme-secondary)), transparent);
-  bottom: -10%;
-  left: 5%;
-  animation-delay: -7s;
+.card-mock {
+  position: absolute;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-surface), 0.9);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 220px;
+}
+
+.card-1 {
+  top: 20px;
+  right: 30px;
+  animation: floatCard 4s ease-in-out infinite;
+  z-index: 3;
+}
+
+.card-2 {
+  top: 150px;
+  left: 10px;
+  animation: floatCard 4s ease-in-out infinite 0.6s;
+  z-index: 2;
+}
+
+.card-3 {
+  bottom: 30px;
+  right: 50px;
+  animation: floatCard 4s ease-in-out infinite 1.2s;
+}
+
+.card-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(var(--v-theme-primary), 0.8);
+  flex-shrink: 0;
+}
+
+.card-dot.alert {
+  background: #ff6b6b;
+}
+
+.card-label {
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.card-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.price-down {
+  font-size: 0.9rem;
+  color: #22c55e;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+.price-up {
+  font-size: 0.9rem;
+  color: #ef4444;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+.card-old-price {
+  opacity: 0.35;
+  text-decoration: line-through;
+  font-size: 0.85rem;
+  margin: 0 0.3rem;
+  color: rgba(var(--v-theme-on-surface), 0.55);
 }
 
 /* features */
 .features {
-  padding: 5rem 1.5rem;
+  padding: 4rem 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -275,9 +361,10 @@
 }
 
 .section-header h2 {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(2rem, 4vw, 2.8rem);
   font-weight: 700;
   margin-top: 0.5rem;
+  color: rgb(var(--v-theme-on-surface));
 }
 
 .grid {
@@ -286,34 +373,39 @@
   gap: 1.5rem;
 }
 
-.card {
-  padding: 2rem;
-  background: rgba(var(--v-theme-surface), 1);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  border-radius: 16px;
+.feature-card {
+  background: rgba(var(--v-theme-surface), 0.9);
   transition: all 0.3s;
+  border-color: rgba(var(--v-theme-on-surface), 0.12) !important;
 }
 
-.card:hover {
+.feature-card :deep(.v-card-text) {
+  border-radius: inherit;
+  background: rgba(var(--v-theme-surface), 0.95);
+}
+
+.feature-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 14px 28px rgba(20, 28, 44, 0.12);
 }
 
-.card h3 {
+.feature-card h3 {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 1rem 0 0.5rem;
+  color: rgb(var(--v-theme-on-surface));
 }
 
-.card p {
-  color: rgba(var(--v-theme-on-surface), 0.7);
+.feature-card p {
+  color: rgba(var(--v-theme-on-surface), 0.72);
   line-height: 1.5;
+  font-size: 0.95rem;
 }
 
 /* steps */
 .steps {
   padding: 5rem 1.5rem;
-  background: rgba(var(--v-theme-primary), 0.03);
+  background: rgba(var(--v-theme-surface), 0.55);
 }
 
 .steps-list {
@@ -325,84 +417,124 @@
 }
 
 .step {
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-  padding: 2rem;
-  background: rgba(var(--v-theme-surface), 1);
-  border-radius: 16px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  transition: transform 0.3s;
-}
-
-.step:hover { transform: translateX(8px); }
-
-.step-num {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  flex-shrink: 0;
-}
-
-.step h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.step p {
-  color: rgba(var(--v-theme-on-surface), 0.7);
-}
-
-/* ready to start */
-.cta {
-  padding: 5rem 1.5rem;
-  text-align: center;
-  /* background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
-  color: white; */
-}
-
-.cta h2 {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  background: rgba(var(--v-theme-surface), 0.9);
   margin-bottom: 1rem;
 }
 
+.step-num {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.5rem;
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+}
+
+.step h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.step p {
+  color: rgba(var(--v-theme-on-surface), 0.72);
+  font-size: 0.95rem;
+}
+
+/* cta */
+.cta {
+  padding: 5rem 1.5rem;
+  text-align: center;
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), #ff8f3f);
+}
+
+.cta h2 {
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
 .cta p {
-  font-size: 1.25rem;
-  opacity: 0.9;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 2rem;
 }
 
-.cta .v-btn {
-  text-transform: none;
-  font-weight: 600;
-  letter-spacing: 0;
-  color: rgb(var(--v-theme-primary)) !important;
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* animations */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(20px, -20px); }
+@keyframes floatCard {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
 }
 
-/* responsive */
+@media (max-width: 960px) {
+  .hero-text {
+    margin-bottom: 2rem;
+  }
+  .visual-cards {
+    height: 300px;
+  }
+  .card-mock {
+    min-width: 200px;
+    font-size: 0.9rem;
+  }
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+}
+
 @media (max-width: 600px) {
-  .actions { flex-direction: column; width: 100%; }
-  .actions .v-btn { width: 100%; }
-  .step { flex-direction: column; text-align: center; }
+  .hero-title {
+    font-size: 1.8rem;
+  }
+  .visual-cards {
+    height: 280px;
+  }
+  .card-1, .card-2, .card-3 {
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    margin-bottom: 0.8rem;
+    animation: none !important;
+  }
 }
 </style>
