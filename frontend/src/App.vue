@@ -52,9 +52,10 @@
                       :key="n.id"
                       rounded="lg"
                       :class="{ 'notification-unread': !n.is_read }"
+                      :prepend-icon="isTrackingStoppedNotification(n) ? 'mdi-alert-circle-outline' : undefined"
                       @click="openNotification(n)"
                     >
-                      <v-list-item-title class="text-body-2">{{ notificationText(n) }}</v-list-item-title>
+                      <v-list-item-title class="text-body-2" :class="{ 'text-warning': isTrackingStoppedNotification(n) }">{{ notificationText(n) }}</v-list-item-title>
                       <v-list-item-subtitle class="text-caption">{{ notificationDate(n.created_at) }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
@@ -356,6 +357,11 @@ const recentNotifications = computed(() => notificationsStore.notifications.slic
 
 function notificationText(notification) {
   return notification?.message || notification?.title || 'Notification'
+}
+
+function isTrackingStoppedNotification(notification) {
+  const msg = (notification?.message || '').toLowerCase()
+  return msg.includes('трекинг остановлен') || msg.includes('tracking stopped')
 }
 
 function notificationDate(value) {

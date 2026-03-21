@@ -519,6 +519,10 @@ class PriceScraperService
 
     protected function markProductUnavailable(Product $product, string $reason): void
     {
+        $activeTrackingUserIds = UserProduct::where('product_id', $product->id)
+            ->where('is_active', true)
+            ->pluck('user_id');
+
         if ($product->status !== 'deleted') {
             $product->update(['status' => 'deleted']);
         }
@@ -529,6 +533,27 @@ class PriceScraperService
                 'is_active' => false,
                 'next_check_at' => null,
             ]);
+
+        $availabilityMessage = "Товар недоступен на сайте, трекинг остановлен. {$product->title}";
+
+        foreach ($activeTrackingUserIds as $userId) {
+            $alreadySent = Notification::where('user_id', $userId)
+                ->where('product_id', $product->id)
+                ->where('message', 'like', 'Товар недоступен на сайте, трекинг остановлен.%')
+                ->exists();
+
+            if ($alreadySent) {
+                continue;
+            }
+
+            Notification::create([
+                'user_id' => $userId,
+                'product_id' => $product->id,
+                'old_price' => (float) ($product->current_price ?? 0),
+                'new_price' => (float) ($product->current_price ?? 0),
+                'message' => $availabilityMessage,
+            ]);
+        }
 
         SystemLog::create([
             'level' => 'warning',

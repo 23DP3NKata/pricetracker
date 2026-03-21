@@ -35,11 +35,11 @@
       >
         <v-card-text class="pa-4 d-flex align-center ga-4">
           <v-avatar
-            :color="Number(n.new_price) < Number(n.old_price) ? 'success' : 'error'"
+            :color="isTrackingStopped(n) ? 'warning' : (Number(n.new_price) < Number(n.old_price) ? 'success' : 'error')"
             variant="tonal"
             size="48"
           >
-            <v-icon>{{ Number(n.new_price) < Number(n.old_price) ? 'mdi-arrow-down-bold' : 'mdi-arrow-up-bold' }}</v-icon>
+            <v-icon>{{ notificationIcon(n) }}</v-icon>
           </v-avatar>
 
           <div class="flex-grow-1">
@@ -47,12 +47,12 @@
             <div class="text-body-2">
               {{ formatPrice(n.old_price) }} → {{ formatPrice(n.new_price) }}
               <v-chip
-                :color="Number(n.new_price) < Number(n.old_price) ? 'success' : 'error'"
+                :color="isTrackingStopped(n) ? 'warning' : (Number(n.new_price) < Number(n.old_price) ? 'success' : 'error')"
                 size="x-small"
                 variant="tonal"
                 class="ml-1"
               >
-                {{ Number(n.new_price) < Number(n.old_price) ? '' : '+' }}{{ (Number(n.new_price) - Number(n.old_price)).toFixed(2) }} €
+                {{ notificationChipText(n) }}
               </v-chip>
             </div>
             <div v-if="n.message" class="text-caption text-medium-emphasis mt-1">{{ n.message }}</div>
@@ -87,6 +87,23 @@ import { useNotificationsStore } from '@/stores/notifications'
 const store = useNotificationsStore()
 const router = useRouter()
 const currentPage = ref(1)
+
+function isTrackingStopped(notification) {
+  const msg = (notification?.message || '').toLowerCase()
+  return msg.includes('трекинг остановлен') || msg.includes('tracking stopped')
+}
+
+function notificationIcon(notification) {
+  if (isTrackingStopped(notification)) return 'mdi-alert-circle-outline'
+  return Number(notification.new_price) < Number(notification.old_price)
+    ? 'mdi-arrow-down-bold'
+    : 'mdi-arrow-up-bold'
+}
+
+function notificationChipText(notification) {
+  if (isTrackingStopped(notification)) return 'Tracking stopped'
+  return `${Number(notification.new_price) < Number(notification.old_price) ? '' : '+'}${(Number(notification.new_price) - Number(notification.old_price)).toFixed(2)} €`
+}
 
 function formatPrice(price) {
   return Number(price).toFixed(2) + ' €'
