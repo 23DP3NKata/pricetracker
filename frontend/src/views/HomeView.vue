@@ -7,26 +7,24 @@
           <v-col cols="12" md="6" class="hero-text">
 
             <h1 class="hero-title">
-              Stop checking prices.<br>
-              <span>Start saving money.</span>
+              {{ $t('home.hero_title') }}
             </h1>
             <p class="hero-desc">
-              Set it, forget it, get notified. Track prices on your favorite stores
-              and never miss a deal. Get instant alerts when prices drop.
+              {{ $t('home.hero_subtitle') }}
             </p>
 
             <div class="hero-actions">
               <v-btn to="/register" color="primary" rounded="xl" size="large" prepend-icon="mdi-rocket-launch">
-                Start Tracking
+                {{ $t('home.cta_start') }}
               </v-btn>
               <v-btn to="/about" variant="outlined" rounded="xl" size="large" append-icon="mdi-arrow-right">
-                Learn More
+                {{ $t('nav.about') }}
               </v-btn>
             </div>
 
             <div class="hero-trust">
               <span class="trust-icon">✓</span>
-              <span>Free forever. No credit card needed.</span>
+              <span>{{ $t('home.trust_line') }}</span>
             </div>
           </v-col>
 
@@ -59,55 +57,55 @@
     <!-- second section -->
     <section class="features">
       <div class="section-header">
-        <h2>Powerful Features</h2>
+        <h2>{{ $t('home.powerful_features') }}</h2>
       </div>
 
       <div class="grid">
         <v-card class="feature-card" rounded="xl" variant="outlined">
           <v-card-text class="pa-4">
             <v-icon color="primary" size="32">mdi-bell-ring</v-icon>
-            <h3>Instant Alerts</h3>
-            <p>Get notified when prices drop</p>
+            <h3>{{ $t('home.feature1_title') }}</h3>
+            <p>{{ $t('home.feature1_desc') }}</p>
           </v-card-text>
         </v-card>
 
         <v-card class="feature-card" rounded="xl" variant="outlined">
           <v-card-text class="pa-4">
             <v-icon color="success" size="32">mdi-chart-timeline-variant</v-icon>
-            <h3>Price History</h3>
-            <p>View detailed trends</p>
+            <h3>{{ $t('home.feature2_title') }}</h3>
+            <p>{{ $t('home.feature2_desc') }}</p>
           </v-card-text>
         </v-card>
 
         <v-card class="feature-card" rounded="xl" variant="outlined">
           <v-card-text class="pa-4">
             <v-icon color="warning" size="32">mdi-lightning-bolt</v-icon>
-            <h3>Smart Tracking</h3>
-            <p>Never pay full price again</p>
+            <h3>{{ $t('home.feature3_title') }}</h3>
+            <p>{{ $t('home.feature3_desc') }}</p>
           </v-card-text>
         </v-card>
 
         <v-card class="feature-card" rounded="xl" variant="outlined">
           <v-card-text class="pa-4">
             <v-icon color="info" size="32">mdi-store</v-icon>
-            <h3>Multi-Store</h3>
-            <p>Compare across your favorites</p>
+            <h3>{{ $t('home.feature4_title') }}</h3>
+            <p>{{ $t('home.feature4_desc') }}</p>
           </v-card-text>
         </v-card>
 
         <v-card class="feature-card" rounded="xl" variant="outlined">
           <v-card-text class="pa-4">
             <v-icon color="error" size="32">mdi-shield-check</v-icon>
-            <h3>Privacy First</h3>
-            <p>Your data is always protected</p>
+            <h3>{{ $t('home.feature5_title') }}</h3>
+            <p>{{ $t('home.feature5_desc') }}</p>
           </v-card-text>
         </v-card>
 
         <v-card class="feature-card" rounded="xl" variant="outlined">
           <v-card-text class="pa-4">
             <v-icon color="secondary" size="32">mdi-devices</v-icon>
-            <h3>Cross-Platform</h3>
-            <p>Access from any device, anytime</p>
+            <h3>{{ $t('home.feature6_title') }}</h3>
+            <p>{{ $t('home.feature6_desc') }}</p>
           </v-card-text>
         </v-card>
       </div>
@@ -116,30 +114,30 @@
     <!-- third section -->
     <section class="steps">
       <div class="section-header">
-        <div class="eyebrow">How It Works</div>
-        <h2>Start Saving in 3 Steps</h2>
+        <div class="eyebrow">{{ $t('home.how_it_works') }}</div>
+        <h2>{{ $t('home.steps_title') }}</h2>
       </div>
 
       <div class="steps-list">
         <div class="step">
           <div class="step-num">1</div>
           <div>
-            <h3>Add Product URL</h3>
-            <p>Paste the link of any product</p>
+            <h3>{{ $t('home.step1_title') }}</h3>
+            <p>{{ $t('home.step1_desc') }}</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num">2</div>
           <div>
-            <h3>Set Target Price</h3>
-            <p>Tell us your ideal price</p>
+            <h3>{{ $t('home.step2_title') }}</h3>
+            <p>{{ $t('home.step2_desc') }}</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num">3</div>
           <div>
-            <h3>Get Notified</h3>
-            <p>Receive alerts on price drops</p>
+            <h3>{{ $t('home.step3_title') }}</h3>
+            <p>{{ $t('home.step3_desc') }}</p>
           </div>
         </div>
       </div>
@@ -147,10 +145,10 @@
 
     <!-- last section -->
     <section class="cta">
-      <h2>Ready to Start Saving?</h2>
-      <p>Join thousands tracking prices and saving money daily.</p>
+      <h2>{{ $t('home.ready_to_save') }}</h2>
+      <p>{{ $t('home.cta_desc') }}</p>
       <v-btn to="/register" color="white" size="x-large" rounded="xl" prepend-icon="mdi-rocket">
-        Get Started Free
+        {{ $t('home.getStartedFree') }}
       </v-btn>
     </section>
   </div>

@@ -1,6 +1,6 @@
 <template>
   <v-container class="py-8">
-    <h1 class="text-h4 font-weight-bold mb-6">Dashboard</h1>
+    <h1 class="text-h4 font-weight-bold mb-6">{{ $t('dashboard.title') }}</h1>
 
     <!-- Email verification banner -->
     <v-alert
@@ -13,8 +13,8 @@
     >
       <div class="d-flex align-center justify-space-between flex-wrap ga-3">
         <div>
-          <strong>Email not verified.</strong> Your monthly limit is 5 checks.
-          Verify your email to get 180.
+          <strong>{{ $t('dashboard.emailNotVerified') }}</strong> {{ $t('dashboard.monthlyLimit5') }}
+          {{ $t('dashboard.verifyTo180') }}
         </div>
         <div class="d-flex ga-2">
           <v-btn
@@ -26,9 +26,9 @@
             :loading="verifyLoading"
             @click="handleResend"
           >
-            Send Verification Link
+            {{ $t('dashboard.sendVerificationLink') }}
           </v-btn>
-          <v-chip v-else color="success" size="small" variant="tonal">Link sent!</v-chip>
+          <v-chip v-else color="success" size="small" variant="tonal">{{ $t('dashboard.linkSent') }}</v-chip>
         </div>
       </div>
     </v-alert>
@@ -46,7 +46,7 @@
               </v-avatar>
               <div>
                 <div class="text-h5 font-weight-bold">{{ stats.total_products }}</div>
-                <div class="text-medium-emphasis text-body-2">Products</div>
+                <div class="text-medium-emphasis text-body-2">{{ $t('dashboard.products') }}</div>
               </div>
             </div>
           </v-card>
@@ -60,7 +60,7 @@
               </v-avatar>
               <div>
                 <div class="text-h5 font-weight-bold">{{ stats.unread_notifications }}</div>
-                <div class="text-medium-emphasis text-body-2">Unread</div>
+                <div class="text-medium-emphasis text-body-2">{{ $t('dashboard.unread') }}</div>
               </div>
             </div>
           </v-card>
@@ -74,7 +74,7 @@
               </v-avatar>
               <div>
                 <div class="text-h5 font-weight-bold">{{ stats.recent_drops }}</div>
-                <div class="text-medium-emphasis text-body-2">Price Drops (7d)</div>
+                <div class="text-medium-emphasis text-body-2">{{ $t('dashboard.priceDrops7d') }}</div>
               </div>
             </div>
           </v-card>
@@ -88,7 +88,7 @@
               </v-avatar>
               <div>
                 <div class="text-h5 font-weight-bold">{{ stats.recent_increases }}</div>
-                <div class="text-medium-emphasis text-body-2">Increases (7d)</div>
+                <div class="text-medium-emphasis text-body-2">{{ $t('dashboard.increases7d') }}</div>
               </div>
             </div>
           </v-card>
@@ -98,7 +98,7 @@
       <!-- Monthly limit -->
       <v-card rounded="xl" class="pa-4 mt-4">
         <div class="d-flex justify-space-between align-center mb-2">
-          <span class="font-weight-medium">Monthly Checks</span>
+          <span class="font-weight-medium">{{ $t('dashboard.monthlyChecks') }}</span>
           <span class="text-medium-emphasis">{{ stats.checks_used }} / {{ stats.monthly_limit }}</span>
         </div>
         <v-progress-linear
@@ -113,7 +113,7 @@
       <v-card v-if="stats.top_drops && stats.top_drops.length" rounded="xl" class="pa-4 mt-4">
         <h3 class="text-h6 font-weight-bold mb-3">
           <v-icon color="success" class="mr-1">mdi-trending-down</v-icon>
-          Biggest Price Drops (7 days)
+          {{ $t('dashboard.biggestDrops7d') }}
         </h3>
         <v-list>
           <v-list-item
@@ -139,12 +139,12 @@
       <v-row class="mt-4">
         <v-col cols="12" sm="6">
           <v-btn to="/products" color="primary" variant="tonal" block rounded="xl" size="large" prepend-icon="mdi-package-variant">
-            My Products
+            {{ $t('dashboard.myProducts') }}
           </v-btn>
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn to="/notifications" color="secondary" variant="tonal" block rounded="xl" size="large" prepend-icon="mdi-bell">
-            Notifications
+            {{ $t('dashboard.notifications') }}
           </v-btn>
         </v-col>
       </v-row>

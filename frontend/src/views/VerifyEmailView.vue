@@ -2,14 +2,13 @@
   <v-container class="auth-container" style="max-width: 520px;">
     <v-card rounded="xl" class="pa-6 text-center">
       <v-icon color="warning" size="64" class="mb-4">mdi-email-alert-outline</v-icon>
-      <h2 class="mb-2">Verify Your Email</h2>
+      <h2 class="mb-2">{{ $t('authRecovery.verifyTitle') }}</h2>
       <p class="text-medium-emphasis mb-6">
-        We sent a verification link to <strong>{{ auth.user?.email }}</strong>.<br>
-        Please check your inbox and click the link to activate your account.
+        {{ $t('authRecovery.verifySubtitle', { email: auth.user?.email || '' }) }}
       </p>
 
       <v-alert v-if="sent" type="success" variant="tonal" rounded="lg" class="mb-4">
-        Verification link sent! Check your email.
+        {{ $t('authRecovery.verifyLinkSent') }}
       </v-alert>
 
       <v-alert v-if="error" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="error = null">
@@ -17,8 +16,7 @@
       </v-alert>
 
       <v-alert type="info" variant="tonal" rounded="lg" class="mb-6">
-        Without verification your monthly check limit is <strong>5</strong>.
-        After verifying it will be raised to <strong>180</strong>.
+        {{ $t('authRecovery.verifyLimitInfo') }}
       </v-alert>
 
       <v-btn
@@ -30,7 +28,7 @@
         @click="resend"
         prepend-icon="mdi-email-fast-outline"
       >
-        Resend Verification Email
+        {{ $t('authRecovery.resendVerificationEmail') }}
       </v-btn>
 
       <v-btn
@@ -39,7 +37,7 @@
         rounded="xl"
         class="mt-3"
       >
-        Continue to Dashboard
+        {{ $t('authRecovery.continueToDashboard') }}
       </v-btn>
     </v-card>
   </v-container>
@@ -47,10 +45,12 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { resendVerification } from '@/api'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 const loading = ref(false)
 const sent = ref(false)
 const error = ref(null)
@@ -63,7 +63,7 @@ async function resend() {
     await resendVerification()
     sent.value = true
   } catch (e) {
-    error.value = e.response?.data?.message || 'Failed to send verification email'
+    error.value = e.response?.data?.message || t('authRecovery.failedSendVerification')
   } finally {
     loading.value = false
   }

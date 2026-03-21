@@ -3,8 +3,8 @@
     <v-card rounded="xl" class="pa-6">
       <div class="text-center mb-6">
         <v-icon color="primary" size="48">mdi-chart-line-variant</v-icon>
-        <h2 class="mt-2">Create Account</h2>
-        <p class="text-medium-emphasis">Start tracking prices today</p>
+        <h2 class="mt-2">{{ $t('auth.createAccount') }}</h2>
+        <p class="text-medium-emphasis">{{ $t('auth.startTrackingToday') }}</p>
       </div>
 
       <v-alert v-if="auth.error" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="auth.error = null">
@@ -22,43 +22,43 @@
       <v-form @submit.prevent="handleRegister" ref="formRef">
         <v-text-field
           v-model="form.name"
-          label="Name"
+          :label="$t('auth.name')"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-account-outline"
-          :rules="[v => !!v || 'Required', v => v.length >= 2 || 'Min 2 characters']"
+          :rules="[v => !!v || $t('auth.required'), v => v.length >= 2 || $t('auth.min2Chars')]"
         />
 
         <v-text-field
           v-model="form.email"
-          label="Email"
+          :label="$t('auth.email')"
           type="email"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-email-outline"
-          :rules="[v => !!v || 'Required', v => /.+@.+\..+/.test(v) || 'Invalid email']"
+          :rules="[v => !!v || $t('auth.required'), v => /.+@.+\..+/.test(v) || $t('auth.invalidEmail')]"
         />
 
         <v-text-field
           v-model="form.password"
-          label="Password"
+          :label="$t('auth.password')"
           :type="showPassword ? 'text' : 'password'"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-lock-outline"
           :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
           @click:append-inner="showPassword = !showPassword"
-          :rules="[v => !!v || 'Required', v => v.length >= 8 || 'Min 8 characters']"
+          :rules="[v => !!v || $t('auth.required'), v => v.length >= 8 || $t('auth.min8Chars')]"
         />
 
         <v-text-field
           v-model="form.password_confirmation"
-          label="Confirm Password"
+          :label="$t('auth.confirmPassword')"
           :type="showPassword ? 'text' : 'password'"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-lock-check-outline"
-          :rules="[v => !!v || 'Required', v => v === form.password || 'Passwords don\'t match']"
+          :rules="[v => !!v || $t('auth.required'), v => v === form.password || $t('auth.passwordsDontMatch')]"
         />
 
         <v-btn
@@ -70,13 +70,13 @@
           :loading="auth.loading"
           class="mt-2"
         >
-          Create Account
+          {{ $t('auth.createAccountBtn') }}
         </v-btn>
       </v-form>
 
       <div class="text-center mt-4">
-        <span class="text-medium-emphasis">Already have an account?</span>
-        <router-link to="/login" class="ml-1 text-primary font-weight-medium">Sign In</router-link>
+        <span class="text-medium-emphasis">{{ $t('auth.alreadyHaveAccount') }}</span>
+        <router-link to="/login" class="ml-1 text-primary font-weight-medium">{{ $t('auth.signIn') }}</router-link>
       </div>
     </v-card>
   </v-container>

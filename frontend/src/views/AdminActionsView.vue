@@ -1,13 +1,13 @@
 <template>
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6 ga-3 flex-wrap">
-      <h1 class="text-h4 font-weight-bold">Admin: Actions</h1>
+      <h1 class="text-h4 font-weight-bold">{{ $t('adminActions.title') }}</h1>
       <div class="d-flex ga-2 flex-wrap">
-        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">Dashboard</v-btn>
-        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">Users</v-btn>
-        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="isTabActive('admin-products') ? 'flat' : 'tonal'" :color="isTabActive('admin-products') ? 'primary' : undefined">Products</v-btn>
-        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="isTabActive('admin-logs') ? 'flat' : 'tonal'" :color="isTabActive('admin-logs') ? 'primary' : undefined">Logs</v-btn>
-        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="isTabActive('admin-actions') ? 'flat' : 'tonal'" :color="isTabActive('admin-actions') ? 'primary' : undefined">Actions</v-btn>
+        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">{{ $t('adminCommon.dashboard') }}</v-btn>
+        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">{{ $t('adminCommon.users') }}</v-btn>
+        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="isTabActive('admin-products') ? 'flat' : 'tonal'" :color="isTabActive('admin-products') ? 'primary' : undefined">{{ $t('adminCommon.products') }}</v-btn>
+        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="isTabActive('admin-logs') ? 'flat' : 'tonal'" :color="isTabActive('admin-logs') ? 'primary' : undefined">{{ $t('adminCommon.logs') }}</v-btn>
+        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="isTabActive('admin-actions') ? 'flat' : 'tonal'" :color="isTabActive('admin-actions') ? 'primary' : undefined">{{ $t('adminCommon.actions') }}</v-btn>
       </div>
     </div>
 
@@ -16,27 +16,27 @@
         <v-col cols="12" md="4">
           <v-text-field
             v-model="filters.search"
-            label="Search in reason"
+            :label="$t('adminActions.searchReason')"
             variant="outlined"
             clearable
             @keyup.enter="loadActions(1)"
           />
         </v-col>
         <v-col cols="12" md="3">
-          <v-select v-model="filters.action_type" label="Action type" variant="outlined" :items="actionTypes" clearable />
+          <v-select v-model="filters.action_type" :label="$t('adminActions.actionType')" variant="outlined" :items="actionTypes" clearable />
         </v-col>
         <v-col cols="12" md="2">
-          <v-text-field v-model="filters.from" type="date" label="From" variant="outlined" />
+          <v-text-field v-model="filters.from" type="date" :label="$t('adminCommon.from')" variant="outlined" />
         </v-col>
         <v-col cols="12" md="2">
-          <v-text-field v-model="filters.to" type="date" label="To" variant="outlined" />
+          <v-text-field v-model="filters.to" type="date" :label="$t('adminCommon.to')" variant="outlined" />
         </v-col>
         <v-col cols="12" md="1" class="d-flex align-center">
-          <v-btn color="primary" block rounded="xl" :loading="loading" @click="loadActions(1)">Apply</v-btn>
+          <v-btn color="primary" block rounded="xl" :loading="loading" @click="loadActions(1)">{{ $t('adminCommon.apply') }}</v-btn>
         </v-col>
         <v-col cols="12" class="d-flex justify-end">
           <v-btn color="secondary" variant="tonal" rounded="xl" prepend-icon="mdi-download" :loading="exporting" @click="downloadCsv">
-            Export CSV
+            {{ $t('adminCommon.exportCsv') }}
           </v-btn>
         </v-col>
       </v-row>
@@ -50,20 +50,20 @@
           <tr>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('created_at')">
-                Time
+                {{ $t('adminActions.time') }}
                 <v-icon end size="16">{{ sortIcon('created_at') }}</v-icon>
               </v-btn>
             </th>
-            <th>Admin</th>
+            <th>{{ $t('adminActions.admin') }}</th>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('action_type')">
-                Action
+                {{ $t('adminActions.action') }}
                 <v-icon end size="16">{{ sortIcon('action_type') }}</v-icon>
               </v-btn>
             </th>
-            <th>Target user</th>
-            <th>Target product</th>
-            <th>Reason</th>
+            <th>{{ $t('adminActions.targetUser') }}</th>
+            <th>{{ $t('adminActions.targetProduct') }}</th>
+            <th>{{ $t('adminActions.reason') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -71,7 +71,7 @@
             <td>{{ formatDate(action.created_at) }}</td>
             <td>{{ action.admin?.email || '-' }}</td>
             <td>
-              <v-chip size="small" color="primary" variant="tonal">{{ action.action_type }}</v-chip>
+              <v-chip size="small" color="primary" variant="tonal">{{ actionTypeLabel(action.action_type) }}</v-chip>
             </td>
             <td>{{ action.target_user?.email || '-' }}</td>
             <td>
@@ -87,7 +87,7 @@
             <td>{{ action.reason || '-' }}</td>
           </tr>
           <tr v-if="!loading && actions.length === 0">
-            <td colspan="6" class="text-center py-8 text-medium-emphasis">No admin actions yet</td>
+            <td colspan="6" class="text-center py-8 text-medium-emphasis">{{ $t('adminActions.noAdminActionsYet') }}</td>
           </tr>
         </tbody>
       </v-table>
@@ -104,32 +104,34 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { exportAdminActions, getAdminActions } from '@/api'
 
 const loading = ref(false)
 const exporting = ref(false)
 const actions = ref([])
 const route = useRoute()
+const { t } = useI18n()
 
 function isTabActive(name) {
   return route.name === name
 }
 
-const actionTypes = [
-  'block_user',
-  'unblock_user',
-  'delete_user',
-  'restore_user',
-  'hide_product',
-  'delete_product',
-  'restore_product',
-  'promote_user',
-  'demote_user',
-  'change_user_limit',
-  'change_user_role',
-]
+const actionTypes = computed(() => [
+  { title: t('adminActions.block_user'), value: 'block_user' },
+  { title: t('adminActions.unblock_user'), value: 'unblock_user' },
+  { title: t('adminActions.delete_user'), value: 'delete_user' },
+  { title: t('adminActions.restore_user'), value: 'restore_user' },
+  { title: t('adminActions.hide_product'), value: 'hide_product' },
+  { title: t('adminActions.delete_product'), value: 'delete_product' },
+  { title: t('adminActions.restore_product'), value: 'restore_product' },
+  { title: t('adminActions.promote_user'), value: 'promote_user' },
+  { title: t('adminActions.demote_user'), value: 'demote_user' },
+  { title: t('adminActions.change_user_limit'), value: 'change_user_limit' },
+  { title: t('adminActions.change_user_role'), value: 'change_user_role' },
+])
 
 const filters = reactive({
   search: '',
@@ -164,6 +166,12 @@ function toggleSort(field) {
 function sortIcon(field) {
   if (filters.sort_by !== field) return 'mdi-swap-vertical'
   return filters.sort_dir === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+}
+
+function actionTypeLabel(type) {
+  const key = `adminActions.${type}`
+  const translated = t(key)
+  return translated === key ? type : translated
 }
 
 async function loadActions(page = 1) {

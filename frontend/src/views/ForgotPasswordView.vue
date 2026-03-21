@@ -3,8 +3,8 @@
     <v-card rounded="xl" class="pa-6">
       <div class="text-center mb-6">
         <v-icon color="primary" size="48">mdi-lock-reset</v-icon>
-        <h2 class="mt-2">Forgot Password?</h2>
-        <p class="text-medium-emphasis">Enter your email and we'll send you a reset link</p>
+        <h2 class="mt-2">{{ $t('authRecovery.forgotTitle') }}</h2>
+        <p class="text-medium-emphasis">{{ $t('authRecovery.forgotSubtitle') }}</p>
       </div>
 
       <v-alert v-if="successMsg" type="success" variant="tonal" rounded="lg" class="mb-4">
@@ -18,12 +18,12 @@
       <v-form v-if="!successMsg" @submit.prevent="handleSubmit" ref="formRef">
         <v-text-field
           v-model="email"
-          label="Email"
+          :label="$t('auth.email')"
           type="email"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-email-outline"
-          :rules="[v => !!v || 'Required', v => /.+@.+\..+/.test(v) || 'Invalid email']"
+          :rules="[v => !!v || $t('auth.required'), v => /.+@.+\..+/.test(v) || $t('auth.invalidEmail')]"
         />
 
         <v-btn
@@ -35,12 +35,12 @@
           :loading="loading"
           class="mt-2"
         >
-          Send Reset Link
+          {{ $t('authRecovery.sendResetLink') }}
         </v-btn>
       </v-form>
 
       <div class="text-center mt-4">
-        <router-link to="/login" class="text-primary font-weight-medium">Back to Sign In</router-link>
+        <router-link to="/login" class="text-primary font-weight-medium">{{ $t('authRecovery.backToSignIn') }}</router-link>
       </div>
     </v-card>
   </v-container>
@@ -48,9 +48,11 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { forgotPassword } from '@/api'
 
 const formRef = ref(null)
+const { t } = useI18n()
 const email = ref('')
 const loading = ref(false)
 const successMsg = ref(null)
@@ -64,11 +66,11 @@ async function handleSubmit() {
   errorMsg.value = null
   try {
     const { data } = await forgotPassword(email.value)
-    successMsg.value = data.status || 'Reset link sent! Check your email.'
+    successMsg.value = data.status || t('authRecovery.resetLinkSentFallback')
   } catch (e) {
     errorMsg.value = e.response?.data?.message
       || e.response?.data?.errors?.email?.[0]
-      || 'Failed to send reset link'
+      || t('authRecovery.failedSendReset')
   } finally {
     loading.value = false
   }

@@ -1,41 +1,41 @@
 <template>
   <v-container class="py-8" style="max-width: 700px;">
-    <h1 class="text-h4 font-weight-bold mb-6">Settings</h1>
+    <h1 class="text-h4 font-weight-bold mb-6">{{ $t('settings.title') }}</h1>
 
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
     <template v-if="profile">
       <!-- Account Info -->
       <v-card rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-4">Account Info</h3>
+        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('settings.accountInfo') }}</h3>
         <v-row>
           <v-col cols="6">
-            <div class="text-caption text-medium-emphasis">Role</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('settings.role') }}</div>
             <v-chip :color="profile.role === 'admin' ? 'warning' : 'primary'" size="small" variant="tonal">
               {{ profile.role }}
             </v-chip>
           </v-col>
           <v-col cols="6">
-            <div class="text-caption text-medium-emphasis">Status</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('settings.status') }}</div>
             <v-chip :color="profile.status === 'active' ? 'success' : 'error'" size="small" variant="tonal">
               {{ profile.status }}
             </v-chip>
           </v-col>
           <v-col cols="6">
-            <div class="text-caption text-medium-emphasis">Email Verified</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('settings.emailVerified') }}</div>
             <v-chip v-if="auth.emailVerified" color="success" size="small" variant="tonal" prepend-icon="mdi-check-circle">
-              Verified
+              {{ $t('settings.verified') }}
             </v-chip>
             <v-chip v-else color="warning" size="small" variant="tonal" prepend-icon="mdi-alert-circle">
-              Not Verified
+              {{ $t('settings.notVerified') }}
             </v-chip>
           </v-col>
           <v-col cols="6">
-            <div class="text-caption text-medium-emphasis">Monthly Limit</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('settings.monthlyLimit') }}</div>
             <div class="text-body-1 font-weight-medium">{{ profile.checks_used }} / {{ profile.monthly_limit }}</div>
           </v-col>
           <v-col cols="6">
-            <div class="text-caption text-medium-emphasis">Member since</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('settings.memberSince') }}</div>
             <div class="text-body-1 font-weight-medium">{{ formatDate(profile.created_at) }}</div>
           </v-col>
         </v-row>
@@ -43,13 +43,12 @@
 
       <!-- Email Verification -->
       <v-card v-if="!auth.emailVerified" rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-2">Email Verification</h3>
+        <h3 class="text-h6 font-weight-bold mb-2">{{ $t('settings.emailVerification') }}</h3>
         <p class="text-medium-emphasis mb-4">
-          Your email is not verified. Your monthly limit is <strong>5 checks</strong>.
-          After verifying it will be raised to <strong>180</strong>.
+          {{ $t('settings.verificationInfo') }}
         </p>
         <v-alert v-if="verifySent" type="success" variant="tonal" rounded="lg" class="mb-4">
-          Verification link sent to {{ auth.user?.email }}!
+          {{ $t('settings.verificationLinkSent', { email: auth.user?.email || '' }) }}
         </v-alert>
         <v-btn
           v-if="!verifySent"
@@ -59,97 +58,97 @@
           @click="handleResendVerification"
           prepend-icon="mdi-email-fast-outline"
         >
-          Send Verification Email
+          {{ $t('settings.sendVerificationEmail') }}
         </v-btn>
       </v-card>
 
       <!-- Change Name -->
       <v-card rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-4">Change Name</h3>
+        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('settings.changeName') }}</h3>
         <v-alert v-if="nameMsg" :type="nameMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="nameMsg = null">
           {{ nameMsg.text }}
         </v-alert>
         <v-form @submit.prevent="handleNameChange" ref="nameFormRef">
           <v-text-field
             v-model="nameForm.name"
-            label="New Username"
+            :label="$t('settings.newUsername')"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-account-outline"
-            :rules="[v => !!v || 'Required', v => v.length <= 100 || 'Max 100 characters']"
+            :rules="[v => !!v || $t('settings.required'), v => v.length <= 100 || $t('settings.max100')]"
           />
           <div class="text-caption text-medium-emphasis mb-3" v-if="profile.last_username_change">
-            Last changed: {{ formatDate(profile.last_username_change) }}
-            (can change once per 30 days)
+            {{ $t('settings.lastChanged') }} {{ formatDate(profile.last_username_change) }}
+            {{ $t('settings.canChange30') }}
           </div>
-          <v-btn type="submit" color="primary" rounded="xl" :loading="nameSaving">Update Name</v-btn>
+          <v-btn type="submit" color="primary" rounded="xl" :loading="nameSaving">{{ $t('settings.updateName') }}</v-btn>
         </v-form>
       </v-card>
 
       <!-- Change Email -->
       <v-card rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-4">Change Email</h3>
+        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('settings.changeEmail') }}</h3>
         <v-alert v-if="emailMsg" :type="emailMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="emailMsg = null">
           {{ emailMsg.text }}
         </v-alert>
         <v-form @submit.prevent="handleEmailChange" ref="emailFormRef">
           <v-text-field
             v-model="emailForm.email"
-            label="New Email"
+            :label="$t('settings.newEmail')"
             type="email"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-email-outline"
-            :rules="[v => !!v || 'Required', v => /.+@.+\..+/.test(v) || 'Invalid email']"
+            :rules="[v => !!v || $t('settings.required'), v => /.+@.+\..+/.test(v) || $t('settings.invalidEmail')]"
           />
           <v-text-field
             v-model="emailForm.password"
-            label="Current Password"
+            :label="$t('settings.currentPassword')"
             type="password"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-lock-outline"
-            :rules="[v => !!v || 'Required']"
+            :rules="[v => !!v || $t('settings.required')]"
           />
-          <v-btn type="submit" color="primary" rounded="xl" :loading="emailSaving">Update Email</v-btn>
+          <v-btn type="submit" color="primary" rounded="xl" :loading="emailSaving">{{ $t('settings.updateEmail') }}</v-btn>
         </v-form>
       </v-card>
 
       <!-- Change Password -->
       <v-card rounded="xl" class="pa-6">
-        <h3 class="text-h6 font-weight-bold mb-4">Change Password</h3>
+        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('settings.changePassword') }}</h3>
         <v-alert v-if="passwordMsg" :type="passwordMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="passwordMsg = null">
           {{ passwordMsg.text }}
         </v-alert>
         <v-form @submit.prevent="handlePasswordChange" ref="passwordFormRef">
           <v-text-field
             v-model="passwordForm.current_password"
-            label="Current Password"
+            :label="$t('settings.currentPassword')"
             type="password"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-lock-outline"
-            :rules="[v => !!v || 'Required']"
+            :rules="[v => !!v || $t('settings.required')]"
           />
           <v-text-field
             v-model="passwordForm.password"
-            label="New Password"
+            :label="$t('settings.newPassword')"
             type="password"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-lock-plus-outline"
-            :rules="[v => !!v || 'Required', v => v.length >= 8 || 'Min 8 characters']"
+            :rules="[v => !!v || $t('settings.required'), v => v.length >= 8 || $t('settings.min8')]"
           />
           <v-text-field
             v-model="passwordForm.password_confirmation"
-            label="Confirm New Password"
+            :label="$t('settings.confirmNewPassword')"
             type="password"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-lock-check-outline"
-            :rules="[v => !!v || 'Required', v => v === passwordForm.password || 'Passwords do not match']"
+            :rules="[v => !!v || $t('settings.required'), v => v === passwordForm.password || $t('settings.passwordsNoMatch')]"
           />
-          <v-btn type="submit" color="primary" rounded="xl" :loading="passwordSaving">Change Password</v-btn>
+          <v-btn type="submit" color="primary" rounded="xl" :loading="passwordSaving">{{ $t('settings.changePasswordBtn') }}</v-btn>
         </v-form>
       </v-card>
     </template>
@@ -158,10 +157,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getUserProfile, updateUserName, updateUserEmail, updateUserPassword, resendVerification } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 const loading = ref(true)
 const profile = ref(null)
 
@@ -215,7 +216,7 @@ async function handleNameChange() {
     await auth.fetchUser()
     await loadProfile()
   } catch (e) {
-    nameMsg.value = { type: 'error', text: e.response?.data?.message || 'Failed to update name' }
+    nameMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedUpdateName') }
   } finally {
     nameSaving.value = false
   }
@@ -233,7 +234,7 @@ async function handleEmailChange() {
     await auth.fetchUser()
     await loadProfile()
   } catch (e) {
-    emailMsg.value = { type: 'error', text: e.response?.data?.message || 'Failed to update email' }
+    emailMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedUpdateEmail') }
   } finally {
     emailSaving.value = false
   }
@@ -251,7 +252,7 @@ async function handlePasswordChange() {
     passwordForm.password = ''
     passwordForm.password_confirmation = ''
   } catch (e) {
-    passwordMsg.value = { type: 'error', text: e.response?.data?.message || 'Failed to change password' }
+    passwordMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedChangePassword') }
   } finally {
     passwordSaving.value = false
   }

@@ -1,13 +1,13 @@
 <template>
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6 ga-3 flex-wrap">
-      <h1 class="text-h4 font-weight-bold">Admin: Users</h1>
+      <h1 class="text-h4 font-weight-bold">{{ $t('adminUsers.title') }}</h1>
       <div class="d-flex ga-2 flex-wrap">
-        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">Dashboard</v-btn>
-        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">Users</v-btn>
-        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="isTabActive('admin-products') ? 'flat' : 'tonal'" :color="isTabActive('admin-products') ? 'primary' : undefined">Products</v-btn>
-        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="isTabActive('admin-logs') ? 'flat' : 'tonal'" :color="isTabActive('admin-logs') ? 'primary' : undefined">Logs</v-btn>
-        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="isTabActive('admin-actions') ? 'flat' : 'tonal'" :color="isTabActive('admin-actions') ? 'primary' : undefined">Actions</v-btn>
+        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">{{ $t('adminCommon.dashboard') }}</v-btn>
+        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">{{ $t('adminCommon.users') }}</v-btn>
+        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="isTabActive('admin-products') ? 'flat' : 'tonal'" :color="isTabActive('admin-products') ? 'primary' : undefined">{{ $t('adminCommon.products') }}</v-btn>
+        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="isTabActive('admin-logs') ? 'flat' : 'tonal'" :color="isTabActive('admin-logs') ? 'primary' : undefined">{{ $t('adminCommon.logs') }}</v-btn>
+        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="isTabActive('admin-actions') ? 'flat' : 'tonal'" :color="isTabActive('admin-actions') ? 'primary' : undefined">{{ $t('adminCommon.actions') }}</v-btn>
       </div>
     </div>
 
@@ -16,7 +16,7 @@
         <v-col cols="12" md="4">
           <v-text-field
             v-model="filters.search"
-            label="Search by name or email"
+            :label="$t('adminUsers.searchNameEmail')"
             variant="outlined"
             density="comfortable"
             clearable
@@ -26,7 +26,7 @@
         <v-col cols="12" md="3">
           <v-select
             v-model="filters.status"
-            label="Status"
+            :label="$t('adminUsers.status')"
             variant="outlined"
             density="comfortable"
             :items="statusOptions"
@@ -36,7 +36,7 @@
         <v-col cols="12" md="3">
           <v-select
             v-model="filters.role"
-            label="Role"
+            :label="$t('adminUsers.role')"
             variant="outlined"
             density="comfortable"
             :items="roleOptions"
@@ -44,7 +44,7 @@
           />
         </v-col>
         <v-col cols="12" md="2" class="d-flex align-center">
-          <v-btn color="primary" block rounded="xl" :loading="loading" @click="loadUsers(1)">Apply</v-btn>
+          <v-btn color="primary" block rounded="xl" :loading="loading" @click="loadUsers(1)">{{ $t('adminCommon.apply') }}</v-btn>
         </v-col>
       </v-row>
     </v-card>
@@ -56,41 +56,41 @@
           <tr>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('id')">
-                ID
+                {{ $t('adminUsers.id') }}
                 <v-icon end size="16">{{ sortIcon('id') }}</v-icon>
               </v-btn>
             </th>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('name')">
-                User
+                {{ $t('adminUsers.user') }}
                 <v-icon end size="16">{{ sortIcon('name') }}</v-icon>
               </v-btn>
             </th>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('role')">
-                Role
+                {{ $t('adminUsers.role') }}
                 <v-icon end size="16">{{ sortIcon('role') }}</v-icon>
               </v-btn>
             </th>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('status')">
-                Status
+                {{ $t('adminUsers.status') }}
                 <v-icon end size="16">{{ sortIcon('status') }}</v-icon>
               </v-btn>
             </th>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('monthly_limit')">
-                Monthly limit
+                {{ $t('adminUsers.monthlyLimit') }}
                 <v-icon end size="16">{{ sortIcon('monthly_limit') }}</v-icon>
               </v-btn>
             </th>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('checks_used')">
-                Checks used
+                {{ $t('adminUsers.checksUsed') }}
                 <v-icon end size="16">{{ sortIcon('checks_used') }}</v-icon>
               </v-btn>
             </th>
-            <th class="text-right">Actions</th>
+            <th class="text-right">{{ $t('adminUsers.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -101,10 +101,10 @@
               <div class="text-caption text-medium-emphasis">{{ u.email }}</div>
             </td>
             <td>
-              <v-chip size="small" :color="u.role === 'admin' ? 'primary' : 'default'">{{ u.role }}</v-chip>
+              <v-chip size="small" :color="u.role === 'admin' ? 'primary' : 'default'">{{ roleLabel(u.role) }}</v-chip>
             </td>
             <td>
-              <v-chip size="small" :color="u.status === 'active' ? 'success' : 'warning'">{{ u.status }}</v-chip>
+              <v-chip size="small" :color="u.status === 'active' ? 'success' : 'warning'">{{ statusLabel(u.status) }}</v-chip>
             </td>
             <td>{{ u.monthly_limit }}</td>
             <td>{{ u.checks_used }}</td>
@@ -115,20 +115,20 @@
                 </template>
                 <v-list density="compact">
                   <v-list-item @click="openStatusDialog(u)">
-                    <v-list-item-title>{{ u.status === 'active' ? 'Block user' : 'Unblock user' }}</v-list-item-title>
+                    <v-list-item-title>{{ u.status === 'active' ? $t('adminUsers.blockUser') : $t('adminUsers.unblockUser') }}</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="toggleRole(u)">
-                    <v-list-item-title>{{ u.role === 'admin' ? 'Set as user' : 'Set as admin' }}</v-list-item-title>
+                    <v-list-item-title>{{ u.role === 'admin' ? $t('adminUsers.setAsUser') : $t('adminUsers.setAsAdmin') }}</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="openLimitDialog(u)">
-                    <v-list-item-title>Change monthly limit</v-list-item-title>
+                    <v-list-item-title>{{ $t('adminUsers.changeMonthlyLimit') }}</v-list-item-title>
                   </v-list-item>
                 </v-list>
               </v-menu>
             </td>
           </tr>
           <tr v-if="!loading && users.length === 0">
-            <td colspan="7" class="text-center py-8 text-medium-emphasis">No users found</td>
+            <td colspan="7" class="text-center py-8 text-medium-emphasis">{{ $t('adminUsers.noUsersFound') }}</td>
           </tr>
         </tbody>
       </v-table>
@@ -144,37 +144,37 @@
 
     <v-dialog v-model="limitDialog.open" max-width="420">
       <v-card rounded="xl" class="pa-5">
-        <h3 class="text-h6 mb-4">Set monthly limit</h3>
+        <h3 class="text-h6 mb-4">{{ $t('adminUsers.setMonthlyLimit') }}</h3>
         <div class="text-body-2 mb-4">{{ limitDialog.user?.name }} ({{ limitDialog.user?.email }})</div>
         <v-text-field
           v-model.number="limitDialog.value"
           type="number"
           min="0"
           variant="outlined"
-          label="Monthly limit"
+          :label="$t('adminUsers.monthlyLimit')"
         />
         <div class="d-flex justify-end ga-2 mt-2">
-          <v-btn variant="text" @click="limitDialog.open = false">Cancel</v-btn>
-          <v-btn color="primary" :loading="saving" @click="saveLimit">Save</v-btn>
+          <v-btn variant="text" @click="limitDialog.open = false">{{ $t('adminCommon.cancel') }}</v-btn>
+          <v-btn color="primary" :loading="saving" @click="saveLimit">{{ $t('adminCommon.save') }}</v-btn>
         </div>
       </v-card>
     </v-dialog>
 
     <v-dialog v-model="statusDialog.open" max-width="460">
       <v-card rounded="xl" class="pa-5">
-        <h3 class="text-h6 mb-4">{{ statusDialog.nextStatus === 'blocked' ? 'Block user' : 'Unblock user' }}</h3>
+        <h3 class="text-h6 mb-4">{{ statusDialog.nextStatus === 'blocked' ? $t('adminUsers.blockUser') : $t('adminUsers.unblockUser') }}</h3>
         <div class="text-body-2 mb-4">{{ statusDialog.user?.name }} ({{ statusDialog.user?.email }})</div>
         <v-textarea
           v-model="statusDialog.reason"
-          label="Reason"
+          :label="$t('adminCommon.reason')"
           variant="outlined"
           rows="3"
           auto-grow
-          placeholder="Why are you changing this user's status?"
+          :placeholder="$t('adminUsers.reasonPlaceholder')"
         />
         <div class="d-flex justify-end ga-2 mt-2">
-          <v-btn variant="text" @click="statusDialog.open = false">Cancel</v-btn>
-          <v-btn color="primary" :loading="saving" @click="saveStatus">Save</v-btn>
+          <v-btn variant="text" @click="statusDialog.open = false">{{ $t('adminCommon.cancel') }}</v-btn>
+          <v-btn color="primary" :loading="saving" @click="saveStatus">{{ $t('adminCommon.save') }}</v-btn>
         </div>
       </v-card>
     </v-dialog>
@@ -182,14 +182,16 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getAdminUsers, updateAdminUserLimit, updateAdminUserRole, updateAdminUserStatus } from '@/api'
 
 const loading = ref(false)
 const saving = ref(false)
 const users = ref([])
 const route = useRoute()
+const { t } = useI18n()
 
 function isTabActive(name) {
   return route.name === name
@@ -203,15 +205,15 @@ const filters = reactive({
   sort_dir: 'desc',
 })
 
-const statusOptions = [
-  { title: 'active', value: 'active' },
-  { title: 'blocked', value: 'blocked' },
-]
+const statusOptions = computed(() => [
+  { title: t('adminUsers.active'), value: 'active' },
+  { title: t('adminUsers.blocked'), value: 'blocked' },
+])
 
-const roleOptions = [
-  { title: 'user', value: 'user' },
-  { title: 'admin', value: 'admin' },
-]
+const roleOptions = computed(() => [
+  { title: t('adminUsers.userRole'), value: 'user' },
+  { title: t('adminUsers.adminRole'), value: 'admin' },
+])
 
 const pagination = reactive({
   current_page: 1,
@@ -245,6 +247,14 @@ function toggleSort(field) {
 function sortIcon(field) {
   if (filters.sort_by !== field) return 'mdi-swap-vertical'
   return filters.sort_dir === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+}
+
+function roleLabel(role) {
+  return role === 'admin' ? t('adminUsers.adminRole') : t('adminUsers.userRole')
+}
+
+function statusLabel(status) {
+  return status === 'blocked' ? t('adminUsers.blocked') : t('adminUsers.active')
 }
 
 async function loadUsers(page = 1) {

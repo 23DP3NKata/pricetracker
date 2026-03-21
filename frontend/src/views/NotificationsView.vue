@@ -1,7 +1,7 @@
 <template>
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6">
-      <h1 class="text-h4 font-weight-bold">Notifications</h1>
+      <h1 class="text-h4 font-weight-bold">{{ $t('notificationsPage.title') }}</h1>
       <v-btn
         v-if="store.notifications.length"
         variant="tonal"
@@ -10,7 +10,7 @@
         size="small"
         @click="store.markAllRead()"
       >
-        Mark all read
+        {{ $t('notificationsPage.markAllRead') }}
       </v-btn>
     </div>
 
@@ -19,8 +19,8 @@
     <!-- Empty state -->
     <v-card v-if="!store.loading && store.notifications.length === 0" rounded="xl" class="pa-8 text-center">
       <v-icon size="64" color="primary" class="mb-4">mdi-bell-check-outline</v-icon>
-      <h3 class="text-h6 mb-2">No notifications</h3>
-      <p class="text-medium-emphasis">You'll see price change alerts here</p>
+      <h3 class="text-h6 mb-2">{{ $t('notificationsPage.noNotifications') }}</h3>
+      <p class="text-medium-emphasis">{{ $t('notificationsPage.alertsHere') }}</p>
     </v-card>
 
     <!-- Notifications list -->
@@ -43,7 +43,7 @@
           </v-avatar>
 
           <div class="flex-grow-1">
-            <div class="font-weight-bold">{{ n.product?.title || 'Product #' + n.product_id }}</div>
+            <div class="font-weight-bold">{{ n.product?.title || $t('notificationsPage.productFallback', { id: n.product_id }) }}</div>
             <div class="text-body-2">
               {{ formatPrice(n.old_price) }} → {{ formatPrice(n.new_price) }}
               <v-chip
@@ -82,10 +82,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useNotificationsStore } from '@/stores/notifications'
 
 const store = useNotificationsStore()
 const router = useRouter()
+const { t } = useI18n()
 const currentPage = ref(1)
 
 function isTrackingStopped(notification) {
@@ -101,7 +103,7 @@ function notificationIcon(notification) {
 }
 
 function notificationChipText(notification) {
-  if (isTrackingStopped(notification)) return 'Tracking stopped'
+  if (isTrackingStopped(notification)) return t('notificationsPage.trackingStopped')
   return `${Number(notification.new_price) < Number(notification.old_price) ? '' : '+'}${(Number(notification.new_price) - Number(notification.old_price)).toFixed(2)} €`
 }
 
@@ -115,9 +117,9 @@ function formatDate(dateStr) {
   const diff = now - d
 
   if (Number.isNaN(d.getTime())) return ''
-  if (diff <= 0) return 'just now'
-  if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago'
-  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago'
+  if (diff <= 0) return t('notificationsPage.justNow')
+  if (diff < 3600000) return t('notificationsPage.minAgo', { count: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('notificationsPage.hourAgo', { count: Math.floor(diff / 3600000) })
   return d.toLocaleDateString()
 }
 

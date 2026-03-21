@@ -1,13 +1,13 @@
 <template>
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6 ga-3 flex-wrap">
-      <h1 class="text-h4 font-weight-bold">Admin: System Logs</h1>
+      <h1 class="text-h4 font-weight-bold">{{ $t('adminLogs.title') }}</h1>
       <div class="d-flex ga-2 flex-wrap">
-        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">Dashboard</v-btn>
-        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">Users</v-btn>
-        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="isTabActive('admin-products') ? 'flat' : 'tonal'" :color="isTabActive('admin-products') ? 'primary' : undefined">Products</v-btn>
-        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="isTabActive('admin-logs') ? 'flat' : 'tonal'" :color="isTabActive('admin-logs') ? 'primary' : undefined">Logs</v-btn>
-        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="isTabActive('admin-actions') ? 'flat' : 'tonal'" :color="isTabActive('admin-actions') ? 'primary' : undefined">Actions</v-btn>
+        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">{{ $t('adminCommon.dashboard') }}</v-btn>
+        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">{{ $t('adminCommon.users') }}</v-btn>
+        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="isTabActive('admin-products') ? 'flat' : 'tonal'" :color="isTabActive('admin-products') ? 'primary' : undefined">{{ $t('adminCommon.products') }}</v-btn>
+        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="isTabActive('admin-logs') ? 'flat' : 'tonal'" :color="isTabActive('admin-logs') ? 'primary' : undefined">{{ $t('adminCommon.logs') }}</v-btn>
+        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="isTabActive('admin-actions') ? 'flat' : 'tonal'" :color="isTabActive('admin-actions') ? 'primary' : undefined">{{ $t('adminCommon.actions') }}</v-btn>
       </div>
     </div>
 
@@ -16,30 +16,30 @@
         <v-col cols="12" md="3">
           <v-text-field
             v-model="filters.search"
-            label="Search in message"
+            :label="$t('adminLogs.searchMessage')"
             variant="outlined"
             clearable
             @keyup.enter="loadLogs(1)"
           />
         </v-col>
         <v-col cols="12" md="2">
-          <v-select v-model="filters.level" label="Level" variant="outlined" :items="levelOptions" clearable />
+          <v-select v-model="filters.level" :label="$t('adminLogs.level')" variant="outlined" :items="levelOptions" clearable />
         </v-col>
         <v-col cols="12" md="2">
-          <v-select v-model="filters.category" label="Category" variant="outlined" :items="categoryOptions" clearable />
+          <v-select v-model="filters.category" :label="$t('adminLogs.category')" variant="outlined" :items="categoryOptions" clearable />
         </v-col>
         <v-col cols="12" md="2">
-          <v-text-field v-model="filters.from" type="date" label="From" variant="outlined" />
+          <v-text-field v-model="filters.from" type="date" :label="$t('adminCommon.from')" variant="outlined" />
         </v-col>
         <v-col cols="12" md="2">
-          <v-text-field v-model="filters.to" type="date" label="To" variant="outlined" />
+          <v-text-field v-model="filters.to" type="date" :label="$t('adminCommon.to')" variant="outlined" />
         </v-col>
         <v-col cols="12" md="1" class="d-flex align-center">
-          <v-btn color="primary" block rounded="xl" :loading="loading" @click="loadLogs(1)">Apply</v-btn>
+          <v-btn color="primary" block rounded="xl" :loading="loading" @click="loadLogs(1)">{{ $t('adminCommon.apply') }}</v-btn>
         </v-col>
         <v-col cols="12" md="12" class="d-flex justify-end">
           <v-btn color="secondary" variant="tonal" rounded="xl" prepend-icon="mdi-download" :loading="exporting" @click="downloadCsv">
-            Export CSV
+            {{ $t('adminCommon.exportCsv') }}
           </v-btn>
         </v-col>
       </v-row>
@@ -53,25 +53,25 @@
           <tr>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('created_at')">
-                Time
+                {{ $t('adminLogs.time') }}
                 <v-icon end size="16">{{ sortIcon('created_at') }}</v-icon>
               </v-btn>
             </th>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('level')">
-                Level
+                {{ $t('adminLogs.level') }}
                 <v-icon end size="16">{{ sortIcon('level') }}</v-icon>
               </v-btn>
             </th>
             <th>
               <v-btn variant="text" size="small" class="px-0" @click="toggleSort('category')">
-                Category
+                {{ $t('adminLogs.category') }}
                 <v-icon end size="16">{{ sortIcon('category') }}</v-icon>
               </v-btn>
             </th>
-            <th>Message</th>
-            <th>User</th>
-            <th>Product</th>
+            <th>{{ $t('adminLogs.message') }}</th>
+            <th>{{ $t('adminLogs.user') }}</th>
+            <th>{{ $t('adminLogs.product') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -95,7 +95,7 @@
             </td>
           </tr>
           <tr v-if="!loading && logs.length === 0">
-            <td colspan="6" class="text-center py-8 text-medium-emphasis">No logs found</td>
+            <td colspan="6" class="text-center py-8 text-medium-emphasis">{{ $t('adminLogs.noLogsFound') }}</td>
           </tr>
         </tbody>
       </v-table>

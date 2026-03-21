@@ -4,10 +4,9 @@
     <section class="about-intro">
       <v-container class="py-8 py-md-12">
         <div class="intro-content">
-          <h1 class="intro-title">About PriceTracker</h1>
+          <h1 class="intro-title">{{ $t('about.title') }}</h1>
           <p class="intro-text">
-            We're on a mission to empower smart shopping. PriceTracker helps you track prices and never overpay again.
-            Founded by creators who believe everyone deserves the best deals without the hassle.
+            {{ $t('about.intro') }}
           </p>
         </div>
       </v-container>
@@ -17,7 +16,7 @@
     <section class="our-story">
       <v-container>
         <div class="section-header">
-          <h2>Our Story</h2>
+          <h2>{{ $t('about.ourStory') }}</h2>
         </div>
 
         <div class="vertical-timeline">
@@ -25,11 +24,11 @@
           <div class="timeline-block">
             <div class="timeline-year">2025</div>
             <div class="timeline-card">
-              <h3>First Concept & Desktop Prototype</h3>
-              <p>In 2025, the first concept was created and a desktop Windows application was developed in Java. It proved the idea and showed that automated price tracking could save users both time and money.</p>
+              <h3>{{ $t('about.timeline2025Title') }}</h3>
+              <p>{{ $t('about.timeline2025Desc') }}</p>
               <ul class="timeline-features">
-                <li><v-icon size="16">mdi-check</v-icon> Real-time monitoring</li>
-                <li><v-icon size="16">mdi-check</v-icon> Instant alerts</li>
+                <li><v-icon size="16">mdi-check</v-icon> {{ $t('about.timeline2025Feature1') }}</li>
+                <li><v-icon size="16">mdi-check</v-icon> {{ $t('about.timeline2025Feature2') }}</li>
               </ul>
             </div>
           </div>
@@ -38,24 +37,24 @@
           <div class="timeline-block">
             <div class="timeline-year">2026</div>
             <div class="timeline-card">
-              <h3>Web Application Release</h3>
-              <p>In 2026, the web application was built and the core idea was significantly improved. The platform became faster, more user-friendly, and accessible from any device.</p>
+              <h3>{{ $t('about.timeline2026Title') }}</h3>
+              <p>{{ $t('about.timeline2026Desc') }}</p>
               <ul class="timeline-features">
-                <li><v-icon size="16">mdi-check</v-icon> User-friendly interface</li>
-                <li><v-icon size="16">mdi-check</v-icon> Support regional stores</li>
+                <li><v-icon size="16">mdi-check</v-icon> {{ $t('about.timeline2026Feature1') }}</li>
+                <li><v-icon size="16">mdi-check</v-icon> {{ $t('about.timeline2026Feature2') }}</li>
               </ul>
             </div>
           </div>
 
           <!-- Future -->
           <div class="timeline-block">
-            <div class="timeline-year">Future</div>
+            <div class="timeline-year">{{ $t('about.timelineFutureYear') }}</div>
             <div class="timeline-card">
-              <h3>Future Growth</h3>
-              <p>We plan to continue developing and improving the product, adding smarter features, broader integrations, and an even better experience for users worldwide.</p>
+              <h3>{{ $t('about.timelineFutureTitle') }}</h3>
+              <p>{{ $t('about.timelineFutureDesc') }}</p>
               <ul class="timeline-features">
-                <li><v-icon size="16">mdi-check</v-icon> Browser extension</li>
-                <li><v-icon size="16">mdi-check</v-icon> Price match guarantees</li>
+                <li><v-icon size="16">mdi-check</v-icon> {{ $t('about.timelineFutureFeature1') }}</li>
+                <li><v-icon size="16">mdi-check</v-icon> {{ $t('about.timelineFutureFeature2') }}</li>
               </ul>
             </div>
           </div>
@@ -69,17 +68,15 @@
         <v-row>
           <v-col cols="12" md="8" offset-md="2">
             <div class="story-card">
-              <h2>How It All Started</h2>
+              <h2>{{ $t('about.howItStarted') }}</h2>
               <p>
-                Two developers were frustrated. Every time they wanted to buy something online, they'd check multiple stores, 
-                track prices manually, and inevitably miss the best deals. They realized thousands of people faced the same problem.
+                {{ $t('about.storyPart1') }}
               </p>
               <p>
-                So they built PriceTracker—a tool that does the hunting for you. Just launched, we're focused on building the best price tracking experience for every user. Join us on this journey to smarter shopping.
+                {{ $t('about.storyPart2') }}
               </p>
               <p>
-                Our belief is simple: <strong>everyone deserves to save money without spending hours on it.</strong> 
-                That's what we're building toward.
+                {{ $t('about.storyPart3') }}
               </p>
             </div>
           </v-col>
@@ -91,16 +88,16 @@
     <section class="contact-section">
       <v-container class="py-12 py-md-16">
         <div class="section-header">
-          <h2>Get In Touch</h2>
-          <p class="section-subtitle">Have questions? We'd love to hear from you.</p>
+          <h2>{{ $t('about.getInTouch') }}</h2>
+          <p class="section-subtitle">{{ $t('about.haveQuestion') }}</p>
         </div>
 
         <div class="contact-form-wrapper">
           <v-form @submit.prevent="handleContact" class="contact-form">
-            <h3>Send us a message</h3>
+            <h3>{{ $t('about.sendMessage') }}</h3>
             <v-text-field
               v-model="form.name"
-              label="Your Name"
+              :label="$t('about.yourName')"
               variant="outlined"
               rounded="lg"
               class="mb-4"
@@ -108,7 +105,7 @@
             />
             <v-text-field
               v-model="form.email"
-              label="Email"
+              :label="$t('about.emailField')"
               type="email"
               variant="outlined"
               rounded="lg"
@@ -117,7 +114,7 @@
             />
             <v-textarea
               v-model="form.message"
-              label="Message"
+              :label="$t('about.messageField')"
               variant="outlined"
               rounded="lg"
               rows="4"
@@ -132,7 +129,7 @@
               block
               :loading="form.loading"
             >
-              Send Message
+              {{ $t('about.sendBtn') }}
             </v-btn>
             <v-alert
               v-if="form.success"
@@ -141,7 +138,7 @@
               rounded="lg"
               class="mt-4"
             >
-              Thank you! We'll get back to you soon.
+              {{ $t('about.thankYou') }}
             </v-alert>
           </v-form>
         </div>
@@ -150,10 +147,10 @@
 
     <!-- CTA -->
     <section class="cta-final">
-      <h2>Ready to Save Money?</h2>
-      <p>Join thousands of smart shoppers using PriceTracker.</p>
+      <h2>{{ $t('about.readyToSave') }}</h2>
+      <p>{{ $t('about.joinUsers') }}</p>
       <v-btn to="/register" color="white" size="x-large" rounded="xl" prepend-icon="mdi-rocket">
-        Start Tracking Free
+        {{ $t('about.startTracking') }}
       </v-btn>
     </section>
   </div>

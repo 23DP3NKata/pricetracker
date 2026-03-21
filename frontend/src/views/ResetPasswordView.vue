@@ -3,14 +3,14 @@
     <v-card rounded="xl" class="pa-6">
       <div class="text-center mb-6">
         <v-icon color="primary" size="48">mdi-lock-check-outline</v-icon>
-        <h2 class="mt-2">Set New Password</h2>
-        <p class="text-medium-emphasis">Enter your new password below</p>
+        <h2 class="mt-2">{{ $t('authRecovery.setNewPassword') }}</h2>
+        <p class="text-medium-emphasis">{{ $t('authRecovery.enterNewPassword') }}</p>
       </div>
 
       <v-alert v-if="successMsg" type="success" variant="tonal" rounded="lg" class="mb-4">
         {{ successMsg }}
         <div class="mt-2">
-          <router-link to="/login" class="text-success font-weight-medium">Go to Sign In</router-link>
+          <router-link to="/login" class="text-success font-weight-medium">{{ $t('authRecovery.goToSignIn') }}</router-link>
         </div>
       </v-alert>
 
@@ -21,34 +21,34 @@
       <v-form v-if="!successMsg" @submit.prevent="handleSubmit" ref="formRef">
         <v-text-field
           v-model="form.email"
-          label="Email"
+          :label="$t('auth.email')"
           type="email"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-email-outline"
-          :rules="[v => !!v || 'Required', v => /.+@.+\..+/.test(v) || 'Invalid email']"
+          :rules="[v => !!v || $t('auth.required'), v => /.+@.+\..+/.test(v) || $t('auth.invalidEmail')]"
         />
 
         <v-text-field
           v-model="form.password"
-          label="New Password"
+          :label="$t('settings.newPassword')"
           :type="showPassword ? 'text' : 'password'"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-lock-outline"
           :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
           @click:append-inner="showPassword = !showPassword"
-          :rules="[v => !!v || 'Required', v => v.length >= 8 || 'Min 8 characters']"
+          :rules="[v => !!v || $t('auth.required'), v => v.length >= 8 || $t('auth.min8Chars')]"
         />
 
         <v-text-field
           v-model="form.password_confirmation"
-          label="Confirm New Password"
+          :label="$t('settings.confirmNewPassword')"
           :type="showPassword ? 'text' : 'password'"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-lock-check-outline"
-          :rules="[v => !!v || 'Required', v => v === form.password || 'Passwords do not match']"
+          :rules="[v => !!v || $t('auth.required'), v => v === form.password || $t('settings.passwordsNoMatch')]"
         />
 
         <v-btn
@@ -60,12 +60,12 @@
           :loading="loading"
           class="mt-2"
         >
-          Reset Password
+          {{ $t('authRecovery.resetPasswordBtn') }}
         </v-btn>
       </v-form>
 
       <div class="text-center mt-4">
-        <router-link to="/login" class="text-primary font-weight-medium">Back to Sign In</router-link>
+        <router-link to="/login" class="text-primary font-weight-medium">{{ $t('authRecovery.backToSignIn') }}</router-link>
       </div>
     </v-card>
   </v-container>
@@ -74,9 +74,11 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { resetPassword } from '@/api'
 
 const route = useRoute()
+const { t } = useI18n()
 const formRef = ref(null)
 const showPassword = ref(false)
 const loading = ref(false)
@@ -103,12 +105,12 @@ async function handleSubmit() {
   errorMsg.value = null
   try {
     const { data } = await resetPassword(form)
-    successMsg.value = data.status || 'Password reset successfully!'
+    successMsg.value = data.status || t('authRecovery.resetSuccessFallback')
   } catch (e) {
     errorMsg.value = e.response?.data?.message
       || e.response?.data?.errors?.email?.[0]
       || e.response?.data?.errors?.password?.[0]
-      || 'Failed to reset password'
+      || t('authRecovery.failedReset')
   } finally {
     loading.value = false
   }

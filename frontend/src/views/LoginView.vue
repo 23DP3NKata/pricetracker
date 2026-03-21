@@ -3,8 +3,8 @@
     <v-card rounded="xl" class="pa-6">
       <div class="text-center mb-6">
         <v-icon color="primary" size="48">mdi-chart-line-variant</v-icon>
-        <h2 class="mt-2">Welcome Back</h2>
-        <p class="text-medium-emphasis">Sign in to your account</p>
+        <h2 class="mt-2">{{ $t('auth.welcomeBack') }}</h2>
+        <p class="text-medium-emphasis">{{ $t('auth.signInAccount') }}</p>
       </div>
 
       <v-alert v-if="auth.error" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="auth.error = null">
@@ -14,24 +14,24 @@
       <v-form @submit.prevent="handleLogin" ref="formRef">
         <v-text-field
           v-model="form.email"
-          label="Email"
+          :label="$t('auth.email')"
           type="email"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-email-outline"
-          :rules="[v => !!v || 'Required', v => /.+@.+\..+/.test(v) || 'Invalid email']"
+          :rules="[v => !!v || $t('auth.required'), v => /.+@.+\..+/.test(v) || $t('auth.invalidEmail')]"
         />
 
         <v-text-field
           v-model="form.password"
-          label="Password"
+          :label="$t('auth.password')"
           :type="showPassword ? 'text' : 'password'"
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-lock-outline"
           :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
           @click:append-inner="showPassword = !showPassword"
-          :rules="[v => !!v || 'Required']"
+          :rules="[v => !!v || $t('auth.required')]"
         />
 
         <v-btn
@@ -43,17 +43,17 @@
           :loading="auth.loading"
           class="mt-2"
         >
-          Sign In
+          {{ $t('auth.signIn') }}
         </v-btn>
       </v-form>
 
       <div class="text-center mt-3">
-        <router-link to="/forgot-password" class="text-medium-emphasis text-body-2">Forgot password?</router-link>
+        <router-link to="/forgot-password" class="text-medium-emphasis text-body-2">{{ $t('auth.forgotPassword') }}</router-link>
       </div>
 
       <div class="text-center mt-3">
-        <span class="text-medium-emphasis">Don't have an account?</span>
-        <router-link to="/register" class="ml-1 text-primary font-weight-medium">Sign Up</router-link>
+        <span class="text-medium-emphasis">{{ $t('auth.dontHaveAccount') }}</span>
+        <router-link to="/register" class="ml-1 text-primary font-weight-medium">{{ $t('auth.signUp') }}</router-link>
       </div>
     </v-card>
   </v-container>

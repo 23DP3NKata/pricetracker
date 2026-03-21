@@ -13,13 +13,13 @@
         <!-- Desktop nav links -->
         <div class="nav d-none d-md-flex">
           <template v-if="!auth.isAuthenticated">
-            <v-btn to="/" variant="text" rounded>Home</v-btn>
-            <v-btn to="/about" variant="text" rounded>About Us</v-btn>
+            <v-btn to="/" variant="text" rounded>{{ $t('nav.home') }}</v-btn>
+            <v-btn to="/about" variant="text" rounded>{{ $t('nav.about') }}</v-btn>
           </template>
           <template v-else>
-            <v-btn to="/dashboard" variant="text" rounded>Dashboard</v-btn>
-            <v-btn to="/products" variant="text" rounded>Products</v-btn>
-            <v-btn v-if="auth.isAdmin" to="/admin/dashboard" variant="text" rounded>Admin</v-btn>
+            <v-btn to="/dashboard" variant="text" rounded>{{ $t('nav.dashboard') }}</v-btn>
+            <v-btn to="/products" variant="text" rounded>{{ $t('nav.products') }}</v-btn>
+            <v-btn v-if="auth.isAdmin" to="/admin/dashboard" variant="text" rounded>{{ $t('nav.admin') }}</v-btn>
           </template>
         </div>
 
@@ -41,7 +41,7 @@
               </template>
 
               <v-card min-width="340" rounded="xl" elevation="3">
-                <v-card-title class="text-subtitle-1">Notifications</v-card-title>
+                <v-card-title class="text-subtitle-1">{{ $t('notifications.title') }}</v-card-title>
 
                 <v-divider />
 
@@ -60,20 +60,20 @@
                     </v-list-item>
                   </template>
                   <v-list-item v-else>
-                    <v-list-item-title class="text-body-2 text-medium-emphasis">No recent notifications</v-list-item-title>
+                    <v-list-item-title class="text-body-2 text-medium-emphasis">{{ $t('notifications.noRecent') }}</v-list-item-title>
                   </v-list-item>
                 </v-list>
 
                 <v-divider />
 
                 <v-card-actions>
-                  <v-btn to="/notifications" variant="text" block @click="notificationsMenu = false">View all</v-btn>
+                  <v-btn to="/notifications" variant="text" block @click="notificationsMenu = false">{{ $t('notifications.all') }}</v-btn>
                 </v-card-actions>
               </v-card>
             </v-menu>
 
             <!-- Add product -->
-            <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="openAddProduct">Add product</v-btn>
+            <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="openAddProduct">{{ $t('nav.addProduct') }}</v-btn>
 
             <!-- User menu -->
             <v-menu location="bottom end" offset="12">
@@ -87,10 +87,10 @@
 
               <v-card min-width="260" rounded="xl" elevation="3">
                 <v-list density="compact" class="py-2">
-                  <v-list-item to="/settings" rounded="lg" prepend-icon="mdi-cog-outline" title="Settings" />
+                  <v-list-item to="/settings" rounded="lg" prepend-icon="mdi-cog-outline" :title="$t('nav.settings')" />
 
                   <v-list-item rounded="lg" prepend-icon="mdi-translate" @click="toggleLanguage">
-                    <v-list-item-title>Language</v-list-item-title>
+                    <v-list-item-title>{{ $t('nav.language') }}</v-list-item-title>
                     <template #append>
                       <span class="text-caption text-medium-emphasis">{{ currentLanguageLabel }}</span>
                     </template>
@@ -99,7 +99,7 @@
                   <v-list-item
                     rounded="lg"
                     :prepend-icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-                    :title="isDark ? 'Light theme' : 'Dark theme'"
+                    :title="isDark ? $t('ux.themeLight') : $t('ux.themeDark')"
                     @click="toggleTheme"
                   />
                 </v-list>
@@ -110,7 +110,7 @@
                   <v-list-item
                     rounded="lg"
                     prepend-icon="mdi-logout"
-                    title="Logout"
+                    :title="$t('nav.logout')"
                     class="text-error"
                     @click="handleLogout"
                   />
@@ -120,8 +120,8 @@
           </template>
 
           <template v-else>
-            <v-btn to="/login" variant="text" rounded>Sign In</v-btn>
-              <v-btn to="/register" color="primary" rounded>Get Started</v-btn>
+            <v-btn to="/login" variant="text" rounded>{{ $t('nav.signIn') }}</v-btn>
+              <v-btn to="/register" color="primary" rounded>{{ $t('nav.getStarted') }}</v-btn>
 
             <!-- Guest user menu -->
             <v-menu location="bottom end" offset="12">
@@ -134,7 +134,7 @@
               <v-card min-width="260" rounded="xl" elevation="3">
                 <v-list density="compact" class="py-2">
                   <v-list-item rounded="lg" prepend-icon="mdi-translate" @click="toggleLanguage">
-                    <v-list-item-title>Language</v-list-item-title>
+                    <v-list-item-title>{{ $t('nav.language') }}</v-list-item-title>
                     <template #append>
                       <span class="text-caption text-medium-emphasis">{{ currentLanguageLabel }}</span>
                     </template>
@@ -143,7 +143,7 @@
                   <v-list-item
                     rounded="lg"
                     :prepend-icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-                    :title="isDark ? 'Light theme' : 'Dark theme'"
+                    :title="isDark ? $t('ux.themeLight') : $t('ux.themeDark')"
                     @click="toggleTheme"
                   />
                 </v-list>
@@ -154,7 +154,7 @@
                   <v-list-item
                     rounded="lg"
                     prepend-icon="mdi-login"
-                    title="Sign In"
+                    :title="$t('nav.signIn')"
                     to="/login"
                   />
                 </v-list>
@@ -182,47 +182,47 @@
         </div>
         <v-divider />
         <v-list class="pa-2">
-          <v-list-item to="/dashboard" rounded prepend-icon="mdi-view-dashboard-outline" title="Dashboard" />
-          <v-list-item to="/products" rounded prepend-icon="mdi-tag-outline" title="Products" />
-          <v-list-item to="/notifications" rounded prepend-icon="mdi-bell-outline" title="Notifications">
+          <v-list-item to="/dashboard" rounded prepend-icon="mdi-view-dashboard-outline" :title="$t('nav.dashboard')" />
+          <v-list-item to="/products" rounded prepend-icon="mdi-tag-outline" :title="$t('nav.products')" />
+          <v-list-item to="/notifications" rounded prepend-icon="mdi-bell-outline" :title="$t('notificationsPage.title')">
             <template v-if="notificationsStore.unreadCount > 0" #append>
               <v-chip size="x-small" color="error">{{ notificationsStore.unreadCount }}</v-chip>
             </template>
           </v-list-item>
           <template v-if="auth.isAdmin">
-            <v-list-item to="/admin/dashboard" rounded prepend-icon="mdi-shield-account" title="Admin dashboard" />
-            <v-list-item to="/admin/users" rounded prepend-icon="mdi-account-group-outline" title="Admin users" />
-            <v-list-item to="/admin/products" rounded prepend-icon="mdi-package-variant-closed" title="Admin products" />
-            <v-list-item to="/admin/logs" rounded prepend-icon="mdi-text-box-search-outline" title="Admin logs" />
-            <v-list-item to="/admin/actions" rounded prepend-icon="mdi-history" title="Admin actions" />
+            <v-list-item to="/admin/dashboard" rounded prepend-icon="mdi-shield-account" :title="$t('nav.admin') + ': ' + $t('adminCommon.dashboard')" />
+            <v-list-item to="/admin/users" rounded prepend-icon="mdi-account-group-outline" :title="$t('nav.admin') + ': ' + $t('adminCommon.users')" />
+            <v-list-item to="/admin/products" rounded prepend-icon="mdi-package-variant-closed" :title="$t('nav.admin') + ': ' + $t('adminCommon.products')" />
+            <v-list-item to="/admin/logs" rounded prepend-icon="mdi-text-box-search-outline" :title="$t('nav.admin') + ': ' + $t('adminCommon.logs')" />
+            <v-list-item to="/admin/actions" rounded prepend-icon="mdi-history" :title="$t('nav.admin') + ': ' + $t('adminCommon.actions')" />
           </template>
           <v-divider class="my-2" />
-          <v-list-item rounded prepend-icon="mdi-plus" title="Add product" base-color="primary" @click="openAddProduct" />
+          <v-list-item rounded prepend-icon="mdi-plus" :title="$t('nav.addProduct')" base-color="primary" @click="openAddProduct" />
           <v-divider class="my-2" />
           <v-list-item
             rounded
             :prepend-icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-            :title="isDark ? 'Light theme' : 'Dark theme'"
+            :title="isDark ? $t('ux.themeLight') : $t('ux.themeDark')"
             @click="toggleTheme"
           />
-          <v-list-item rounded prepend-icon="mdi-translate" title="Language" @click="toggleLanguage">
+          <v-list-item rounded prepend-icon="mdi-translate" :title="$t('nav.language')" @click="toggleLanguage">
             <template #append>
               <span class="text-caption text-medium-emphasis">{{ currentLanguageLabel }}</span>
             </template>
           </v-list-item>
-          <v-list-item to="/settings" rounded prepend-icon="mdi-cog-outline" title="Settings" />
+          <v-list-item to="/settings" rounded prepend-icon="mdi-cog-outline" :title="$t('nav.settings')" />
           <v-divider class="my-2" />
-          <v-list-item rounded prepend-icon="mdi-logout" title="Logout" class="text-error" @click="handleLogout" />
+          <v-list-item rounded prepend-icon="mdi-logout" :title="$t('nav.logout')" class="text-error" @click="handleLogout" />
         </v-list>
       </template>
 
       <template v-else>
         <v-list class="pa-4">
-          <v-list-item to="/" rounded>Home</v-list-item>
-          <v-list-item to="/about" rounded>About Us</v-list-item>
+          <v-list-item to="/" rounded>{{ $t('nav.home') }}</v-list-item>
+          <v-list-item to="/about" rounded>{{ $t('nav.about') }}</v-list-item>
           <v-divider class="my-3" />
-          <v-list-item to="/login" rounded>Sign In</v-list-item>
-          <v-btn to="/register" color="primary" block rounded class="mt-2">Get Started</v-btn>
+          <v-list-item to="/login" rounded>{{ $t('nav.signIn') }}</v-list-item>
+          <v-btn to="/register" color="primary" block rounded class="mt-2">{{ $t('nav.getStarted') }}</v-btn>
         </v-list>
       </template>
     </v-navigation-drawer>
@@ -234,7 +234,7 @@
 
     <v-dialog v-model="showAddDialog" max-width="520">
       <v-card rounded="xl" class="pa-6">
-        <h2 class="text-h6 font-weight-bold mb-4">Add product</h2>
+        <h2 class="text-h6 font-weight-bold mb-4">{{ $t('nav.addProduct') }}</h2>
 
         <v-alert
           v-if="addError"
@@ -251,18 +251,18 @@
         <v-form ref="addFormRef" @submit.prevent="handleAddProduct">
           <v-text-field
             v-model="addForm.url"
-            label="Product URL"
+            :label="$t('form.url')"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-link-variant"
-            placeholder="https://www.amazon.com/dp/..."
+            :placeholder="$t('form.urlPlaceholder')"
             :rules="urlRules"
             :disabled="addLoading"
           />
 
           <v-select
             v-model="addForm.checkInterval"
-            label="Check frequency"
+            :label="$t('form.checkFrequency')"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-timer-outline"
@@ -273,8 +273,8 @@
           />
 
           <div class="d-flex ga-2 justify-end mt-2">
-            <v-btn variant="text" rounded="xl" :disabled="addLoading" @click="closeAddProduct">Cancel</v-btn>
-            <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading" prepend-icon="mdi-plus">Track</v-btn>
+            <v-btn variant="text" rounded="xl" :disabled="addLoading" @click="closeAddProduct">{{ $t('form.cancel') }}</v-btn>
+            <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading" prepend-icon="mdi-plus">{{ $t('form.track') }}</v-btn>
           </div>
         </v-form>
       </v-card>
@@ -290,20 +290,20 @@
           </div>
 
           <div class="footer-links">
-            <router-link to="/">Home</router-link>
-            <router-link to="/about">About Us</router-link>
-            <router-link to="#">Terms</router-link>
+            <router-link to="/">{{ $t('nav.home') }}</router-link>
+            <router-link to="/about">{{ $t('nav.about') }}</router-link>
+            <router-link to="#">{{ $t('footer.terms') }}</router-link>
           </div>
         </div>
 
         <v-divider class="my-4" />
 
-        <p class="copyright">© {{ new Date().getFullYear() }} PriceTracker. All rights reserved.</p>
+        <p class="copyright">© {{ new Date().getFullYear() }} PriceTracker. {{ $t('footer.copyright') }}</p>
       </v-container>
     </footer>
 
     <v-snackbar v-model="showLanguageNotice" timeout="2200" location="bottom right">
-      Language switcher is a placeholder for now.
+      {{ $t('messages.languageSwitcher') }}
     </v-snackbar>
   </v-app>
 </template>
@@ -312,52 +312,53 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useProductsStore } from '@/stores/products'
 
 const theme = useTheme()
 const router = useRouter()
+const i18n = useI18n()
 const auth = useAuthStore()
 const notificationsStore = useNotificationsStore()
 const productsStore = useProductsStore()
 const drawer = ref(false)
 const scrolled = ref(false)
-const language = ref(localStorage.getItem('pt-language') || 'en')
 const showLanguageNotice = ref(false)
 const notificationsMenu = ref(false)
 const showAddDialog = ref(false)
 const addFormRef = ref(null)
 const addLoading = ref(false)
 const addError = ref(null)
-const checkIntervalOptions = [
-  { label: 'Every 30 minutes', value: 30 },
-  { label: 'Every 1 hour', value: 60 },
-  { label: 'Every 6 hours', value: 360 },
-  { label: 'Every 12 hours', value: 720 },
-  { label: 'Every 24 hours', value: 1440 },
-]
+const checkIntervalOptions = computed(() => [
+  { label: i18n.t('form.every30min'), value: 30 },
+  { label: i18n.t('form.every1h'), value: 60 },
+  { label: i18n.t('form.every6h'), value: 360 },
+  { label: i18n.t('form.every12h'), value: 720 },
+  { label: i18n.t('form.every24h'), value: 1440 },
+])
 const addForm = reactive({
   url: '',
   targetPrice: '',
   checkInterval: 1440,
 })
-const urlRules = [
-  v => !!v || 'Product URL is required',
-  v => /^https?:\/\/.+/.test(v) || 'URL must start with http:// or https://',
-]
+const urlRules = computed(() => [
+  v => !!v || `${i18n.t('form.url')} ${i18n.t('form.required')}`,
+  v => /^https?:\/\/.+/.test(v) || i18n.t('form.invalidUrl'),
+])
 
 const isDark = computed(() => theme.global.current.value.dark)
-const currentLanguageLabel = computed(() => language.value === 'lv' ? 'Latvian' : 'English')
+const currentLanguageLabel = computed(() => i18n.locale.value === 'lv' ? i18n.t('ux.languageLatvian') : i18n.t('ux.languageEnglish'))
 const recentNotifications = computed(() => notificationsStore.notifications.slice(0, 5))
 
 function notificationText(notification) {
-  return notification?.message || notification?.title || 'Notification'
+  return notification?.message || notification?.title || i18n.t('ux.notificationFallback')
 }
 
 function isTrackingStoppedNotification(notification) {
   const msg = (notification?.message || '').toLowerCase()
-  return msg.includes('трекинг остановлен') || msg.includes('tracking stopped')
+  return msg.includes('tracking stopped')
 }
 
 function notificationDate(value) {
@@ -379,7 +380,7 @@ async function openNotification(notification) {
     try {
       await notificationsStore.markRead(notification.id)
     } catch (_) {
-      // Keep navigation even if mark-read request fails.
+
     }
   }
 
@@ -423,7 +424,7 @@ async function handleAddProduct() {
       router.push({ name: 'product-detail', params: { id: result.product.id } })
     }
   } catch (e) {
-    addError.value = e.response?.data?.message || 'Failed to add product'
+    addError.value = e.response?.data?.message || i18n.t('productsPage.failedAdd')
   } finally {
     addLoading.value = false
   }
@@ -436,8 +437,9 @@ function toggleTheme() {
 }
 
 function toggleLanguage() {
-  language.value = language.value === 'en' ? 'lv' : 'en'
-  localStorage.setItem('pt-language', language.value)
+  const newLang = i18n.locale.value === 'en' ? 'lv' : 'en'
+  i18n.locale.value = newLang
+  localStorage.setItem('pt-language', newLang)
   showLanguageNotice.value = true
 }
 

@@ -1,9 +1,9 @@
 <template>
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6">
-      <h1 class="text-h4 font-weight-bold">My Products</h1>
+      <h1 class="text-h4 font-weight-bold">{{ $t('productsPage.title') }}</h1>
       <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">
-        Add Product
+        {{ $t('productsPage.addProduct') }}
       </v-btn>
     </div>
 
@@ -15,7 +15,7 @@
           <v-select
             v-model="sort.by"
             :items="sortByOptions"
-            label="Sort by"
+            :label="$t('productsPage.sortBy')"
             variant="outlined"
             density="comfortable"
             @update:model-value="loadProducts(1)"
@@ -25,7 +25,7 @@
           <v-select
             v-model="sort.dir"
             :items="sortDirOptions"
-            label="Direction"
+            :label="$t('productsPage.direction')"
             variant="outlined"
             density="comfortable"
             @update:model-value="loadProducts(1)"
@@ -37,9 +37,9 @@
     <!-- Empty state -->
     <v-card v-if="!store.loading && store.products.length === 0" rounded="xl" class="pa-8 text-center">
       <v-icon size="64" color="primary" class="mb-4">mdi-package-variant-plus</v-icon>
-      <h3 class="text-h6 mb-2">No products yet</h3>
-      <p class="text-medium-emphasis mb-4">Start tracking your first product to get price alerts</p>
-      <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">Add Product</v-btn>
+      <h3 class="text-h6 mb-2">{{ $t('productsPage.noProductsYet') }}</h3>
+      <p class="text-medium-emphasis mb-4">{{ $t('productsPage.startTrackingFirst') }}</p>
+      <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">{{ $t('productsPage.addProduct') }}</v-btn>
     </v-card>
 
     <!-- Products list -->
@@ -61,7 +61,7 @@
                 size="x-small"
                 variant="tonal"
               >
-                {{ product.pivot?.is_active ? 'Active' : 'Paused' }}
+                {{ product.pivot?.is_active ? $t('productsPage.active') : $t('productsPage.paused') }}
               </v-chip>
             </div>
 
@@ -70,10 +70,10 @@
             </div>
 
             <div class="text-caption text-medium-emphasis">
-              <v-icon size="14">mdi-store</v-icon> {{ product.store_name || 'Unknown' }}
+              <v-icon size="14">mdi-store</v-icon> {{ product.store_name || $t('productsPage.unknown') }}
             </div>
             <div class="text-caption text-medium-emphasis">
-              <v-icon size="14">mdi-clock-outline</v-icon> Every {{ formatInterval(product.pivot?.check_interval) }}
+              <v-icon size="14">mdi-clock-outline</v-icon> {{ $t('productsPage.every') }} {{ formatInterval(product.pivot?.check_interval) }}
             </div>
           </v-card-text>
         </v-card>
@@ -93,7 +93,7 @@
     <!-- Add Product Dialog -->
     <v-dialog v-model="showAddDialog" max-width="500">
       <v-card rounded="xl" class="pa-6">
-        <h2 class="text-h6 font-weight-bold mb-4">Add Product</h2>
+        <h2 class="text-h6 font-weight-bold mb-4">{{ $t('productsPage.dialogTitle') }}</h2>
 
         <v-alert v-if="addError" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="addError = null">
           {{ addError }}
@@ -102,18 +102,18 @@
         <v-form @submit.prevent="handleAdd" ref="addFormRef">
           <v-text-field
             v-model="addForm.url"
-            label="Product URL"
+            :label="$t('productsPage.productUrl')"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-link"
-            placeholder="https://www.amazon.com/dp/..."
-            :rules="[v => !!v || 'Required', v => /^https?:\/\/.+/.test(v) || 'Must be a valid URL']"
+            :placeholder="$t('form.urlPlaceholder')"
+            :rules="[v => !!v || $t('productsPage.required'), v => /^https?:\/\/.+/.test(v) || $t('productsPage.validUrl')]"
             :disabled="addLoading"
           />
 
           <v-select
             v-model="addForm.checkInterval"
-            label="Check frequency"
+            :label="$t('productsPage.checkFrequency')"
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-timer-outline"
@@ -125,13 +125,13 @@
 
           <div class="text-caption text-medium-emphasis mb-4">
             <v-icon size="14">mdi-information-outline</v-icon>
-            Supported stores: Amazon, eBay, rdveikals.lv, 1a.lv, 220.lv
+            {{ $t('productsPage.supportedStores') }}
           </div>
 
           <div class="d-flex ga-2 justify-end mt-2">
-            <v-btn variant="text" rounded="xl" @click="showAddDialog = false" :disabled="addLoading">Cancel</v-btn>
+            <v-btn variant="text" rounded="xl" @click="showAddDialog = false" :disabled="addLoading">{{ $t('productsPage.cancel') }}</v-btn>
             <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading">
-              <v-icon start>mdi-magnify</v-icon> Fetch &amp; Track
+              <v-icon start>mdi-magnify</v-icon> {{ $t('productsPage.fetchTrack') }}
             </v-btn>
           </div>
         </v-form>
@@ -141,10 +141,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useProductsStore } from '@/stores/products'
 
 const store = useProductsStore()
+const { t } = useI18n()
 const currentPage = ref(1)
 const showAddDialog = ref(false)
 const addFormRef = ref(null)
@@ -161,27 +163,27 @@ const sort = reactive({
   dir: 'desc',
 })
 
-const sortByOptions = [
-  { title: 'Added date', value: 'created_at' },
-  { title: 'Title', value: 'title' },
-  { title: 'Current price', value: 'current_price' },
-  { title: 'Store', value: 'store_name' },
-  { title: 'Next check', value: 'next_check_at' },
-  { title: 'Last checked', value: 'last_checked_at' },
-]
+const sortByOptions = computed(() => [
+  { title: t('productsPage.sortAddedDate'), value: 'created_at' },
+  { title: t('productsPage.sortTitle'), value: 'title' },
+  { title: t('productsPage.sortCurrentPrice'), value: 'current_price' },
+  { title: t('productsPage.sortStore'), value: 'store_name' },
+  { title: t('productsPage.sortNextCheck'), value: 'next_check_at' },
+  { title: t('productsPage.sortLastChecked'), value: 'last_checked_at' },
+])
 
-const sortDirOptions = [
-  { title: 'Descending', value: 'desc' },
-  { title: 'Ascending', value: 'asc' },
-]
+const sortDirOptions = computed(() => [
+  { title: t('productsPage.sortDesc'), value: 'desc' },
+  { title: t('productsPage.sortAsc'), value: 'asc' },
+])
 
-const checkIntervalOptions = [
-  { label: 'Every 30 minutes', value: 30 },
-  { label: 'Every 1 hour', value: 60 },
-  { label: 'Every 6 hours', value: 360 },
-  { label: 'Every 12 hours', value: 720 },
-  { label: 'Every 24 hours', value: 1440 },
-]
+const checkIntervalOptions = computed(() => [
+  { label: t('form.every30min'), value: 30 },
+  { label: t('form.every1h'), value: 60 },
+  { label: t('form.every6h'), value: 360 },
+  { label: t('form.every12h'), value: 720 },
+  { label: t('form.every24h'), value: 1440 },
+])
 
 function formatPrice(price) {
   return Number(price).toFixed(2) + ' €'
@@ -220,7 +222,7 @@ async function handleAdd() {
     addForm.checkInterval = 1440
     await loadProducts(currentPage.value)
   } catch (e) {
-    addError.value = e.response?.data?.message || 'Failed to add product'
+    addError.value = e.response?.data?.message || t('productsPage.failedAdd')
   } finally {
     addLoading.value = false
   }
