@@ -209,7 +209,17 @@ function formatPrice(price) {
 }
 
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleString(undefined, { timeZone: 'UTC' })
+  // Backend may return UTC without timezone suffix ("YYYY-MM-DD HH:mm:ss").
+  // Normalize to ISO UTC and then render in user local time.
+  const hasTimezone = /[zZ]$|[+-]\d{2}:\d{2}$/.test(dateStr)
+  const normalized = hasTimezone
+    ? dateStr
+    : `${dateStr.replace(' ', 'T')}Z`
+
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime())) return t('productDetail.noData')
+
+  return date.toLocaleString()
 }
 
 function formatDateOrFallback(dateStr) {

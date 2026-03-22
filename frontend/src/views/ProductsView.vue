@@ -209,7 +209,18 @@ function formatInterval(minutes) {
 
 function formatDateTime(dateStr) {
   if (!dateStr) return t('productDetail.noData')
-  return new Date(dateStr).toLocaleString()
+
+  // Backend may return UTC without timezone suffix ("YYYY-MM-DD HH:mm:ss").
+  // Normalize to ISO UTC so local rendering is correct for the user.
+  const hasTimezone = /[zZ]$|[+-]\d{2}:\d{2}$/.test(dateStr)
+  const normalized = hasTimezone
+    ? dateStr
+    : `${dateStr.replace(' ', 'T')}Z`
+
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime())) return t('productDetail.noData')
+
+  return date.toLocaleString()
 }
 
 async function loadProducts(page = 1) {
