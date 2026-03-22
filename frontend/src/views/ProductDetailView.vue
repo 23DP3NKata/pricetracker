@@ -65,6 +65,10 @@
             <v-btn color="error" variant="tonal" rounded="xl" @click="confirmDelete = true">{{ $t('productDetail.delete') }}</v-btn>
           </v-col>
         </v-row>
+        <div class="text-caption text-medium-emphasis mt-2">
+          <v-icon size="14">mdi-timer-sand</v-icon>
+          {{ $t('productsPage.sortNextCheck') }}: {{ formatDateOrFallback(product.tracking?.next_check_at) }}
+        </div>
         <v-alert v-if="saveMsg" :type="saveMsg.type" variant="tonal" rounded="lg" class="mt-3" closable @click:close="saveMsg = null">
           {{ saveMsg.text }}
         </v-alert>
@@ -208,6 +212,11 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleString(undefined, { timeZone: 'UTC' })
 }
 
+function formatDateOrFallback(dateStr) {
+  if (!dateStr) return t('productDetail.noData')
+  return formatDate(dateStr)
+}
+
 function priceDiff(current, previous) {
   return Number(current) - Number(previous)
 }
@@ -237,6 +246,7 @@ async function saveSettings() {
   saveMsg.value = null
   try {
     await store.updateProduct(product.value.id, trackingForm)
+    await loadProduct()
     saveMsg.value = { type: 'success', text: t('productDetail.settingsSaved') }
   } catch {
     saveMsg.value = { type: 'error', text: t('productDetail.failedToSave') }

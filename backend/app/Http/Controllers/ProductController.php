@@ -211,7 +211,22 @@ class ProductController extends Controller
             return response()->json(['message' => 'Product not found in your tracking list.'], 404);
         }
 
-        $pivot->update($validated);
+        $updates = $validated;
+
+        $hasIntervalUpdate = array_key_exists('check_interval', $validated);
+        $hasActiveUpdate = array_key_exists('is_active', $validated);
+        $effectiveInterval = $validated['check_interval'] ?? $pivot->check_interval;
+        $effectiveActive = $hasActiveUpdate ? (bool) $validated['is_active'] : (bool) $pivot->is_active;
+
+        // Keep schedule in sync with updated tracking settings.
+        if ($hasIntervalUpdate || $hasActiveUpdate) {
+            $updates['next_check_at'] = $effectiveActive
+                ? now()->addMinutes((int) $effectiveInterval)
+                : null;
+        }
+
+        $pivot->update($updates);
+        $pivot->refresh();
 
         return response()->json(['message' => 'Tracking settings updated.', 'tracking' => $pivot]);
     }

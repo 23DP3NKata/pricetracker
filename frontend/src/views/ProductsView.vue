@@ -44,7 +44,7 @@
 
     <!-- Products list -->
     <v-row v-else>
-      <v-col v-for="product in store.products" :key="product.id" cols="12" sm="6" md="4">
+      <v-col v-for="product in store.products" :key="product.id" cols="12" sm="6" md="4" class="d-flex">
         <v-card rounded="xl" class="product-card" :to="`/products/${product.id}`">
           <v-img
             v-if="product.image_url"
@@ -53,13 +53,21 @@
             cover
             class="bg-grey-lighten-3"
           />
+          <v-sheet
+            v-else
+            height="140"
+            class="d-flex align-center justify-center bg-grey-lighten-4"
+          >
+            <v-icon size="36" color="medium-emphasis">mdi-image-outline</v-icon>
+          </v-sheet>
           <v-card-text class="pa-4">
             <div class="d-flex justify-space-between align-start mb-2">
               <h3 class="text-subtitle-1 font-weight-bold" style="line-height: 1.3;">{{ product.title }}</h3>
               <v-chip
                 :color="product.pivot?.is_active ? 'success' : 'grey'"
-                size="x-small"
+                size="small"
                 variant="tonal"
+                class="status-chip"
               >
                 {{ product.pivot?.is_active ? $t('productsPage.active') : $t('productsPage.paused') }}
               </v-chip>
@@ -74,6 +82,9 @@
             </div>
             <div class="text-caption text-medium-emphasis">
               <v-icon size="14">mdi-clock-outline</v-icon> {{ $t('productsPage.every') }} {{ formatInterval(product.pivot?.check_interval) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              <v-icon size="14">mdi-timer-sand</v-icon> {{ $t('productsPage.sortNextCheck') }}: {{ formatDateTime(product.pivot?.next_check_at) }}
             </div>
           </v-card-text>
         </v-card>
@@ -196,6 +207,11 @@ function formatInterval(minutes) {
   return Math.round(minutes / 1440) + 'd'
 }
 
+function formatDateTime(dateStr) {
+  if (!dateStr) return t('productDetail.noData')
+  return new Date(dateStr).toLocaleString()
+}
+
 async function loadProducts(page = 1) {
   currentPage.value = page
   await store.fetchProducts({
@@ -233,9 +249,33 @@ onMounted(() => loadProducts(1))
 
 <style scoped>
 .product-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.2s, box-shadow 0.2s;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
+
+.product-card :deep(.v-card-text) {
+  flex: 1;
+}
+
+.status-chip {
+  min-width: 66px;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.product-card h3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .product-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
