@@ -4,7 +4,7 @@
     <v-app-bar :elevation="scrolled ? 2 : 0" :class="{ scrolled }" height="70" flat>
       <v-container class="d-flex align-center">
         <div class="logo" @click="handleLogoClick">
-          <v-icon color="primary" size="28">mdi-chart-line-variant</v-icon>
+          <img :src="siteLogoSrc" alt="PriceTracker logo" class="logo-mark" />
           <span>PriceTracker</span>
         </div>
 
@@ -76,7 +76,7 @@
             <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="openAddProduct">{{ $t('nav.addProduct') }}</v-btn>
 
             <!-- User menu -->
-            <v-menu location="bottom end" offset="12">
+            <v-menu location="bottom end" offset="12" :close-on-content-click="false">
               <template #activator="{ props }">
                 <v-btn icon v-bind="props" variant="text">
                   <v-avatar size="32" color="primary">
@@ -86,15 +86,35 @@
               </template>
 
               <v-card min-width="260" rounded="xl" elevation="3">
-                <v-list density="compact" class="py-2">
+                <v-list v-model:opened="openedUserMenuGroups" density="compact" class="py-2">
                   <v-list-item to="/settings" rounded="lg" prepend-icon="mdi-cog-outline" :title="$t('nav.settings')" />
 
-                  <v-list-item rounded="lg" prepend-icon="mdi-translate" @click="toggleLanguage">
-                    <v-list-item-title>{{ $t('nav.language') }}</v-list-item-title>
-                    <template #append>
-                      <span class="text-caption text-medium-emphasis">{{ currentLanguageLabel }}</span>
+                  <v-list-group value="language-user" prepend-icon="mdi-translate">
+                    <template #activator="{ props }">
+                      <v-list-item v-bind="props" rounded="lg" :title="$t('nav.language')" />
                     </template>
-                  </v-list-item>
+                    <v-list-item
+                      rounded="lg"
+                      class="pl-8"
+                      :active="i18n.locale.value === 'en'"
+                      :title="i18n.t('ux.languageEnglish')"
+                      @click="setLanguage('en')"
+                    />
+                    <v-list-item
+                      rounded="lg"
+                      class="pl-8"
+                      :active="i18n.locale.value === 'lv'"
+                      :title="i18n.t('ux.languageLatvian')"
+                      @click="setLanguage('lv')"
+                    />
+                    <v-list-item
+                      rounded="lg"
+                      class="pl-8"
+                      :active="i18n.locale.value === 'ru'"
+                      :title="i18n.t('ux.languageRussian')"
+                      @click="setLanguage('ru')"
+                    />
+                  </v-list-group>
 
                   <v-list-item
                     rounded="lg"
@@ -106,7 +126,7 @@
 
                 <v-divider />
 
-                <v-list density="compact" class="py-2">
+                <v-list v-model:opened="openedGuestMenuGroups" density="compact" class="py-2">
                   <v-list-item
                     rounded="lg"
                     prepend-icon="mdi-logout"
@@ -124,7 +144,7 @@
               <v-btn to="/register" color="primary" rounded>{{ $t('nav.getStarted') }}</v-btn>
 
             <!-- Guest user menu -->
-            <v-menu location="bottom end" offset="12">
+            <v-menu location="bottom end" offset="12" :close-on-content-click="false">
               <template #activator="{ props }">
                 <v-btn icon v-bind="props" variant="text">
                   <v-icon size="30">mdi-account-circle-outline</v-icon>
@@ -133,12 +153,32 @@
 
               <v-card min-width="260" rounded="xl" elevation="3">
                 <v-list density="compact" class="py-2">
-                  <v-list-item rounded="lg" prepend-icon="mdi-translate" @click="toggleLanguage">
-                    <v-list-item-title>{{ $t('nav.language') }}</v-list-item-title>
-                    <template #append>
-                      <span class="text-caption text-medium-emphasis">{{ currentLanguageLabel }}</span>
+                  <v-list-group value="language-guest" prepend-icon="mdi-translate">
+                    <template #activator="{ props }">
+                      <v-list-item v-bind="props" rounded="lg" :title="$t('nav.language')" />
                     </template>
-                  </v-list-item>
+                    <v-list-item
+                      rounded="lg"
+                      class="pl-8"
+                      :active="i18n.locale.value === 'en'"
+                      :title="i18n.t('ux.languageEnglish')"
+                      @click="setLanguage('en')"
+                    />
+                    <v-list-item
+                      rounded="lg"
+                      class="pl-8"
+                      :active="i18n.locale.value === 'lv'"
+                      :title="i18n.t('ux.languageLatvian')"
+                      @click="setLanguage('lv')"
+                    />
+                    <v-list-item
+                      rounded="lg"
+                      class="pl-8"
+                      :active="i18n.locale.value === 'ru'"
+                      :title="i18n.t('ux.languageRussian')"
+                      @click="setLanguage('ru')"
+                    />
+                  </v-list-group>
 
                   <v-list-item
                     rounded="lg"
@@ -181,7 +221,7 @@
           </div>
         </div>
         <v-divider />
-        <v-list class="pa-2">
+        <v-list v-model:opened="openedMobileMenuGroups" class="pa-2">
           <v-list-item to="/dashboard" rounded prepend-icon="mdi-view-dashboard-outline" :title="$t('nav.dashboard')" />
           <v-list-item to="/products" rounded prepend-icon="mdi-tag-outline" :title="$t('nav.products')" />
           <v-list-item to="/notifications" rounded prepend-icon="mdi-bell-outline" :title="$t('notificationsPage.title')">
@@ -205,11 +245,32 @@
             :title="isDark ? $t('ux.themeLight') : $t('ux.themeDark')"
             @click="toggleTheme"
           />
-          <v-list-item rounded prepend-icon="mdi-translate" :title="$t('nav.language')" @click="toggleLanguage">
-            <template #append>
-              <span class="text-caption text-medium-emphasis">{{ currentLanguageLabel }}</span>
+          <v-list-group value="language-mobile" prepend-icon="mdi-translate">
+            <template #activator="{ props }">
+              <v-list-item v-bind="props" rounded :title="$t('nav.language')" />
             </template>
-          </v-list-item>
+            <v-list-item
+              rounded
+              class="pl-8"
+              :active="i18n.locale.value === 'en'"
+              :title="i18n.t('ux.languageEnglish')"
+              @click="setLanguage('en')"
+            />
+            <v-list-item
+              rounded
+              class="pl-8"
+              :active="i18n.locale.value === 'lv'"
+              :title="i18n.t('ux.languageLatvian')"
+              @click="setLanguage('lv')"
+            />
+            <v-list-item
+              rounded
+              class="pl-8"
+              :active="i18n.locale.value === 'ru'"
+              :title="i18n.t('ux.languageRussian')"
+              @click="setLanguage('ru')"
+            />
+          </v-list-group>
           <v-list-item to="/settings" rounded prepend-icon="mdi-cog-outline" :title="$t('nav.settings')" />
           <v-divider class="my-2" />
           <v-list-item rounded prepend-icon="mdi-logout" :title="$t('nav.logout')" class="text-error" @click="handleLogout" />
@@ -291,7 +352,7 @@
       <v-container>
         <div class="footer-content">
           <div class="logo">
-            <v-icon color="primary" size="24">mdi-chart-line-variant</v-icon>
+            <img :src="siteLogoSrc" alt="PriceTracker logo" class="logo-mark logo-mark--sm" />
             <span>PriceTracker</span>
           </div>
 
@@ -338,6 +399,9 @@ const addFormRef = ref(null)
 const addLoading = ref(false)
 const addError = ref(null)
 const addSubmitted = ref(false)
+const openedUserMenuGroups = ref([])
+const openedGuestMenuGroups = ref([])
+const openedMobileMenuGroups = ref([])
 const checkIntervalOptions = computed(() => [
   { label: i18n.t('form.every30min'), value: 30 },
   { label: i18n.t('form.every1h'), value: 60 },
@@ -361,7 +425,7 @@ function addUrlErrors() {
 }
 
 const isDark = computed(() => theme.global.current.value.dark)
-const currentLanguageLabel = computed(() => i18n.locale.value === 'lv' ? i18n.t('ux.languageLatvian') : i18n.t('ux.languageEnglish'))
+const siteLogoSrc = computed(() => (isDark.value ? '/wombat.png' : '/wombat-blue.png'))
 const recentNotifications = computed(() => notificationsStore.notifications.slice(0, 5))
 
 function handleLogoClick() {
@@ -451,11 +515,21 @@ function toggleTheme() {
   localStorage.setItem('pt-theme', nextTheme)
 }
 
-function toggleLanguage() {
-  const newLang = i18n.locale.value === 'en' ? 'lv' : 'en'
-  i18n.locale.value = newLang
-  localStorage.setItem('pt-language', newLang)
+function setLanguage(lang) {
+  if (!['en', 'lv', 'ru'].includes(lang)) return
+  if (i18n.locale.value === lang) {
+    openedUserMenuGroups.value = openedUserMenuGroups.value.filter((v) => v !== 'language-user')
+    openedGuestMenuGroups.value = openedGuestMenuGroups.value.filter((v) => v !== 'language-guest')
+    openedMobileMenuGroups.value = openedMobileMenuGroups.value.filter((v) => v !== 'language-mobile')
+    return
+  }
+
+  i18n.locale.value = lang
+  localStorage.setItem('pt-language', lang)
   showLanguageNotice.value = true
+  openedUserMenuGroups.value = openedUserMenuGroups.value.filter((v) => v !== 'language-user')
+  openedGuestMenuGroups.value = openedGuestMenuGroups.value.filter((v) => v !== 'language-guest')
+  openedMobileMenuGroups.value = openedMobileMenuGroups.value.filter((v) => v !== 'language-mobile')
 }
 
 async function handleLogout() {
@@ -518,6 +592,17 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+}
+
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.logo-mark--sm {
+  width: 28px;
+  height: 28px;
 }
 
 .logo span {
