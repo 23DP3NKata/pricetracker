@@ -92,7 +92,7 @@ const currentPage = ref(1)
 
 function isTrackingStopped(notification) {
   const msg = (notification?.message || '').toLowerCase()
-  return msg.includes('трекинг остановлен') || msg.includes('tracking stopped')
+  return msg.includes('tracking stopped')
 }
 
 function notificationIcon(notification) {

@@ -59,7 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
       await apiLogin(credentials)
       await fetchUser()
     } catch (e) {
-      error.value = e.response?.data?.message || 'Ошибка входа'
+      error.value = e.response?.data?.message || 'Login failed'
       throw e
     } finally {
       loading.value = false
@@ -75,7 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
       await apiRegister(data)
       await fetchUser()
     } catch (e) {
-      error.value = e.response?.data?.message || 'Ошибка регистрации'
+      error.value = e.response?.data?.message || 'Registration failed'
       throw e
     } finally {
       loading.value = false

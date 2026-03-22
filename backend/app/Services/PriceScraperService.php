@@ -534,12 +534,12 @@ class PriceScraperService
                 'next_check_at' => null,
             ]);
 
-        $availabilityMessage = "Товар недоступен на сайте, трекинг остановлен. {$product->title}";
+        $availabilityMessage = "Product unavailable on the site, tracking stopped. {$product->title}";
 
         foreach ($activeTrackingUserIds as $userId) {
             $alreadySent = Notification::where('user_id', $userId)
                 ->where('product_id', $product->id)
-                ->where('message', 'like', 'Товар недоступен на сайте, трекинг остановлен.%')
+                ->where('message', 'like', 'Product unavailable on the site, tracking stopped.%')
                 ->exists();
 
             if ($alreadySent) {
