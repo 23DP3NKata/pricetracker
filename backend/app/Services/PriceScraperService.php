@@ -80,13 +80,13 @@ class PriceScraperService
         '220.lv' => [
             'name' => '220.lv',
             'selectors' => [
-                'title' => 'h1[itemprop="name"], .product-name',
-                'price' => '.product-price, [itemprop="price"]',
-                'image' => '.product-image img',
-                'currency' => 'meta[itemprop="priceCurrency"]',
+                'title' => '.c-product__name, h1[itemprop="name"], .product-name',
+                'price' => '.c-price.h-price--x-large, .product-price, [itemprop="price"]',
+                'image' => '.c-gallery-slide--image img, .c-gallery-slide--image, .product-image img',
+                'currency' => '.c-price.h-price--x-large small, .c-price.h-price--x-large, meta[itemprop="priceCurrency"]',
             ],
-            'canonicalPattern' => '/\/(\d+)/',
-            'canonicalUrl' => 'https://220.lv/{1}',
+            'canonicalPattern' => '/[?&]id=(\d+)/i',
+            'canonicalUrl' => 'https://220.lv/id/{1}',
         ],
     ];
 
@@ -650,12 +650,15 @@ class PriceScraperService
     protected function recordPrice(Product $product, float $newPrice): void
     {
         $oldPrice = $product->current_price;
+        $priceChanged = $oldPrice === null || abs((float) $oldPrice - $newPrice) >= 0.01;
 
-        PriceHistory::create([
-            'product_id' => $product->id,
-            'price' => $newPrice,
-            'checked_at' => now(),
-        ]);
+        if ($priceChanged) {
+            PriceHistory::create([
+                'product_id' => $product->id,
+                'price' => $newPrice,
+                'checked_at' => now(),
+            ]);
+        }
 
         $product->update([
             'current_price' => $newPrice,
@@ -664,7 +667,7 @@ class PriceScraperService
             'checks_count' => $product->checks_count + 1,
         ]);
 
-        if ($oldPrice !== null && abs($oldPrice - $newPrice) >= 0.01) {
+        if ($oldPrice !== null && $priceChanged) {
             $direction = $newPrice < $oldPrice ? 'dropped' : 'increased';
             $diff = abs($oldPrice - $newPrice);
             $message = "{$product->title}: price {$direction} by {$product->currency} "
