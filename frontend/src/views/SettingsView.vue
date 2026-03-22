@@ -87,7 +87,8 @@
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-account-outline"
-            :rules="[v => !!v || $t('settings.required'), v => v.length <= 100 || $t('settings.max100')]"
+            :error="nameErrors().length > 0"
+            :error-messages="nameErrors()"
           />
           <div class="text-caption text-medium-emphasis mb-3" v-if="profile.last_username_change">
             {{ $t('settings.lastChanged') }} {{ formatDate(profile.last_username_change) }}
@@ -116,7 +117,8 @@
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-email-outline"
-            :rules="[v => !!v || $t('settings.required'), v => /.+@.+\..+/.test(v) || $t('settings.invalidEmail')]"
+            :error="emailErrors().length > 0"
+            :error-messages="emailErrors()"
           />
           <v-text-field
             v-model="emailForm.password"
@@ -125,7 +127,8 @@
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-lock-outline"
-            :rules="[v => !!v || $t('settings.required')]"
+            :error="emailPasswordErrors().length > 0"
+            :error-messages="emailPasswordErrors()"
           />
           <v-btn type="submit" color="primary" rounded="xl" :loading="emailSaving">{{ $t('settings.updateEmail') }}</v-btn>
         </v-form>
@@ -150,7 +153,8 @@
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-lock-outline"
-            :rules="[v => !!v || $t('settings.required')]"
+            :error="currentPasswordErrors().length > 0"
+            :error-messages="currentPasswordErrors()"
           />
           <v-text-field
             v-model="passwordForm.password"
@@ -159,7 +163,8 @@
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-lock-plus-outline"
-            :rules="[v => !!v || $t('settings.required'), v => v.length >= 8 || $t('settings.min8')]"
+            :error="newPasswordErrors().length > 0"
+            :error-messages="newPasswordErrors()"
           />
           <v-text-field
             v-model="passwordForm.password_confirmation"
@@ -168,7 +173,8 @@
             variant="outlined"
             rounded="lg"
             prepend-inner-icon="mdi-lock-check-outline"
-            :rules="[v => !!v || $t('settings.required'), v => v === passwordForm.password || $t('settings.passwordsNoMatch')]"
+            :error="confirmPasswordErrors().length > 0"
+            :error-messages="confirmPasswordErrors()"
           />
           <v-btn type="submit" color="primary" rounded="xl" :loading="passwordSaving">{{ $t('settings.changePasswordBtn') }}</v-btn>
         </v-form>
@@ -198,18 +204,67 @@ const nameFormRef = ref(null)
 const nameSaving = ref(false)
 const nameMsg = ref(null)
 const nameForm = reactive({ name: '' })
+const nameSubmitted = ref(false)
 
 // Email
 const emailFormRef = ref(null)
 const emailSaving = ref(false)
 const emailMsg = ref(null)
 const emailForm = reactive({ email: '', password: '' })
+const emailSubmitted = ref(false)
 
 // Password
 const passwordFormRef = ref(null)
 const passwordSaving = ref(false)
 const passwordMsg = ref(null)
 const passwordForm = reactive({ current_password: '', password: '', password_confirmation: '' })
+const passwordSubmitted = ref(false)
+
+function isValidEmail(value) {
+  return /.+@.+\..+/.test(value)
+}
+
+function nameErrors() {
+  if (!nameSubmitted.value) return []
+
+  const name = nameForm.name?.trim() || ''
+  if (!name) return [t('settings.required')]
+  if (name.length > 100) return [t('settings.max100')]
+  return []
+}
+
+function emailErrors() {
+  if (!emailSubmitted.value) return []
+
+  const email = emailForm.email?.trim() || ''
+  if (!email) return [t('settings.required')]
+  if (!isValidEmail(email)) return [t('settings.invalidEmail')]
+  return []
+}
+
+function emailPasswordErrors() {
+  if (!emailSubmitted.value) return []
+  return emailForm.password ? [] : [t('settings.required')]
+}
+
+function currentPasswordErrors() {
+  if (!passwordSubmitted.value) return []
+  return passwordForm.current_password ? [] : [t('settings.required')]
+}
+
+function newPasswordErrors() {
+  if (!passwordSubmitted.value) return []
+  if (!passwordForm.password) return [t('settings.required')]
+  if (passwordForm.password.length < 8) return [t('settings.min8')]
+  return []
+}
+
+function confirmPasswordErrors() {
+  if (!passwordSubmitted.value) return []
+  if (!passwordForm.password_confirmation) return [t('settings.required')]
+  if (passwordForm.password_confirmation !== passwordForm.password) return [t('settings.passwordsNoMatch')]
+  return []
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
@@ -229,13 +284,15 @@ async function loadProfile() {
 }
 
 async function handleNameChange() {
-  const { valid } = await nameFormRef.value.validate()
-  if (!valid) return
+  nameSubmitted.value = true
+  if (nameErrors().length) return
+
   nameSaving.value = true
   nameMsg.value = null
   try {
-    const { data } = await updateUserName({ name: nameForm.name })
+    const { data } = await updateUserName({ name: nameForm.name.trim() })
     nameMsg.value = { type: 'success', text: data.message }
+    nameSubmitted.value = false
     await auth.fetchUser()
     await loadProfile()
   } catch (e) {
@@ -246,14 +303,16 @@ async function handleNameChange() {
 }
 
 async function handleEmailChange() {
-  const { valid } = await emailFormRef.value.validate()
-  if (!valid) return
+  emailSubmitted.value = true
+  if (emailErrors().length || emailPasswordErrors().length) return
+
   emailSaving.value = true
   emailMsg.value = null
   try {
-    const { data } = await updateUserEmail({ email: emailForm.email, password: emailForm.password })
+    const { data } = await updateUserEmail({ email: emailForm.email.trim(), password: emailForm.password })
     emailMsg.value = { type: 'success', text: data.message }
     emailForm.password = ''
+    emailSubmitted.value = false
     await auth.fetchUser()
     await loadProfile()
   } catch (e) {
@@ -264,8 +323,15 @@ async function handleEmailChange() {
 }
 
 async function handlePasswordChange() {
-  const { valid } = await passwordFormRef.value.validate()
-  if (!valid) return
+  passwordSubmitted.value = true
+  if (
+    currentPasswordErrors().length
+    || newPasswordErrors().length
+    || confirmPasswordErrors().length
+  ) {
+    return
+  }
+
   passwordSaving.value = true
   passwordMsg.value = null
   try {
@@ -274,6 +340,7 @@ async function handlePasswordChange() {
     passwordForm.current_password = ''
     passwordForm.password = ''
     passwordForm.password_confirmation = ''
+    passwordSubmitted.value = false
   } catch (e) {
     passwordMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedChangePassword') }
   } finally {

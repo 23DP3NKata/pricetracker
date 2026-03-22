@@ -256,7 +256,8 @@
             rounded="lg"
             prepend-inner-icon="mdi-link-variant"
             :placeholder="$t('form.urlPlaceholder')"
-            :rules="urlRules"
+            :error="addUrlErrors().length > 0"
+            :error-messages="addUrlErrors()"
             :disabled="addLoading"
           />
 
@@ -331,6 +332,7 @@ const showAddDialog = ref(false)
 const addFormRef = ref(null)
 const addLoading = ref(false)
 const addError = ref(null)
+const addSubmitted = ref(false)
 const checkIntervalOptions = computed(() => [
   { label: i18n.t('form.every30min'), value: 30 },
   { label: i18n.t('form.every1h'), value: 60 },
@@ -343,10 +345,15 @@ const addForm = reactive({
   targetPrice: '',
   checkInterval: 1440,
 })
-const urlRules = computed(() => [
-  v => !!v || `${i18n.t('form.url')} ${i18n.t('form.required')}`,
-  v => /^https?:\/\/.+/.test(v) || i18n.t('form.invalidUrl'),
-])
+
+function addUrlErrors() {
+  if (!addSubmitted.value) return []
+
+  const url = addForm.url?.trim() || ''
+  if (!url) return [`${i18n.t('form.url')} ${i18n.t('form.required')}`]
+  if (!/^https?:\/\/.+/.test(url)) return [i18n.t('form.invalidUrl')]
+  return []
+}
 
 const isDark = computed(() => theme.global.current.value.dark)
 const currentLanguageLabel = computed(() => i18n.locale.value === 'lv' ? i18n.t('ux.languageLatvian') : i18n.t('ux.languageEnglish'))
@@ -402,21 +409,21 @@ function openAddProduct() {
 function closeAddProduct() {
   showAddDialog.value = false
   addError.value = null
+  addSubmitted.value = false
   addForm.url = ''
   addForm.targetPrice = ''
   addForm.checkInterval = 1440
-  addFormRef.value?.resetValidation()
 }
 
 async function handleAddProduct() {
-  const { valid } = await addFormRef.value.validate()
-  if (!valid) return
+  addSubmitted.value = true
+  if (addUrlErrors().length) return
 
   addLoading.value = true
   addError.value = null
   try {
     const result = await productsStore.addProduct({
-      url: addForm.url,
+      url: addForm.url.trim(),
       check_interval: addForm.checkInterval,
     })
     closeAddProduct()

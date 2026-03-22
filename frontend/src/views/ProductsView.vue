@@ -118,7 +118,8 @@
             rounded="lg"
             prepend-inner-icon="mdi-link"
             :placeholder="$t('form.urlPlaceholder')"
-            :rules="[v => !!v || $t('productsPage.required'), v => /^https?:\/\/.+/.test(v) || $t('productsPage.validUrl')]"
+            :error="addUrlErrors().length > 0"
+            :error-messages="addUrlErrors()"
             :disabled="addLoading"
           />
 
@@ -140,7 +141,7 @@
           </div>
 
           <div class="d-flex ga-2 justify-end mt-2">
-            <v-btn variant="text" rounded="xl" @click="showAddDialog = false" :disabled="addLoading">{{ $t('productsPage.cancel') }}</v-btn>
+            <v-btn variant="text" rounded="xl" @click="closeAddDialog" :disabled="addLoading">{{ $t('productsPage.cancel') }}</v-btn>
             <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading">
               <v-icon start>mdi-magnify</v-icon> {{ $t('productsPage.fetchTrack') }}
             </v-btn>
@@ -163,6 +164,7 @@ const showAddDialog = ref(false)
 const addFormRef = ref(null)
 const addLoading = ref(false)
 const addError = ref(null)
+const addSubmitted = ref(false)
 
 const addForm = reactive({
   url: '',
@@ -223,6 +225,23 @@ function formatDateTime(dateStr) {
   return date.toLocaleString()
 }
 
+function addUrlErrors() {
+  if (!addSubmitted.value) return []
+
+  const url = addForm.url?.trim() || ''
+  if (!url) return [t('productsPage.required')]
+  if (!/^https?:\/\/.+/.test(url)) return [t('productsPage.validUrl')]
+  return []
+}
+
+function closeAddDialog() {
+  showAddDialog.value = false
+  addError.value = null
+  addSubmitted.value = false
+  addForm.url = ''
+  addForm.checkInterval = 1440
+}
+
 async function loadProducts(page = 1) {
   currentPage.value = page
   await store.fetchProducts({
@@ -234,19 +253,17 @@ async function loadProducts(page = 1) {
 }
 
 async function handleAdd() {
-  const { valid } = await addFormRef.value.validate()
-  if (!valid) return
+  addSubmitted.value = true
+  if (addUrlErrors().length) return
 
   addLoading.value = true
   addError.value = null
   try {
     await store.addProduct({
-      url: addForm.url,
+      url: addForm.url.trim(),
       check_interval: addForm.checkInterval,
     })
-    showAddDialog.value = false
-    addForm.url = ''
-    addForm.checkInterval = 1440
+    closeAddDialog()
     await loadProducts(currentPage.value)
   } catch (e) {
     addError.value = e.response?.data?.message || t('productsPage.failedAdd')

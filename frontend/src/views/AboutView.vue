@@ -101,7 +101,8 @@
               variant="outlined"
               rounded="lg"
               class="mb-4"
-              required
+              :error="fieldErrors('name').length > 0"
+              :error-messages="fieldErrors('name')"
             />
             <v-text-field
               v-model="form.email"
@@ -110,7 +111,8 @@
               variant="outlined"
               rounded="lg"
               class="mb-4"
-              required
+              :error="fieldErrors('email').length > 0"
+              :error-messages="fieldErrors('email')"
             />
             <v-textarea
               v-model="form.message"
@@ -119,7 +121,8 @@
               rounded="lg"
               rows="4"
               class="mb-4"
-              required
+              :error="fieldErrors('message').length > 0"
+              :error-messages="fieldErrors('message')"
             />
             <v-btn
               type="submit"
@@ -158,6 +161,9 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const form = ref({
   name: '',
@@ -167,7 +173,45 @@ const form = ref({
   success: false
 })
 
+const submitted = ref(false)
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
+function fieldErrors(field) {
+  if (!submitted.value) return []
+
+  if (field === 'name') {
+    return form.value.name.trim() ? [] : [t('auth.required')]
+  }
+
+  if (field === 'message') {
+    return form.value.message.trim() ? [] : [t('auth.required')]
+  }
+
+  if (field === 'email') {
+    const email = form.value.email.trim()
+    if (!email) return [t('auth.required')]
+    return isValidEmail(email) ? [] : [t('auth.invalidEmail')]
+  }
+
+  return []
+}
+
+function hasErrors() {
+  return fieldErrors('name').length > 0
+    || fieldErrors('email').length > 0
+    || fieldErrors('message').length > 0
+}
+
 function handleContact() {
+  submitted.value = true
+
+  if (hasErrors()) {
+    return
+  }
+
   form.value.loading = true
 
   setTimeout(() => {
@@ -177,6 +221,7 @@ function handleContact() {
     form.value.name = ''
     form.value.email = ''
     form.value.message = ''
+    submitted.value = false
 
     setTimeout(() => {
       form.value.success = false
