@@ -86,35 +86,28 @@
               </template>
 
               <v-card min-width="260" rounded="xl" elevation="3">
-                <v-list v-model:opened="openedUserMenuGroups" density="compact" class="py-2">
+                <v-list density="compact" class="py-2">
                   <v-list-item to="/settings" rounded="lg" prepend-icon="mdi-cog-outline" :title="$t('nav.settings')" />
 
-                  <v-list-group value="language-user" prepend-icon="mdi-translate">
+                  <v-menu v-model="languageMenuUser" location="end" offset="8">
                     <template #activator="{ props }">
-                      <v-list-item v-bind="props" rounded="lg" :title="$t('nav.language')" />
+                      <v-list-item
+                        v-bind="props"
+                        rounded="lg"
+                        prepend-icon="mdi-translate"
+                        :title="$t('nav.language')"
+                        :subtitle="currentLanguageLabel"
+                      />
                     </template>
-                    <v-list-item
-                      rounded="lg"
-                      class="pl-8"
-                      :active="i18n.locale.value === 'en'"
-                      :title="i18n.t('ux.languageEnglish')"
-                      @click="setLanguage('en')"
-                    />
-                    <v-list-item
-                      rounded="lg"
-                      class="pl-8"
-                      :active="i18n.locale.value === 'lv'"
-                      :title="i18n.t('ux.languageLatvian')"
-                      @click="setLanguage('lv')"
-                    />
-                    <v-list-item
-                      rounded="lg"
-                      class="pl-8"
-                      :active="i18n.locale.value === 'ru'"
-                      :title="i18n.t('ux.languageRussian')"
-                      @click="setLanguage('ru')"
-                    />
-                  </v-list-group>
+
+                    <v-card min-width="220" rounded="lg" elevation="2">
+                      <v-list density="compact" class="py-1">
+                        <v-list-item :active="i18n.locale.value === 'en'" :title="i18n.t('ux.languageEnglish')" @click="setLanguage('en')" />
+                        <v-list-item :active="i18n.locale.value === 'lv'" :title="i18n.t('ux.languageLatvian')" @click="setLanguage('lv')" />
+                        <v-list-item :active="i18n.locale.value === 'ru'" :title="i18n.t('ux.languageRussian')" @click="setLanguage('ru')" />
+                      </v-list>
+                    </v-card>
+                  </v-menu>
 
                   <v-list-item
                     rounded="lg"
@@ -126,7 +119,7 @@
 
                 <v-divider />
 
-                <v-list v-model:opened="openedGuestMenuGroups" density="compact" class="py-2">
+                <v-list density="compact" class="py-2">
                   <v-list-item
                     rounded="lg"
                     prepend-icon="mdi-logout"
@@ -153,32 +146,25 @@
 
               <v-card min-width="260" rounded="xl" elevation="3">
                 <v-list density="compact" class="py-2">
-                  <v-list-group value="language-guest" prepend-icon="mdi-translate">
+                  <v-menu v-model="languageMenuGuest" location="end" offset="8">
                     <template #activator="{ props }">
-                      <v-list-item v-bind="props" rounded="lg" :title="$t('nav.language')" />
+                      <v-list-item
+                        v-bind="props"
+                        rounded="lg"
+                        prepend-icon="mdi-translate"
+                        :title="$t('nav.language')"
+                        :subtitle="currentLanguageLabel"
+                      />
                     </template>
-                    <v-list-item
-                      rounded="lg"
-                      class="pl-8"
-                      :active="i18n.locale.value === 'en'"
-                      :title="i18n.t('ux.languageEnglish')"
-                      @click="setLanguage('en')"
-                    />
-                    <v-list-item
-                      rounded="lg"
-                      class="pl-8"
-                      :active="i18n.locale.value === 'lv'"
-                      :title="i18n.t('ux.languageLatvian')"
-                      @click="setLanguage('lv')"
-                    />
-                    <v-list-item
-                      rounded="lg"
-                      class="pl-8"
-                      :active="i18n.locale.value === 'ru'"
-                      :title="i18n.t('ux.languageRussian')"
-                      @click="setLanguage('ru')"
-                    />
-                  </v-list-group>
+
+                    <v-card min-width="220" rounded="lg" elevation="2">
+                      <v-list density="compact" class="py-1">
+                        <v-list-item :active="i18n.locale.value === 'en'" :title="i18n.t('ux.languageEnglish')" @click="setLanguage('en')" />
+                        <v-list-item :active="i18n.locale.value === 'lv'" :title="i18n.t('ux.languageLatvian')" @click="setLanguage('lv')" />
+                        <v-list-item :active="i18n.locale.value === 'ru'" :title="i18n.t('ux.languageRussian')" @click="setLanguage('ru')" />
+                      </v-list>
+                    </v-card>
+                  </v-menu>
 
                   <v-list-item
                     rounded="lg"
@@ -221,7 +207,7 @@
           </div>
         </div>
         <v-divider />
-        <v-list v-model:opened="openedMobileMenuGroups" class="pa-2">
+        <v-list class="pa-2">
           <v-list-item to="/dashboard" rounded prepend-icon="mdi-view-dashboard-outline" :title="$t('nav.dashboard')" />
           <v-list-item to="/products" rounded prepend-icon="mdi-tag-outline" :title="$t('nav.products')" />
           <v-list-item to="/notifications" rounded prepend-icon="mdi-bell-outline" :title="$t('notificationsPage.title')">
@@ -245,32 +231,25 @@
             :title="isDark ? $t('ux.themeLight') : $t('ux.themeDark')"
             @click="toggleTheme"
           />
-          <v-list-group value="language-mobile" prepend-icon="mdi-translate">
+          <v-menu v-model="languageMenuMobile" location="bottom" offset="8">
             <template #activator="{ props }">
-              <v-list-item v-bind="props" rounded :title="$t('nav.language')" />
+              <v-list-item
+                v-bind="props"
+                rounded
+                prepend-icon="mdi-translate"
+                :title="$t('nav.language')"
+                :subtitle="currentLanguageLabel"
+              />
             </template>
-            <v-list-item
-              rounded
-              class="pl-8"
-              :active="i18n.locale.value === 'en'"
-              :title="i18n.t('ux.languageEnglish')"
-              @click="setLanguage('en')"
-            />
-            <v-list-item
-              rounded
-              class="pl-8"
-              :active="i18n.locale.value === 'lv'"
-              :title="i18n.t('ux.languageLatvian')"
-              @click="setLanguage('lv')"
-            />
-            <v-list-item
-              rounded
-              class="pl-8"
-              :active="i18n.locale.value === 'ru'"
-              :title="i18n.t('ux.languageRussian')"
-              @click="setLanguage('ru')"
-            />
-          </v-list-group>
+
+            <v-card min-width="220" rounded="lg" elevation="2">
+              <v-list density="compact" class="py-1">
+                <v-list-item :active="i18n.locale.value === 'en'" :title="i18n.t('ux.languageEnglish')" @click="setLanguage('en')" />
+                <v-list-item :active="i18n.locale.value === 'lv'" :title="i18n.t('ux.languageLatvian')" @click="setLanguage('lv')" />
+                <v-list-item :active="i18n.locale.value === 'ru'" :title="i18n.t('ux.languageRussian')" @click="setLanguage('ru')" />
+              </v-list>
+            </v-card>
+          </v-menu>
           <v-list-item to="/settings" rounded prepend-icon="mdi-cog-outline" :title="$t('nav.settings')" />
           <v-divider class="my-2" />
           <v-list-item rounded prepend-icon="mdi-logout" :title="$t('nav.logout')" class="text-error" @click="handleLogout" />
@@ -401,9 +380,9 @@ const addFormRef = ref(null)
 const addLoading = ref(false)
 const addError = ref(null)
 const addSubmitted = ref(false)
-const openedUserMenuGroups = ref([])
-const openedGuestMenuGroups = ref([])
-const openedMobileMenuGroups = ref([])
+const languageMenuUser = ref(false)
+const languageMenuGuest = ref(false)
+const languageMenuMobile = ref(false)
 const checkIntervalOptions = computed(() => [
   { label: i18n.t('form.every30min'), value: 30 },
   { label: i18n.t('form.every1h'), value: 60 },
@@ -427,6 +406,11 @@ function addUrlErrors() {
 }
 
 const isDark = computed(() => theme.global.current.value.dark)
+const currentLanguageLabel = computed(() => {
+  if (i18n.locale.value === 'lv') return i18n.t('ux.languageLatvian')
+  if (i18n.locale.value === 'ru') return i18n.t('ux.languageRussian')
+  return i18n.t('ux.languageEnglish')
+})
 const siteLogoSrc = computed(() => (isDark.value ? '/wombat.png' : '/wombat-blue.png'))
 const recentNotifications = computed(() => notificationsStore.notifications.slice(0, 5))
 
@@ -519,19 +503,21 @@ function toggleTheme() {
 
 function setLanguage(lang) {
   if (!['en', 'lv', 'ru'].includes(lang)) return
+  const closeLanguageMenus = () => {
+    languageMenuUser.value = false
+    languageMenuGuest.value = false
+    languageMenuMobile.value = false
+  }
+
   if (i18n.locale.value === lang) {
-    openedUserMenuGroups.value = openedUserMenuGroups.value.filter((v) => v !== 'language-user')
-    openedGuestMenuGroups.value = openedGuestMenuGroups.value.filter((v) => v !== 'language-guest')
-    openedMobileMenuGroups.value = openedMobileMenuGroups.value.filter((v) => v !== 'language-mobile')
+    closeLanguageMenus()
     return
   }
 
   i18n.locale.value = lang
   localStorage.setItem('pt-language', lang)
   showLanguageNotice.value = true
-  openedUserMenuGroups.value = openedUserMenuGroups.value.filter((v) => v !== 'language-user')
-  openedGuestMenuGroups.value = openedGuestMenuGroups.value.filter((v) => v !== 'language-guest')
-  openedMobileMenuGroups.value = openedMobileMenuGroups.value.filter((v) => v !== 'language-mobile')
+  closeLanguageMenus()
 }
 
 async function handleLogout() {
