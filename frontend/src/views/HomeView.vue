@@ -451,7 +451,7 @@
 .cta {
   padding: 5rem 1.5rem;
   text-align: center;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), #ff8f3f);
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), #f97316);
 }
 
 .cta h2 {
