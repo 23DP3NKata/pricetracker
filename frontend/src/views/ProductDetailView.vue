@@ -109,23 +109,33 @@
         <v-table v-if="historyData.length" density="compact">
           <thead>
             <tr>
-              <th>{{ $t('productDetail.date') }}</th>
+              <th>
+                <button type="button" class="table-sort-btn" @click="setHistorySort('date')">
+                  {{ $t('productDetail.date') }}
+                  <v-icon v-if="historySortKey === 'date'" size="14">{{ historySortDir === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+                </button>
+              </th>
               <th class="text-right">{{ $t('productDetail.price') }}</th>
-              <th class="text-right">{{ $t('productDetail.change') }}</th>
+              <th class="text-right">
+                <button type="button" class="table-sort-btn table-sort-btn-right" @click="setHistorySort('change')">
+                  {{ $t('productDetail.change') }}
+                  <v-icon v-if="historySortKey === 'change'" size="14">{{ historySortDir === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(entry, i) in historyData" :key="i">
+            <tr v-for="(entry, i) in sortedHistoryData" :key="`${entry.checked_at}-${entry.price}-${i}`">
               <td>{{ formatDate(entry.checked_at) }}</td>
               <td class="text-right font-weight-medium">{{ formatPrice(entry.price) }}</td>
               <td class="text-right">
-                <template v-if="i < historyData.length - 1">
+                <template v-if="i < sortedHistoryData.length - 1">
                   <v-chip
-                    :color="priceDiff(entry.price, historyData[i + 1].price) > 0 ? 'error' : priceDiff(entry.price, historyData[i + 1].price) < 0 ? 'success' : 'grey'"
+                    :color="priceDiff(entry.price, sortedHistoryData[i + 1].price) > 0 ? 'error' : priceDiff(entry.price, sortedHistoryData[i + 1].price) < 0 ? 'success' : 'grey'"
                     size="x-small"
                     variant="tonal"
                   >
-                    {{ priceDiff(entry.price, historyData[i + 1].price) > 0 ? '+' : '' }}{{ priceDiff(entry.price, historyData[i + 1].price).toFixed(2) }} €
+                    {{ priceDiff(entry.price, sortedHistoryData[i + 1].price) > 0 ? '+' : '' }}{{ priceDiff(entry.price, sortedHistoryData[i + 1].price).toFixed(2) }} €
                   </v-chip>
                 </template>
               </td>
@@ -169,6 +179,8 @@ const product = ref(null)
 const historyDays = ref(30)
 const historyData = ref([])
 const historyStats = ref(null)
+const historySortKey = ref('date')
+const historySortDir = ref('desc')
 const saving = ref(false)
 const saveMsg = ref(null)
 const confirmDelete = ref(false)
@@ -220,6 +232,59 @@ function formatDate(dateStr) {
   if (Number.isNaN(date.getTime())) return t('productDetail.noData')
 
   return date.toLocaleString()
+}
+
+function parseHistoryDate(dateStr) {
+  if (!dateStr) return Number.NEGATIVE_INFINITY
+
+  const hasTimezone = /[zZ]$|[+-]\d{2}:\d{2}$/.test(dateStr)
+  const normalized = hasTimezone
+    ? dateStr
+    : `${dateStr.replace(' ', 'T')}Z`
+
+  const date = new Date(normalized)
+  return Number.isNaN(date.getTime()) ? Number.NEGATIVE_INFINITY : date.getTime()
+}
+
+const sortedHistoryData = computed(() => {
+  const rows = [...historyData.value]
+
+  if (historySortKey.value === 'date') {
+    rows.sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
+  }
+
+  if (historySortKey.value === 'change') {
+    // Compute change on chronological order first, then sort by absolute change.
+    const byDateAsc = [...rows].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
+    const withChange = byDateAsc.map((entry, index) => ({
+      entry,
+      change: index < byDateAsc.length - 1 ? priceDiff(entry.price, byDateAsc[index + 1].price) : null,
+    }))
+
+    withChange.sort((a, b) => {
+      const aVal = a.change === null ? Number.NEGATIVE_INFINITY : Math.abs(a.change)
+      const bVal = b.change === null ? Number.NEGATIVE_INFINITY : Math.abs(b.change)
+      return aVal - bVal
+    })
+
+    rows.splice(0, rows.length, ...withChange.map((row) => row.entry))
+  }
+
+  if (historySortDir.value === 'desc') {
+    rows.reverse()
+  }
+
+  return rows
+})
+
+function setHistorySort(key) {
+  if (historySortKey.value === key) {
+    historySortDir.value = historySortDir.value === 'desc' ? 'asc' : 'desc'
+    return
+  }
+
+  historySortKey.value = key
+  historySortDir.value = 'desc'
 }
 
 function formatDateOrFallback(dateStr) {
@@ -282,3 +347,21 @@ onMounted(async () => {
   await loadHistory()
 })
 </script>
+
+<style scoped>
+.table-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.table-sort-btn-right {
+  margin-left: auto;
+}
+</style>
