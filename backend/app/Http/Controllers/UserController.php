@@ -39,11 +39,18 @@ class UserController extends Controller
         $user = $request->user();
 
         // Check 30-day cooldown
-        if ($user->last_username_change && $user->last_username_change->diffInDays(now()) < 30) {
-            $daysLeft = 30 - $user->last_username_change->diffInDays(now());
-            return response()->json([
-                'message' => "You can change your name again in {$daysLeft} days.",
-            ], 422);
+        if ($user->last_username_change) {
+            $elapsedSeconds = $user->last_username_change->diffInSeconds(now());
+            $cooldownSeconds = 30 * 24 * 60 * 60;
+
+            if ($elapsedSeconds < $cooldownSeconds) {
+                $secondsLeft = $cooldownSeconds - $elapsedSeconds;
+                $daysLeft = max(1, (int) ceil($secondsLeft / (24 * 60 * 60)));
+
+                return response()->json([
+                    'message' => "You can change your name again in {$daysLeft} days.",
+                ], 422);
+            }
         }
 
         $validated = $request->validate([
@@ -65,7 +72,7 @@ class UserController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'email', 'max:255', 'confirmed', Rule::unique('users')->ignore($user->id)],
             'password' => ['required', 'string'],
         ]);
 

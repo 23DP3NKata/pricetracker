@@ -121,6 +121,16 @@
             :error-messages="emailErrors()"
           />
           <v-text-field
+            v-model="emailForm.email_confirmation"
+            :label="$t('settings.confirmNewEmail')"
+            type="email"
+            variant="outlined"
+            rounded="lg"
+            prepend-inner-icon="mdi-email-check-outline"
+            :error="emailConfirmErrors().length > 0"
+            :error-messages="emailConfirmErrors()"
+          />
+          <v-text-field
             v-model="emailForm.password"
             :label="$t('settings.currentPassword')"
             type="password"
@@ -210,7 +220,7 @@ const nameSubmitted = ref(false)
 const emailFormRef = ref(null)
 const emailSaving = ref(false)
 const emailMsg = ref(null)
-const emailForm = reactive({ email: '', password: '' })
+const emailForm = reactive({ email: '', email_confirmation: '', password: '' })
 const emailSubmitted = ref(false)
 
 // Password
@@ -247,6 +257,15 @@ function emailPasswordErrors() {
   return emailForm.password ? [] : [t('settings.required')]
 }
 
+function emailConfirmErrors() {
+  if (!emailSubmitted.value) return []
+
+  const confirmEmail = emailForm.email_confirmation?.trim() || ''
+  if (!confirmEmail) return [t('settings.required')]
+  if (confirmEmail !== (emailForm.email?.trim() || '')) return [t('settings.emailsNoMatch')]
+  return []
+}
+
 function currentPasswordErrors() {
   if (!passwordSubmitted.value) return []
   return passwordForm.current_password ? [] : [t('settings.required')]
@@ -278,6 +297,7 @@ async function loadProfile() {
     profile.value = data
     nameForm.name = data.name
     emailForm.email = data.email
+    emailForm.email_confirmation = data.email
   } finally {
     loading.value = false
   }
@@ -304,13 +324,18 @@ async function handleNameChange() {
 
 async function handleEmailChange() {
   emailSubmitted.value = true
-  if (emailErrors().length || emailPasswordErrors().length) return
+  if (emailErrors().length || emailConfirmErrors().length || emailPasswordErrors().length) return
 
   emailSaving.value = true
   emailMsg.value = null
   try {
-    const { data } = await updateUserEmail({ email: emailForm.email.trim(), password: emailForm.password })
+    const { data } = await updateUserEmail({
+      email: emailForm.email.trim(),
+      email_confirmation: emailForm.email_confirmation.trim(),
+      password: emailForm.password,
+    })
     emailMsg.value = { type: 'success', text: data.message }
+    emailForm.email_confirmation = emailForm.email
     emailForm.password = ''
     emailSubmitted.value = false
     await auth.fetchUser()
