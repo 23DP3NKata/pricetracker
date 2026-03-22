@@ -1,27 +1,29 @@
 <template>
   <v-container class="py-8" style="max-width: 700px;">
-    <h1 class="text-h4 font-weight-bold mb-6">{{ $t('settings.title') }}</h1>
+    <div class="settings-head mb-6">
+      <h1 class="text-h4 font-weight-bold">{{ $t('settings.title') }}</h1>
+      <p class="text-medium-emphasis">{{ profile?.email || auth.user?.email }}</p>
+    </div>
 
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
     <template v-if="profile">
       <!-- Account Info -->
-      <v-card rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('settings.accountInfo') }}</h3>
+      <v-card rounded="xl" class="pa-6 mb-6 settings-card">
+        <div class="section-title mb-4">
+          <v-avatar size="36" color="primary" variant="tonal">
+            <v-icon size="20">mdi-account-circle-outline</v-icon>
+          </v-avatar>
+          <h3 class="text-h6 font-weight-bold">{{ $t('settings.accountInfo') }}</h3>
+        </div>
         <v-row>
-          <v-col cols="6">
+          <v-col v-if="isAdmin" cols="12" sm="6">
             <div class="text-caption text-medium-emphasis">{{ $t('settings.role') }}</div>
-            <v-chip :color="profile.role === 'admin' ? 'warning' : 'primary'" size="small" variant="tonal">
+            <v-chip color="warning" size="small" variant="tonal">
               {{ profile.role }}
             </v-chip>
           </v-col>
-          <v-col cols="6">
-            <div class="text-caption text-medium-emphasis">{{ $t('settings.status') }}</div>
-            <v-chip :color="profile.status === 'active' ? 'success' : 'error'" size="small" variant="tonal">
-              {{ profile.status }}
-            </v-chip>
-          </v-col>
-          <v-col cols="6">
+          <v-col cols="12" sm="6">
             <div class="text-caption text-medium-emphasis">{{ $t('settings.emailVerified') }}</div>
             <v-chip v-if="auth.emailVerified" color="success" size="small" variant="tonal" prepend-icon="mdi-check-circle">
               {{ $t('settings.verified') }}
@@ -30,11 +32,11 @@
               {{ $t('settings.notVerified') }}
             </v-chip>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="12" sm="6">
             <div class="text-caption text-medium-emphasis">{{ $t('settings.monthlyLimit') }}</div>
             <div class="text-body-1 font-weight-medium">{{ profile.checks_used }} / {{ profile.monthly_limit }}</div>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="12" sm="6">
             <div class="text-caption text-medium-emphasis">{{ $t('settings.memberSince') }}</div>
             <div class="text-body-1 font-weight-medium">{{ formatDate(profile.created_at) }}</div>
           </v-col>
@@ -42,8 +44,13 @@
       </v-card>
 
       <!-- Email Verification -->
-      <v-card v-if="!auth.emailVerified" rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-2">{{ $t('settings.emailVerification') }}</h3>
+      <v-card v-if="!auth.emailVerified" rounded="xl" class="pa-6 mb-6 settings-card">
+        <div class="section-title mb-2">
+          <v-avatar size="36" color="warning" variant="tonal">
+            <v-icon size="20">mdi-email-fast-outline</v-icon>
+          </v-avatar>
+          <h3 class="text-h6 font-weight-bold">{{ $t('settings.emailVerification') }}</h3>
+        </div>
         <p class="text-medium-emphasis mb-4">
           {{ $t('settings.verificationInfo') }}
         </p>
@@ -63,8 +70,13 @@
       </v-card>
 
       <!-- Change Name -->
-      <v-card rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('settings.changeName') }}</h3>
+      <v-card rounded="xl" class="pa-6 mb-6 settings-card">
+        <div class="section-title mb-4">
+          <v-avatar size="36" color="primary" variant="tonal">
+            <v-icon size="20">mdi-account-edit-outline</v-icon>
+          </v-avatar>
+          <h3 class="text-h6 font-weight-bold">{{ $t('settings.changeName') }}</h3>
+        </div>
         <v-alert v-if="nameMsg" :type="nameMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="nameMsg = null">
           {{ nameMsg.text }}
         </v-alert>
@@ -86,8 +98,13 @@
       </v-card>
 
       <!-- Change Email -->
-      <v-card rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('settings.changeEmail') }}</h3>
+      <v-card rounded="xl" class="pa-6 mb-6 settings-card">
+        <div class="section-title mb-4">
+          <v-avatar size="36" color="primary" variant="tonal">
+            <v-icon size="20">mdi-email-edit-outline</v-icon>
+          </v-avatar>
+          <h3 class="text-h6 font-weight-bold">{{ $t('settings.changeEmail') }}</h3>
+        </div>
         <v-alert v-if="emailMsg" :type="emailMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="emailMsg = null">
           {{ emailMsg.text }}
         </v-alert>
@@ -115,8 +132,13 @@
       </v-card>
 
       <!-- Change Password -->
-      <v-card rounded="xl" class="pa-6">
-        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('settings.changePassword') }}</h3>
+      <v-card rounded="xl" class="pa-6 settings-card">
+        <div class="section-title mb-4">
+          <v-avatar size="36" color="primary" variant="tonal">
+            <v-icon size="20">mdi-lock-reset</v-icon>
+          </v-avatar>
+          <h3 class="text-h6 font-weight-bold">{{ $t('settings.changePassword') }}</h3>
+        </div>
         <v-alert v-if="passwordMsg" :type="passwordMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="passwordMsg = null">
           {{ passwordMsg.text }}
         </v-alert>
@@ -156,7 +178,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getUserProfile, updateUserName, updateUserEmail, updateUserPassword, resendVerification } from '@/api'
 import { useAuthStore } from '@/stores/auth'
@@ -165,6 +187,7 @@ const auth = useAuthStore()
 const { t } = useI18n()
 const loading = ref(true)
 const profile = ref(null)
+const isAdmin = computed(() => profile.value?.role === 'admin' || auth.isAdmin)
 
 // Verification
 const verifySending = ref(false)
@@ -270,3 +293,24 @@ async function handleResendVerification() {
   }
 }
 </script>
+
+<style scoped>
+.settings-head p {
+  margin-top: 6px;
+}
+
+.settings-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  box-shadow: 0 14px 26px rgba(18, 24, 38, 0.06);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title h3 {
+  margin: 0;
+}
+</style>
