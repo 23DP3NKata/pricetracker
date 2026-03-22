@@ -33,6 +33,7 @@ export const useProductsStore = defineStore('products', () => {
         page: query.page ?? 1,
         sort_by: query.sort_by,
         sort_dir: query.sort_dir,
+        store_name: query.store_name,
       })
       products.value = data.data
       pagination.value = {

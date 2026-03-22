@@ -3,7 +3,7 @@
     <!-- nav -->
     <v-app-bar :elevation="scrolled ? 2 : 0" :class="{ scrolled }" height="70" flat>
       <v-container class="d-flex align-center">
-        <div class="logo" @click="$router.push('/')">
+        <div class="logo" @click="handleLogoClick">
           <v-icon color="primary" size="28">mdi-chart-line-variant</v-icon>
           <span>PriceTracker</span>
         </div>
@@ -273,6 +273,11 @@
             :disabled="addLoading"
           />
 
+          <div class="text-caption text-medium-emphasis mb-4">
+            <v-icon size="14">mdi-information-outline</v-icon>
+            {{ $t('productsPage.supportedStores') }}
+          </div>
+
           <div class="d-flex ga-2 justify-end mt-2">
             <v-btn variant="text" rounded="xl" :disabled="addLoading" @click="closeAddProduct">{{ $t('form.cancel') }}</v-btn>
             <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading" prepend-icon="mdi-plus">{{ $t('form.track') }}</v-btn>
@@ -358,6 +363,10 @@ function addUrlErrors() {
 const isDark = computed(() => theme.global.current.value.dark)
 const currentLanguageLabel = computed(() => i18n.locale.value === 'lv' ? i18n.t('ux.languageLatvian') : i18n.t('ux.languageEnglish'))
 const recentNotifications = computed(() => notificationsStore.notifications.slice(0, 5))
+
+function handleLogoClick() {
+  router.push(auth.isAuthenticated ? '/products' : '/')
+}
 
 function notificationText(notification) {
   return notification?.message || notification?.title || i18n.t('ux.notificationFallback')

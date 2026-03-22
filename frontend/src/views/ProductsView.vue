@@ -31,6 +31,19 @@
             @update:model-value="loadProducts(1)"
           />
         </v-col>
+        <v-col cols="12" sm="6" md="5">
+          <v-select
+            v-model="sort.storeName"
+            :items="storeFilterOptions"
+            :label="$t('productsPage.storeFilter')"
+            item-title="title"
+            item-value="value"
+            variant="outlined"
+            density="comfortable"
+            clearable
+            @update:model-value="loadProducts(1)"
+          />
+        </v-col>
       </v-row>
     </v-card>
 
@@ -174,6 +187,7 @@ const addForm = reactive({
 const sort = reactive({
   by: 'created_at',
   dir: 'desc',
+  storeName: null,
 })
 
 const sortByOptions = computed(() => [
@@ -189,6 +203,16 @@ const sortDirOptions = computed(() => [
   { title: t('productsPage.sortDesc'), value: 'desc' },
   { title: t('productsPage.sortAsc'), value: 'asc' },
 ])
+
+const storeFilterOptions = computed(() => {
+  const names = [...new Set((store.products || []).map((p) => p.store_name).filter(Boolean))]
+  const sorted = names.sort((a, b) => a.localeCompare(b))
+
+  return [
+    { title: t('productsPage.allStores'), value: null },
+    ...sorted.map((name) => ({ title: name, value: name })),
+  ]
+})
 
 const checkIntervalOptions = computed(() => [
   { label: t('form.every30min'), value: 30 },
@@ -248,6 +272,7 @@ async function loadProducts(page = 1) {
     page,
     sort_by: sort.by,
     sort_dir: sort.dir,
+    store_name: sort.storeName || undefined,
   })
   currentPage.value = store.pagination.current_page
 }

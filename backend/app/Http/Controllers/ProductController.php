@@ -24,6 +24,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'sort_by' => ['nullable', Rule::in(['created_at', 'title', 'current_price', 'store_name', 'next_check_at', 'last_checked_at'])],
             'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
+            'store_name' => ['nullable', 'string', 'max:100'],
         ]);
 
         $sortMap = [
@@ -38,13 +39,19 @@ class ProductController extends Controller
         $sortBy = $validated['sort_by'] ?? 'created_at';
         $sortDir = $validated['sort_dir'] ?? 'desc';
         $sortColumn = $sortMap[$sortBy] ?? 'user_products.created_at';
+        $storeFilter = trim((string) ($validated['store_name'] ?? ''));
 
-        $products = $request->user()
+        $query = $request->user()
             ->products()
             ->where('products.status', 'active')
             ->withPivot('check_interval', 'is_active', 'last_checked_at', 'next_check_at', 'created_at')
-            ->orderBy($sortColumn, $sortDir)
-            ->paginate(20);
+            ->orderBy($sortColumn, $sortDir);
+
+        if ($storeFilter !== '') {
+            $query->where('products.store_name', $storeFilter);
+        }
+
+        $products = $query->paginate(20);
 
         return response()->json($products);
     }

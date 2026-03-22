@@ -173,7 +173,7 @@ const messages = {
       dialogTitle: 'Add Product',
       productUrl: 'Product URL',
       checkFrequency: 'Check frequency',
-      supportedStores: 'Supported stores: Amazon, eBay, rdveikals.lv, 1a.lv, 220.lv',
+      supportedStores: 'Supported stores: rdveikals.lv, 1a.lv, 220.lv',
       cancel: 'Cancel',
       fetchTrack: 'Fetch & Track',
       failedAdd: 'Failed to add product',
@@ -181,6 +181,8 @@ const messages = {
       sortTitle: 'Title',
       sortCurrentPrice: 'Current price',
       sortStore: 'Store',
+      storeFilter: 'Filter by store',
+      allStores: 'All stores',
       sortNextCheck: 'Next check',
       sortLastChecked: 'Last checked',
       sortDesc: 'Descending',
@@ -387,7 +389,7 @@ const messages = {
     // Forms
     form: {
       url: 'Product URL',
-      urlPlaceholder: 'https://www.amazon.com/dp/...',
+      urlPlaceholder: 'https://www.rdveikals.lv/...',
       checkFrequency: 'Check frequency',
       every30min: 'Every 30 minutes',
       every1h: 'Every 1 hour',
@@ -587,7 +589,7 @@ const messages = {
       dialogTitle: 'Pievienot produktu',
       productUrl: 'Produkta saite',
       checkFrequency: 'Pārbaudes biežums',
-      supportedStores: 'Atbalstītie veikali: Amazon, eBay, rdveikals.lv, 1a.lv, 220.lv',
+      supportedStores: 'Atbalstītie veikali: rdveikals.lv, 1a.lv, 220.lv',
       cancel: 'Atcelt',
       fetchTrack: 'Ielādēt un izsekot',
       failedAdd: 'Neizdevās pievienot produktu',
@@ -595,6 +597,8 @@ const messages = {
       sortTitle: 'Nosaukums',
       sortCurrentPrice: 'Pašreizējā cena',
       sortStore: 'Veikals',
+      storeFilter: 'Filtrēt pēc veikala',
+      allStores: 'Visi veikali',
       sortNextCheck: 'Nākamā pārbaude',
       sortLastChecked: 'Pēdējā pārbaude',
       sortDesc: 'Dilstoši',
@@ -801,7 +805,7 @@ const messages = {
     // Formas
     form: {
       url: 'Produkta URL adrese',
-      urlPlaceholder: 'https://www.amazon.com/dp/...',
+      urlPlaceholder: 'https://www.rdveikals.lv/...',
       checkFrequency: 'Pārbaudes biežums',
       every30min: 'Ik 30 minūtes',
       every1h: 'Ik 1 stundu',
