@@ -315,7 +315,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -365,7 +365,7 @@ const currentLanguageLabel = computed(() => i18n.locale.value === 'lv' ? i18n.t(
 const recentNotifications = computed(() => notificationsStore.notifications.slice(0, 5))
 
 function handleLogoClick() {
-  router.push(auth.isAuthenticated ? '/products' : '/')
+  router.push(auth.isAuthenticated ? '/dashboard' : '/')
 }
 
 function notificationText(notification) {
@@ -384,9 +384,8 @@ function notificationDate(value) {
 
 async function handleNotificationsMenu(isOpen) {
   if (!isOpen || !auth.isAuthenticated) return
-  if (notificationsStore.notifications.length === 0) {
-    await notificationsStore.fetchNotifications(1)
-  }
+  await notificationsStore.fetchUnreadCount()
+  await notificationsStore.fetchNotifications(1)
 }
 
 async function openNotification(notification) {
@@ -473,11 +472,28 @@ onMounted(() => {
     theme.global.name.value = savedTheme
   }
 
+  if (auth.isAuthenticated) {
+    notificationsStore.fetchUnreadCount()
+  }
+
   pollInterval = setInterval(() => {
     if (auth.isAuthenticated) notificationsStore.fetchUnreadCount()
   }, 30000)
 })
 onUnmounted(() => clearInterval(pollInterval))
+
+watch(
+  () => auth.isAuthenticated,
+  (isAuthenticated) => {
+    if (isAuthenticated) {
+      notificationsStore.fetchUnreadCount()
+      return
+    }
+
+    notificationsStore.reset()
+    notificationsMenu.value = false
+  }
+)
 
 const handleScroll = () => scrolled.value = window.scrollY > 20
 onMounted(() => window.addEventListener('scroll', handleScroll))
