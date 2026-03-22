@@ -32,28 +32,6 @@ class PriceScraperService
      * Supported store configurations with CSS selectors.
      */
     protected array $stores = [
-        'amazon.com' => [
-            'name' => 'Amazon',
-            'selectors' => [
-                'title' => '#productTitle, #title',
-                'price' => '.a-price-whole, .a-offscreen, #priceblock_ourprice, #priceblock_dealprice',
-                'image' => '#landingImage, #imgBlkFront, .a-dynamic-image',
-                'currency' => '.a-price-symbol',
-            ],
-            'canonicalPattern' => '/\/dp\/([A-Z0-9]{10})/',
-            'canonicalUrl' => 'https://www.amazon.com/dp/{1}',
-        ],
-        'ebay.com' => [
-            'name' => 'eBay',
-            'selectors' => [
-                'title' => '.x-item-title__mainTitle, h1.it-ttl',
-                'price' => '.x-price-primary, #prcIsum',
-                'image' => '.ux-image-carousel-item img, #icImg',
-                'currency' => '.x-price-primary .ux-textspans',
-            ],
-            'canonicalPattern' => '/\/itm\/(\d+)/',
-            'canonicalUrl' => 'https://www.ebay.com/itm/{1}',
-        ],
         'rdveikals.lv' => [
             'name' => 'RD Veikals',
             'selectors' => [
@@ -69,13 +47,13 @@ class PriceScraperService
         '1a.lv' => [
             'name' => '1a.lv',
             'selectors' => [
-                'title' => '.product-righter.google-rich-snippet h1, .product-righter h1',
-                'price' => '.price span, .product-price span',
-                'image' => '.products-gallery-slider__slide-inner img, .product-gallery img',
-                'currency' => '.price',
+                'title' => '.product-righter.google-rich-snippet h1, .product-righter h1, h1',
+                'price' => '.promotion-price-product-original-value, .price span, .product-price span',
+                'image' => '.products-gallery-slider__slide-link img, .products-gallery-slider__slide-inner img, .product-gallery img',
+                'currency' => '.promotion-price-product-original-value, .price',
             ],
-            'canonicalPattern' => '/\/p\/([a-z0-9-]+)\/([a-z0-9]+)/i',
-            'canonicalUrl' => 'https://1a.lv/p/{1}/{2}',
+            'canonicalPattern' => '/\/p\/[^\/]+\/([a-z0-9]+)(?:[\/?#]|$)/i',
+            'canonicalUrl' => 'https://1a.lv/p/id/{1}',
         ],
         '220.lv' => [
             'name' => '220.lv',
