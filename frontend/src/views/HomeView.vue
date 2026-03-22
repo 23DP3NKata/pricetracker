@@ -213,7 +213,7 @@
 
 .hero-title span {
   display: inline-block;
-  background: linear-gradient(120deg, rgb(var(--v-theme-primary)), #ff8f3f);
+  background: linear-gradient(120deg, rgb(var(--v-theme-primary)), #1e3a8a);
   line-height: 1.2;
   padding-bottom: 0.08em;
   background-clip: text;
@@ -451,7 +451,7 @@
 .cta {
   padding: 5rem 1.5rem;
   text-align: center;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), #f97316);
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), #1e3a8a);
 }
 
 .cta h2 {

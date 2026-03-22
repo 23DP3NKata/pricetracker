@@ -442,7 +442,7 @@ function handleContact() {
 .cta-final {
   padding: 4rem 1.5rem;
   text-align: center;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), #f97316);
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), #1e3a8a);
 }
 
 .cta-final h2 {
