@@ -27,7 +27,57 @@ const messages = {
     // Footer
     footer: {
       terms: 'Terms',
+      privacy: 'Privacy',
+      disclaimer: 'Disclaimer',
       copyright: 'All rights reserved'
+    },
+
+    // Legal pages
+    legal: {
+      lastUpdated: 'Last updated: March 22, 2026',
+      terms: {
+        title: 'Terms of Use',
+        section1Title: '1. Acceptance of Terms',
+        section1Text: 'By using PriceTracker, you agree to these Terms of Use. If you do not agree, please do not use the service.',
+        section2Title: '2. Service Description',
+        section2Text: 'PriceTracker monitors product pages and displays price-change information. We provide information services and do not sell products directly.',
+        section3Title: '3. Public Data Sources',
+        section3Text: 'The service uses data from publicly available sources. PriceTracker does not claim ownership of third-party trademarks, brand names, or store content.',
+        section4Title: '4. Accuracy and Availability',
+        section4Text: 'We do not guarantee uninterrupted service or absolute accuracy of all displayed data. Final product details and prices should always be verified on the seller website.',
+        section5Title: '5. Acceptable Use',
+        section5Text: 'You agree not to use the service for unlawful activities, abuse, or attempts to disrupt operation of the platform.',
+        section6Title: '6. Contact',
+        section6Text: "For legal or support requests, please contact: support{'@'}pricetracker.lv"
+      },
+      privacy: {
+        title: 'Privacy Policy',
+        section1Title: '1. Data We Collect',
+        section1Text: 'We collect account data (such as name and email), product URLs you track, and service usage data required to operate PriceTracker.',
+        section2Title: '2. How We Use Data',
+        section2Text: 'Data is used to provide account access, track prices, send notifications, and improve platform quality and security.',
+        section3Title: '3. Legal Basis and Retention',
+        section3Text: 'We process personal data based on service performance and legitimate interests. Data is stored only as long as needed for platform operation and legal obligations.',
+        section4Title: '4. Sharing and Third Parties',
+        section4Text: 'We do not sell your personal data. Data may be processed by trusted service providers (for example hosting and email delivery) under appropriate safeguards.',
+        section5Title: '5. Your Rights',
+        section5Text: 'You may request access, correction, deletion, or restriction of your personal data, subject to applicable law.',
+        section6Title: '6. Contact',
+        section6Text: "Privacy requests: support{'@'}pricetracker.lv"
+      },
+      disclaimer: {
+        title: 'Disclaimer & Data Sources',
+        section1Title: '1. Public Sources',
+        section1Text: 'Price and availability data is obtained from publicly available sources on the internet.',
+        section2Title: '2. No Content Ownership Claim',
+        section2Text: 'PriceTracker does not claim ownership of third-party content and does not represent itself as the source owner of product pages.',
+        section3Title: '3. Trademarks and Brand Names',
+        section3Text: 'All trademarks, product names, logos, and brand references belong to their respective owners.',
+        section4Title: '4. Accuracy Disclaimer',
+        section4Text: 'Data may change without notice. Users must verify final prices and product terms directly on the seller website before making a purchase decision.',
+        section5Title: '5. Rights Holder Requests',
+        section5Text: "If you are a rights holder and need correction or removal review, contact: support{'@'}pricetracker.lv"
+      }
     },
     
     // Home / General
@@ -446,7 +496,57 @@ const messages = {
     // Kājene
     footer: {
       terms: 'Noteikumi',
+      privacy: 'Privātums',
+      disclaimer: 'Atruna',
       copyright: 'Visas tiesības paturētas'
+    },
+
+    // Juridiskās lapas
+    legal: {
+      lastUpdated: 'Pēdējoreiz atjaunots: 2026. gada 22. marts',
+      terms: {
+        title: 'Lietošanas noteikumi',
+        section1Title: '1. Noteikumu pieņemšana',
+        section1Text: 'Izmantojot PriceTracker, jūs piekrītat šiem lietošanas noteikumiem. Ja nepiekrītat, lūdzu, neizmantojiet pakalpojumu.',
+        section2Title: '2. Pakalpojuma apraksts',
+        section2Text: 'PriceTracker uzrauga produktu lapas un attēlo cenu izmaiņu informāciju. Mēs sniedzam informācijas pakalpojumu un nepārdodam preces tieši.',
+        section3Title: '3. Publiski datu avoti',
+        section3Text: 'Pakalpojums izmanto datus no publiski pieejamiem avotiem. PriceTracker nepretendē uz trešo pušu preču zīmju, zīmolu nosaukumu vai veikalu satura īpašumtiesībām.',
+        section4Title: '4. Precizitāte un pieejamība',
+        section4Text: 'Mēs negarantējam nepārtrauktu pakalpojumu vai absolūtu visu attēloto datu precizitāti. Gala informāciju par preci un cenu vienmēr pārbaudiet pārdevēja vietnē.',
+        section5Title: '5. Atļautā lietošana',
+        section5Text: 'Jūs piekrītat neizmantot pakalpojumu nelikumīgām darbībām, ļaunprātīgai izmantošanai vai platformas darbības traucēšanai.',
+        section6Title: '6. Kontakti',
+        section6Text: "Juridiskiem vai atbalsta jautājumiem rakstiet: support{'@'}pricetracker.lv"
+      },
+      privacy: {
+        title: 'Privātuma politika',
+        section1Title: '1. Kādus datus mēs vācam',
+        section1Text: 'Mēs vācam konta datus (piemēram, vārdu un e-pastu), jūsu izsekotās produktu saites un lietošanas datus, kas nepieciešami PriceTracker darbībai.',
+        section2Title: '2. Kā mēs izmantojam datus',
+        section2Text: 'Dati tiek izmantoti konta piekļuvei, cenu izsekošanai, paziņojumu nosūtīšanai un platformas kvalitātes un drošības uzlabošanai.',
+        section3Title: '3. Tiesiskais pamats un glabāšana',
+        section3Text: 'Personas datus apstrādājam, pamatojoties uz pakalpojuma sniegšanu un leģitīmajām interesēm. Dati tiek glabāti tikai tik ilgi, cik nepieciešams pakalpojuma darbībai un tiesisko pienākumu izpildei.',
+        section4Title: '4. Datu nodošana trešajām pusēm',
+        section4Text: 'Mēs nepārdodam jūsu personas datus. Datus var apstrādāt uzticami pakalpojumu sniedzēji (piemēram, hostings un e-pasta piegāde), ievērojot atbilstošus aizsardzības pasākumus.',
+        section5Title: '5. Jūsu tiesības',
+        section5Text: 'Jums ir tiesības pieprasīt piekļuvi, labošanu, dzēšanu vai apstrādes ierobežošanu atbilstoši piemērojamajiem tiesību aktiem.',
+        section6Title: '6. Kontakti',
+        section6Text: "Privātuma jautājumi: support{'@'}pricetracker.lv"
+      },
+      disclaimer: {
+        title: 'Atruna un datu avoti',
+        section1Title: '1. Publiskie avoti',
+        section1Text: 'Cenu un pieejamības dati tiek iegūti no publiski pieejamiem avotiem internetā.',
+        section2Title: '2. Nepretendējam uz satura īpašumtiesībām',
+        section2Text: 'PriceTracker nepretendē uz trešo pušu satura īpašumtiesībām un neuzdodas par produktu lapu satura avota īpašnieku.',
+        section3Title: '3. Preču zīmes un zīmolu nosaukumi',
+        section3Text: 'Visas preču zīmes, produktu nosaukumi, logotipi un zīmolu norādes pieder attiecīgajiem īpašniekiem.',
+        section4Title: '4. Precizitātes atruna',
+        section4Text: 'Dati var mainīties bez iepriekšēja brīdinājuma. Pirms pirkuma lēmuma pieņemšanas gala cena un noteikumi jāpārbauda pārdevēja vietnē.',
+        section5Title: '5. Tiesību īpašnieku pieprasījumi',
+        section5Text: "Ja esat tiesību īpašnieks un vēlaties labojumu vai dzēšanas izvērtēšanu, rakstiet: support{'@'}pricetracker.lv"
+      }
     },
     
     // Sākums / Vispārīgi
@@ -865,7 +965,59 @@ messages.ru = {
   footer: {
     ...messages.en.footer,
     terms: 'Условия',
+    privacy: 'Конфиденциальность',
+    disclaimer: 'Дисклеймер',
     copyright: 'Все права защищены',
+  },
+  legal: {
+    ...messages.en.legal,
+    lastUpdated: 'Последнее обновление: 22 марта 2026',
+    terms: {
+      ...messages.en.legal.terms,
+      title: 'Условия использования',
+      section1Title: '1. Принятие условий',
+      section1Text: 'Используя PriceTracker, вы соглашаетесь с настоящими условиями. Если вы не согласны, пожалуйста, не используйте сервис.',
+      section2Title: '2. Описание сервиса',
+      section2Text: 'PriceTracker отслеживает страницы товаров и отображает информацию об изменении цен. Мы предоставляем информационный сервис и не продаем товары напрямую.',
+      section3Title: '3. Публичные источники данных',
+      section3Text: 'Сервис использует данные из публично доступных источников. PriceTracker не заявляет права собственности на товарные знаки, названия брендов или контент магазинов третьих лиц.',
+      section4Title: '4. Точность и доступность',
+      section4Text: 'Мы не гарантируем бесперебойную работу сервиса или абсолютную точность всех отображаемых данных. Итоговую информацию о товаре и цене всегда проверяйте на сайте продавца.',
+      section5Title: '5. Допустимое использование',
+      section5Text: 'Вы соглашаетесь не использовать сервис для незаконной деятельности, злоупотреблений или попыток нарушить работу платформы.',
+      section6Title: '6. Контакты',
+      section6Text: "По юридическим вопросам и вопросам поддержки: support{'@'}pricetracker.lv",
+    },
+    privacy: {
+      ...messages.en.legal.privacy,
+      title: 'Политика конфиденциальности',
+      section1Title: '1. Какие данные мы собираем',
+      section1Text: 'Мы собираем данные аккаунта (например, имя и email), ссылки на отслеживаемые товары и данные использования сервиса, необходимые для работы PriceTracker.',
+      section2Title: '2. Как мы используем данные',
+      section2Text: 'Данные используются для доступа к аккаунту, отслеживания цен, отправки уведомлений и улучшения качества и безопасности платформы.',
+      section3Title: '3. Правовые основания и хранение',
+      section3Text: 'Мы обрабатываем персональные данные на основании предоставления сервиса и законных интересов. Данные хранятся только столько, сколько необходимо для работы платформы и выполнения правовых обязательств.',
+      section4Title: '4. Передача данных и третьи стороны',
+      section4Text: 'Мы не продаем ваши персональные данные. Данные могут обрабатываться доверенными провайдерами (например, хостингом и сервисами отправки email) при соблюдении соответствующих мер защиты.',
+      section5Title: '5. Ваши права',
+      section5Text: 'Вы можете запросить доступ, исправление, удаление или ограничение обработки персональных данных в соответствии с применимым законодательством.',
+      section6Title: '6. Контакты',
+      section6Text: "Вопросы по приватности: support{'@'}pricetracker.lv",
+    },
+    disclaimer: {
+      ...messages.en.legal.disclaimer,
+      title: 'Дисклеймер и источники данных',
+      section1Title: '1. Публичные источники',
+      section1Text: 'Данные о ценах и наличии товаров получаются из публично доступных источников в интернете.',
+      section2Title: '2. Отсутствие притязаний на контент',
+      section2Text: 'PriceTracker не заявляет права собственности на контент третьих лиц и не позиционирует себя как владельца источника контента страниц товаров.',
+      section3Title: '3. Товарные знаки и бренды',
+      section3Text: 'Все товарные знаки, названия товаров, логотипы и упоминания брендов принадлежат их соответствующим правообладателям.',
+      section4Title: '4. Оговорка о точности',
+      section4Text: 'Данные могут изменяться без предварительного уведомления. Перед покупкой пользователь обязан проверять итоговую цену и условия непосредственно на сайте продавца.',
+      section5Title: '5. Запросы правообладателей',
+      section5Text: "Если вы правообладатель и хотите запросить исправление или удаление, напишите: support{'@'}pricetracker.lv",
+    },
   },
   home: {
     ...messages.en.home,
