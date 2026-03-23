@@ -93,57 +93,13 @@
         </div>
 
         <div class="contact-form-wrapper">
-          <v-form @submit.prevent="handleContact" class="contact-form">
+          <div class="contact-form">
             <h3>{{ $t('about.sendMessage') }}</h3>
-            <v-text-field
-              v-model="form.name"
-              :label="$t('about.yourName')"
-              variant="outlined"
-              rounded="lg"
-              class="mb-4"
-              :error="fieldErrors('name').length > 0"
-              :error-messages="fieldErrors('name')"
-            />
-            <v-text-field
-              v-model="form.email"
-              :label="$t('about.emailField')"
-              type="email"
-              variant="outlined"
-              rounded="lg"
-              class="mb-4"
-              :error="fieldErrors('email').length > 0"
-              :error-messages="fieldErrors('email')"
-            />
-            <v-textarea
-              v-model="form.message"
-              :label="$t('about.messageField')"
-              variant="outlined"
-              rounded="lg"
-              rows="4"
-              class="mb-4"
-              :error="fieldErrors('message').length > 0"
-              :error-messages="fieldErrors('message')"
-            />
-            <v-btn
-              type="submit"
-              color="primary"
-              size="large"
-              rounded="xl"
-              block
-              :loading="form.loading"
-            >
-              {{ $t('about.sendBtn') }}
-            </v-btn>
-            <v-alert
-              v-if="form.success"
-              type="success"
-              variant="tonal"
-              rounded="lg"
-              class="mt-4"
-            >
-              {{ $t('about.thankYou') }}
-            </v-alert>
-          </v-form>
+            <p class="section-subtitle">{{ $t('about.haveQuestion') }}</p>
+            <p class="section-subtitle">
+              <a href="mailto:support@pricetracker.lv">support@pricetracker.lv</a>
+            </p>
+          </div>
         </div>
       </v-container>
     </section>
@@ -158,77 +114,6 @@
     </section>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-
-const { t } = useI18n()
-
-const form = ref({
-  name: '',
-  email: '',
-  message: '',
-  loading: false,
-  success: false
-})
-
-const submitted = ref(false)
-
-function isValidEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-}
-
-function fieldErrors(field) {
-  if (!submitted.value) return []
-
-  if (field === 'name') {
-    return form.value.name.trim() ? [] : [t('auth.required')]
-  }
-
-  if (field === 'message') {
-    return form.value.message.trim() ? [] : [t('auth.required')]
-  }
-
-  if (field === 'email') {
-    const email = form.value.email.trim()
-    if (!email) return [t('auth.required')]
-    return isValidEmail(email) ? [] : [t('auth.invalidEmail')]
-  }
-
-  return []
-}
-
-function hasErrors() {
-  return fieldErrors('name').length > 0
-    || fieldErrors('email').length > 0
-    || fieldErrors('message').length > 0
-}
-
-function handleContact() {
-  submitted.value = true
-
-  if (hasErrors()) {
-    return
-  }
-
-  form.value.loading = true
-
-  setTimeout(() => {
-    form.value.loading = false
-    form.value.success = true
-
-    form.value.name = ''
-    form.value.email = ''
-    form.value.message = ''
-    submitted.value = false
-
-    setTimeout(() => {
-      form.value.success = false
-    }, 5000)
-  }, 1500)
-}
-</script>
 
 <style scoped>
 .about-view {
