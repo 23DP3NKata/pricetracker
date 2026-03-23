@@ -389,6 +389,9 @@ const checkIntervalOptions = computed(() => [
   { label: i18n.t('form.every6h'), value: 360 },
   { label: i18n.t('form.every12h'), value: 720 },
   { label: i18n.t('form.every24h'), value: 1440 },
+  { label: i18n.t('form.every3d'), value: 4320 },
+  { label: i18n.t('form.every7d'), value: 10080 },
+  { label: i18n.t('form.every14d'), value: 20160 },
 ])
 const addForm = reactive({
   url: '',

@@ -197,6 +197,9 @@ const intervalOptions = computed(() => [
   { text: t('productDetail.every6hours'), value: 360 },
   { text: t('productDetail.every12hours'), value: 720 },
   { text: t('productDetail.everyDay'), value: 1440 },
+  { text: t('productDetail.every3days'), value: 4320 },
+  { text: t('productDetail.everyWeek'), value: 10080 },
+  { text: t('productDetail.every2weeks'), value: 20160 },
 ])
 
 function statusLabel(status) {

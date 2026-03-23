@@ -220,6 +220,9 @@ const checkIntervalOptions = computed(() => [
   { label: t('form.every6h'), value: 360 },
   { label: t('form.every12h'), value: 720 },
   { label: t('form.every24h'), value: 1440 },
+  { label: t('form.every3d'), value: 4320 },
+  { label: t('form.every7d'), value: 10080 },
+  { label: t('form.every14d'), value: 20160 },
 ])
 
 function formatPrice(price) {
