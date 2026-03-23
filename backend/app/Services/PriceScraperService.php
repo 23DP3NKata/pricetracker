@@ -470,7 +470,7 @@ class PriceScraperService
         $domain = preg_replace('/^www\./', '', strtolower($host));
 
         foreach ($this->stores as $storeDomain => $config) {
-            if (str_contains($domain, $storeDomain)) {
+            if ($domain === $storeDomain || str_ends_with($domain, '.' . $storeDomain)) {
                 return array_merge(['domain' => $storeDomain], $config);
             }
         }

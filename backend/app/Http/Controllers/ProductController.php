@@ -8,6 +8,7 @@ use App\Models\UserProduct;
 use App\Services\PriceScraperService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
@@ -110,8 +111,14 @@ class ProductController extends Controller
         try {
             $details = $this->scraper->fetchProductDetails($url);
         } catch (\Throwable $e) {
+            Log::warning('Failed to fetch product details during tracking create.', [
+                'user_id' => $request->user()?->id,
+                'url' => $url,
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
-                'message' => 'Failed to fetch product details: ' . $e->getMessage(),
+                'message' => 'Failed to fetch product details. Please verify the product URL and try again later.',
             ], 422);
         }
 
