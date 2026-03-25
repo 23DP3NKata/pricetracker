@@ -167,7 +167,12 @@ const messages = {
       invalidEmail: 'Invalid email',
       min2Chars: 'Min 2 characters',
       min8Chars: 'Min 8 characters',
-      passwordsDontMatch: 'Passwords don\'t match'
+      passwordsDontMatch: 'Passwords don\'t match',
+      agreeToPrefix: 'I agree to the',
+      termsLink: 'Terms of Use',
+      andText: 'and',
+      privacyLink: 'Privacy Policy',
+      mustAcceptTerms: 'You must accept the terms and privacy policy'
     },
 
     authRecovery: {
@@ -642,7 +647,12 @@ const messages = {
       invalidEmail: 'Nederīgs e-pasts',
       min2Chars: 'Vismaz 2 rakstzīmes',
       min8Chars: 'Vismaz 8 rakstzīmes',
-      passwordsDontMatch: 'Paroles nesakrīt'
+      passwordsDontMatch: 'Paroles nesakrīt',
+      agreeToPrefix: 'Es piekrītu',
+      termsLink: 'Lietošanas noteikumiem',
+      andText: 'un',
+      privacyLink: 'Privātuma politikai',
+      mustAcceptTerms: 'Jums jāpiekrīt noteikumiem un privātuma politikai'
     },
 
     authRecovery: {
@@ -1117,6 +1127,11 @@ messages.ru = {
     min2Chars: 'Минимум 2 символа',
     min8Chars: 'Минимум 8 символов',
     passwordsDontMatch: 'Пароли не совпадают',
+    agreeToPrefix: 'Я соглашаюсь с',
+    termsLink: 'Условиями использования',
+    andText: 'и',
+    privacyLink: 'Политикой конфиденциальности',
+    mustAcceptTerms: 'Необходимо принять условия и политику конфиденциальности',
   },
   authRecovery: {
     ...messages.en.authRecovery,

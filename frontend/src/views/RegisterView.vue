@@ -73,6 +73,22 @@
               :rules="[v => !!v || $t('auth.required'), v => v === form.password || $t('auth.passwordsDontMatch')]"
             />
 
+            <v-checkbox
+              v-model="form.terms_accepted"
+              color="primary"
+              class="mt-2"
+              :rules="[v => !!v || $t('auth.mustAcceptTerms')]"
+            >
+              <template #label>
+                <span class="text-body-2">
+                  {{ $t('auth.agreeToPrefix') }}
+                  <router-link to="/terms" class="auth-link">{{ $t('auth.termsLink') }}</router-link>
+                  {{ ' ' + $t('auth.andText') + ' ' }}
+                  <router-link to="/privacy" class="auth-link">{{ $t('auth.privacyLink') }}</router-link>
+                </span>
+              </template>
+            </v-checkbox>
+
             <v-btn
               type="submit"
               color="primary"
@@ -112,6 +128,7 @@ const form = reactive({
   email: '',
   password: '',
   password_confirmation: '',
+  terms_accepted: false,
 })
 
 async function handleRegister() {
