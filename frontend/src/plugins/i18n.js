@@ -48,7 +48,7 @@ const messages = {
         section5Title: '5. Acceptable Use',
         section5Text: 'You agree not to use the service for unlawful activities, abuse, or attempts to disrupt operation of the platform.',
         section6Title: '6. Contact',
-        section6Text: "For legal or support requests, please contact: support{'@'}pricetracker.lv"
+        section6Text: "For legal or support requests, please use platform support channels."
       },
       privacy: {
         title: 'Privacy Policy',
@@ -63,7 +63,7 @@ const messages = {
         section5Title: '5. Your Rights',
         section5Text: 'You may request access, correction, deletion, or restriction of your personal data, subject to applicable law.',
         section6Title: '6. Contact',
-        section6Text: "Privacy requests: support{'@'}pricetracker.lv"
+        section6Text: "Privacy requests can be submitted through platform support channels."
       },
       disclaimer: {
         title: 'Disclaimer & Data Sources',
@@ -76,7 +76,7 @@ const messages = {
         section4Title: '4. Accuracy Disclaimer',
         section4Text: 'Data may change without notice. Users must verify final prices and product terms directly on the seller website before making a purchase decision.',
         section5Title: '5. Rights Holder Requests',
-        section5Text: "If you are a rights holder and need correction or removal review, contact: support{'@'}pricetracker.lv"
+        section5Text: "If you are a rights holder and need correction or removal review, please use platform support channels."
       }
     },
     
@@ -528,7 +528,7 @@ const messages = {
         section5Title: '5. Atļautā lietošana',
         section5Text: 'Jūs piekrītat neizmantot pakalpojumu nelikumīgām darbībām, ļaunprātīgai izmantošanai vai platformas darbības traucēšanai.',
         section6Title: '6. Kontakti',
-        section6Text: "Juridiskiem vai atbalsta jautājumiem rakstiet: support{'@'}pricetracker.lv"
+        section6Text: "Juridiskiem vai atbalsta jautājumiem izmantojiet platformas atbalsta kanālus."
       },
       privacy: {
         title: 'Privātuma politika',
@@ -543,7 +543,7 @@ const messages = {
         section5Title: '5. Jūsu tiesības',
         section5Text: 'Jums ir tiesības pieprasīt piekļuvi, labošanu, dzēšanu vai apstrādes ierobežošanu atbilstoši piemērojamajiem tiesību aktiem.',
         section6Title: '6. Kontakti',
-        section6Text: "Privātuma jautājumi: support{'@'}pricetracker.lv"
+        section6Text: "Privātuma pieprasījumus iesniedziet, izmantojot platformas atbalsta kanālus."
       },
       disclaimer: {
         title: 'Atruna un datu avoti',
@@ -556,7 +556,7 @@ const messages = {
         section4Title: '4. Precizitātes atruna',
         section4Text: 'Dati var mainīties bez iepriekšēja brīdinājuma. Pirms pirkuma lēmuma pieņemšanas gala cena un noteikumi jāpārbauda pārdevēja vietnē.',
         section5Title: '5. Tiesību īpašnieku pieprasījumi',
-        section5Text: "Ja esat tiesību īpašnieks un vēlaties labojumu vai dzēšanas izvērtēšanu, rakstiet: support{'@'}pricetracker.lv"
+        section5Text: "Ja esat tiesību īpašnieks un vēlaties labojumu vai dzēšanas izvērtēšanu, izmantojiet platformas atbalsta kanālus."
       }
     },
     
@@ -1008,7 +1008,7 @@ messages.ru = {
       section5Title: '5. Допустимое использование',
       section5Text: 'Вы соглашаетесь не использовать сервис для незаконной деятельности, злоупотреблений или попыток нарушить работу платформы.',
       section6Title: '6. Контакты',
-      section6Text: "По юридическим вопросам и вопросам поддержки: support{'@'}pricetracker.lv",
+      section6Text: "По юридическим вопросам и вопросам поддержки используйте каналы поддержки платформы.",
     },
     privacy: {
       ...messages.en.legal.privacy,
@@ -1024,7 +1024,7 @@ messages.ru = {
       section5Title: '5. Ваши права',
       section5Text: 'Вы можете запросить доступ, исправление, удаление или ограничение обработки персональных данных в соответствии с применимым законодательством.',
       section6Title: '6. Контакты',
-      section6Text: "Вопросы по приватности: support{'@'}pricetracker.lv",
+      section6Text: "Запросы по приватности отправляйте через каналы поддержки платформы.",
     },
     disclaimer: {
       ...messages.en.legal.disclaimer,
@@ -1038,7 +1038,7 @@ messages.ru = {
       section4Title: '4. Оговорка о точности',
       section4Text: 'Данные могут изменяться без предварительного уведомления. Перед покупкой пользователь обязан проверять итоговую цену и условия непосредственно на сайте продавца.',
       section5Title: '5. Запросы правообладателей',
-      section5Text: "Если вы правообладатель и хотите запросить исправление или удаление, напишите: support{'@'}pricetracker.lv",
+      section5Text: "Если вы правообладатель и хотите запросить исправление или удаление, используйте каналы поддержки платформы.",
     },
   },
   home: {

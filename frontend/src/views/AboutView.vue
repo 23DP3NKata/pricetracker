@@ -96,9 +96,6 @@
           <div class="contact-form">
             <h3>{{ $t('about.sendMessage') }}</h3>
             <p class="section-subtitle">{{ $t('about.haveQuestion') }}</p>
-            <p class="section-subtitle">
-              <a href="mailto:support@pricetracker.lv">support@pricetracker.lv</a>
-            </p>
           </div>
         </div>
       </v-container>
