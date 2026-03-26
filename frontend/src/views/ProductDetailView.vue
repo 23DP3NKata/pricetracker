@@ -345,10 +345,15 @@ async function handleDelete() {
 
 watch(historyDays, () => loadHistory())
 
-onMounted(async () => {
-  await loadProduct()
-  await loadHistory()
-})
+watch(
+  () => route.params.id,
+  async () => {
+    saveMsg.value = null
+    await loadProduct()
+    await loadHistory()
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

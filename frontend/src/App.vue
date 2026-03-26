@@ -40,7 +40,7 @@
                 </v-btn>
               </template>
 
-              <v-card min-width="340" rounded="xl" elevation="3">
+              <v-card min-width="300" max-width="300" rounded="xl" elevation="3">
                 <v-card-title class="text-subtitle-1">{{ $t('notifications.title') }}</v-card-title>
 
                 <v-divider />

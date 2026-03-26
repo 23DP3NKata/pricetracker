@@ -24,47 +24,49 @@
     </v-card>
 
     <!-- Notifications list -->
-    <div v-else class="d-flex flex-column ga-3">
-      <v-card
-        v-for="n in store.notifications"
-        :key="n.id"
-        rounded="xl"
-        :class="{ 'notification-unread': !n.is_read }"
-        class="notification-card"
-        @click="handleClick(n)"
-      >
-        <v-card-text class="pa-4 d-flex align-center ga-4">
-          <v-avatar
-            :color="isTrackingStopped(n) ? 'warning' : (Number(n.new_price) < Number(n.old_price) ? 'success' : 'error')"
-            variant="tonal"
-            size="48"
-          >
-            <v-icon>{{ notificationIcon(n) }}</v-icon>
-          </v-avatar>
+    <div v-else class="notifications-wrap">
+      <div class="d-flex flex-column ga-3">
+        <v-card
+          v-for="n in store.notifications"
+          :key="n.id"
+          rounded="xl"
+          :class="{ 'notification-unread': !n.is_read }"
+          class="notification-card"
+          @click="handleClick(n)"
+        >
+          <v-card-text class="pa-4 d-flex align-center ga-4">
+            <v-avatar
+              :color="isTrackingStopped(n) ? 'warning' : (Number(n.new_price) < Number(n.old_price) ? 'success' : 'error')"
+              variant="tonal"
+              size="48"
+            >
+              <v-icon>{{ notificationIcon(n) }}</v-icon>
+            </v-avatar>
 
-          <div class="flex-grow-1">
-            <div class="font-weight-bold">{{ n.product?.title || $t('notificationsPage.productFallback', { id: n.product_id }) }}</div>
-            <div class="text-body-2">
-              {{ formatPrice(n.old_price) }} → {{ formatPrice(n.new_price) }}
-              <v-chip
-                :color="isTrackingStopped(n) ? 'warning' : (Number(n.new_price) < Number(n.old_price) ? 'success' : 'error')"
-                size="x-small"
-                variant="tonal"
-                class="ml-1"
-              >
-                {{ notificationChipText(n) }}
-              </v-chip>
+            <div class="flex-grow-1">
+              <div class="font-weight-bold">{{ n.product?.title || $t('notificationsPage.productFallback', { id: n.product_id }) }}</div>
+              <div class="text-body-2">
+                {{ formatPrice(n.old_price) }} → {{ formatPrice(n.new_price) }}
+                <v-chip
+                  :color="isTrackingStopped(n) ? 'warning' : (Number(n.new_price) < Number(n.old_price) ? 'success' : 'error')"
+                  size="x-small"
+                  variant="tonal"
+                  class="ml-1"
+                >
+                  {{ notificationChipText(n) }}
+                </v-chip>
+              </div>
+              <div v-if="n.message" class="text-caption text-medium-emphasis mt-1">{{ n.message }}</div>
             </div>
-            <div v-if="n.message" class="text-caption text-medium-emphasis mt-1">{{ n.message }}</div>
-          </div>
 
-          <div class="text-caption text-medium-emphasis text-no-wrap">
-            {{ formatDate(n.created_at) }}
-          </div>
+            <div class="text-caption text-medium-emphasis text-no-wrap">
+              {{ formatDate(n.created_at) }}
+            </div>
 
-          <v-icon v-if="!n.is_read" color="primary" size="12">mdi-circle</v-icon>
-        </v-card-text>
-      </v-card>
+            <v-icon v-if="!n.is_read" color="primary" size="12">mdi-circle</v-icon>
+          </v-card-text>
+        </v-card>
+      </div>
     </div>
 
     <!-- Pagination -->
@@ -136,6 +138,10 @@ onMounted(() => store.fetchNotifications(1))
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   cursor: pointer;
   transition: transform 0.2s;
+}
+.notifications-wrap {
+  max-width: 920px;
+  margin: 0 auto;
 }
 .notification-card:hover {
   transform: translateX(4px);
