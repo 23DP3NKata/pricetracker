@@ -9,6 +9,7 @@ use App\Models\SystemLog;
 use App\Models\UserProduct;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Http\Client\Response;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -663,11 +664,43 @@ class PriceScraperService
             return null;
         }
 
+        $command = $baseCommand . ' ' . escapeshellarg($url);
+
+        try {
+            $result = Process::timeout((int) env('SCRAPER_BROWSER_TIMEOUT', 60))
+                ->run(['bash', '-lc', $command]);
+
+            if ($result->successful()) {
+                $html = trim($result->output());
+                if ($html !== '' && $this->looksLikeHtml($html)) {
+                    return $html;
+                }
+
+                SystemLog::create([
+                    'level' => 'warning',
+                    'category' => 'scraper',
+                    'message' => 'Browser fallback returned empty or non-HTML output.',
+                ]);
+            } else {
+                SystemLog::create([
+                    'level' => 'warning',
+                    'category' => 'scraper',
+                    'message' => 'Browser fallback process failed: ' . trim($result->errorOutput()),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            SystemLog::create([
+                'level' => 'warning',
+                'category' => 'scraper',
+                'message' => 'Browser fallback process exception: ' . $e->getMessage(),
+            ]);
+        }
+
         if (!function_exists('shell_exec')) {
             return null;
         }
 
-        $command = $baseCommand . ' ' . escapeshellarg($url) . ' 2>/dev/null';
+        $command = $command . ' 2>/dev/null';
         $output = shell_exec($command);
         $html = is_string($output) ? trim($output) : '';
 
