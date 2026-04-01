@@ -2,9 +2,12 @@
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6">
       <h1 class="text-h4 font-weight-bold">{{ $t('productsPage.title') }}</h1>
-      <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">
+      <!-- <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">
         {{ $t('productsPage.addProduct') }}
-      </v-btn>
+      </v-btn> -->
+      <v-chip color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
+        {{ $t('messages.addProductTemporarilyDisabled') }}
+      </v-chip>
     </div>
 
     <v-progress-linear v-if="store.loading" indeterminate color="primary" class="mb-4" />
@@ -52,7 +55,10 @@
       <v-icon size="64" color="primary" class="mb-4">mdi-package-variant-plus</v-icon>
       <h3 class="text-h6 mb-2">{{ $t('productsPage.noProductsYet') }}</h3>
       <p class="text-medium-emphasis mb-4">{{ $t('productsPage.startTrackingFirst') }}</p>
-      <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">{{ $t('productsPage.addProduct') }}</v-btn>
+      <!-- <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">{{ $t('productsPage.addProduct') }}</v-btn> -->
+      <v-chip color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
+        {{ $t('messages.addProductTemporarilyDisabled') }}
+      </v-chip>
     </v-card>
 
     <!-- Products list -->
@@ -155,8 +161,11 @@
 
           <div class="d-flex ga-2 justify-end mt-2">
             <v-btn variant="text" rounded="xl" @click="closeAddDialog" :disabled="addLoading">{{ $t('productsPage.cancel') }}</v-btn>
-            <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading">
+            <!-- <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading">
               <v-icon start>mdi-magnify</v-icon> {{ $t('productsPage.fetchTrack') }}
+            </v-btn> -->
+            <v-btn type="button" color="warning" rounded="xl" disabled>
+              <v-icon start>mdi-alert-circle-outline</v-icon> {{ $t('messages.addProductTemporarilyDisabled') }}
             </v-btn>
           </div>
         </v-form>

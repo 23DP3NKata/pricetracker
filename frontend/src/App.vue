@@ -73,7 +73,10 @@
             </v-menu>
 
             <!-- Add product -->
-            <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="openAddProduct">{{ $t('nav.addProduct') }}</v-btn>
+            <!-- <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="openAddProduct">{{ $t('nav.addProduct') }}</v-btn> -->
+            <v-chip color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
+              {{ $t('messages.addProductTemporarilyDisabled') }}
+            </v-chip>
 
             <!-- User menu -->
             <v-menu location="bottom end" offset="12" :close-on-content-click="false">
@@ -223,7 +226,8 @@
             <v-list-item to="/admin/actions" rounded prepend-icon="mdi-history" :title="$t('nav.admin') + ': ' + $t('adminCommon.actions')" />
           </template>
           <v-divider class="my-2" />
-          <v-list-item rounded prepend-icon="mdi-plus" :title="$t('nav.addProduct')" base-color="primary" @click="openAddProduct" />
+          <!-- <v-list-item rounded prepend-icon="mdi-plus" :title="$t('nav.addProduct')" base-color="primary" @click="openAddProduct" /> -->
+          <v-list-item rounded prepend-icon="mdi-alert-circle-outline" :title="$t('messages.addProductTemporarilyDisabled')" base-color="warning" />
           <v-divider class="my-2" />
           <v-list-item
             rounded
@@ -320,7 +324,10 @@
 
           <div class="d-flex ga-2 justify-end mt-2">
             <v-btn variant="text" rounded="xl" :disabled="addLoading" @click="closeAddProduct">{{ $t('form.cancel') }}</v-btn>
-            <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading" prepend-icon="mdi-plus">{{ $t('form.track') }}</v-btn>
+            <!-- <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading" prepend-icon="mdi-plus">{{ $t('form.track') }}</v-btn> -->
+            <v-btn type="button" color="warning" rounded="xl" prepend-icon="mdi-alert-circle-outline" disabled>
+              {{ $t('messages.addProductTemporarilyDisabled') }}
+            </v-btn>
           </div>
         </v-form>
       </v-card>

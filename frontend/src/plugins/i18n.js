@@ -467,7 +467,8 @@ const messages = {
     
     // Messages
     messages: {
-      languageSwitcher: 'Language has been updated.'
+      languageSwitcher: 'Language has been updated.',
+      addProductTemporarilyDisabled: 'Adding products is temporarily unavailable.'
     },
 
     // Small UX texts
@@ -947,7 +948,8 @@ const messages = {
     
     // Paziņojumi
     messages: {
-      languageSwitcher: 'Valoda ir atjaunināta.'
+      languageSwitcher: 'Valoda ir atjaunināta.',
+      addProductTemporarilyDisabled: 'Produktu pievienošana īslaicīgi nav pieejama.'
     },
 
     // UX teksti
@@ -1422,6 +1424,7 @@ messages.ru = {
   messages: {
     ...messages.en.messages,
     languageSwitcher: 'Язык сайта обновлен.',
+    addProductTemporarilyDisabled: 'Добавление товаров временно недоступно.',
   },
   ux: {
     ...messages.en.ux,
@@ -1436,8 +1439,8 @@ messages.ru = {
 
 const i18n = createI18n({
   legacy: false,
-  locale: localStorage.getItem('pt-language') || 'en',
-  fallbackLocale: 'en',
+  locale: localStorage.getItem('pt-language') || 'lv',
+  fallbackLocale: 'lv',
   messages
 })
 
