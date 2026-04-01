@@ -874,68 +874,77 @@ class PriceScraperService
 
     protected function fetchViaNodeBrowser(string $url, bool $interactive = false): ?string
     {
-        $baseCommand = trim((string) env('SCRAPER_BROWSER_COMMAND', ''));
-        if ($baseCommand === '') {
-            return null;
+        $scriptPath = base_path('scripts/puppeteer-fetch.js');
+        $configured = trim((string) env('SCRAPER_BROWSER_COMMAND', ''));
+
+        $commandCandidates = [];
+        if ($configured !== '') {
+            $commandCandidates[] = $configured;
         }
 
-        $command = $baseCommand . ' ' . escapeshellarg($url);
+        // Auto fallback commands for cases where env is missing or PATH differs under PHP runtime.
+        $commandCandidates[] = 'node ' . escapeshellarg($scriptPath);
+        $commandCandidates[] = '/usr/bin/node ' . escapeshellarg($scriptPath);
+        $commandCandidates[] = '/usr/local/bin/node ' . escapeshellarg($scriptPath);
+        $commandCandidates = array_values(array_unique($commandCandidates));
 
-        try {
-            $result = Process::timeout((int) env('SCRAPER_BROWSER_TIMEOUT', 60))
-                ->run($command);
+        foreach ($commandCandidates as $baseCommand) {
+            $command = $baseCommand . ' ' . escapeshellarg($url);
 
-            if ($result->successful()) {
-                $html = trim($result->output());
-                if ($html !== '' && $this->looksLikeHtml($html)) {
-                    return $html;
+            try {
+                $result = Process::timeout((int) env('SCRAPER_BROWSER_TIMEOUT', 60))
+                    ->run($command);
+
+                if ($result->successful()) {
+                    $html = trim($result->output());
+                    if ($html !== '' && $this->looksLikeHtml($html)) {
+                        return $html;
+                    }
+
+                    SystemLog::create([
+                        'level' => 'warning',
+                        'category' => 'scraper',
+                        'message' => 'Browser fallback returned empty or non-HTML output.',
+                    ]);
+                } else {
+                    SystemLog::create([
+                        'level' => 'warning',
+                        'category' => 'scraper',
+                        'message' => 'Browser fallback process failed: ' . trim($result->errorOutput()),
+                    ]);
+
+                    Log::warning('Browser fallback process failed.', [
+                        'url' => $url,
+                        'error' => trim($result->errorOutput()),
+                        'command' => $baseCommand,
+                    ]);
                 }
-
+            } catch (\Throwable $e) {
                 SystemLog::create([
                     'level' => 'warning',
                     'category' => 'scraper',
-                    'message' => 'Browser fallback returned empty or non-HTML output.',
-                ]);
-            } else {
-                SystemLog::create([
-                    'level' => 'warning',
-                    'category' => 'scraper',
-                    'message' => 'Browser fallback process failed: ' . trim($result->errorOutput()),
+                    'message' => 'Browser fallback process exception: ' . $e->getMessage(),
                 ]);
 
-                Log::warning('Browser fallback process failed.', [
+                Log::warning('Browser fallback process exception.', [
                     'url' => $url,
-                    'error' => trim($result->errorOutput()),
+                    'error' => $e->getMessage(),
                     'command' => $baseCommand,
                 ]);
             }
-        } catch (\Throwable $e) {
-            SystemLog::create([
-                'level' => 'warning',
-                'category' => 'scraper',
-                'message' => 'Browser fallback process exception: ' . $e->getMessage(),
-            ]);
 
-            Log::warning('Browser fallback process exception.', [
-                'url' => $url,
-                'error' => $e->getMessage(),
-                'command' => $baseCommand,
-            ]);
+            if (!function_exists('shell_exec')) {
+                continue;
+            }
+
+            $output = shell_exec($command . ' 2>/dev/null');
+            $html = is_string($output) ? trim($output) : '';
+            if ($html !== '' && $this->looksLikeHtml($html)) {
+                return $html;
+            }
         }
 
-        if (!function_exists('shell_exec')) {
-            return null;
-        }
-
-        $command = $command . ' 2>/dev/null';
-        $output = shell_exec($command);
-        $html = is_string($output) ? trim($output) : '';
-
-        if ($html === '' || !$this->looksLikeHtml($html)) {
-            return null;
-        }
-
-        return $html;
+        return null;
     }
 
     protected function fetchViaRenderEndpoint(string $url, bool $interactive = false): ?string
