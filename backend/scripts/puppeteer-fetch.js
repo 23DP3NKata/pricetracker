@@ -17,6 +17,7 @@ async function main() {
 
   try {
     const page = await browser.newPage();
+    await page.setViewport({ width: 1366, height: 900 });
     await page.setUserAgent(
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
     );
@@ -29,6 +30,14 @@ async function main() {
       waitUntil: 'networkidle2',
       timeout: 45000,
     });
+
+    // Allow SPA/product blocks to hydrate before dumping HTML.
+    await Promise.race([
+      page.waitForSelector('h1, [itemprop="name"], [itemprop="price"], .product-price, .price', { timeout: 12000 }),
+      page.waitForTimeout(12000),
+    ]);
+
+    await page.waitForTimeout(1500);
 
     const html = await page.content();
     process.stdout.write(html);

@@ -9,6 +9,7 @@ use App\Models\SystemLog;
 use App\Models\UserProduct;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Http\Client\Response;
 use Symfony\Component\DomCrawler\Crawler;
@@ -172,12 +173,22 @@ class PriceScraperService
         }
 
         if (!$title) {
+            $title = $this->extractAttribute($crawler, 'meta[property="og:title"], meta[name="twitter:title"]', 'content');
+        }
+
+        if (!$title) {
             throw new \RuntimeException('Could not extract product title from page.');
         }
 
         $price = $this->parsePrice($priceText);
         if ($price === null && isset($structured['price']) && is_numeric($structured['price'])) {
             $price = (float) $structured['price'];
+        }
+        if ($price === null) {
+            $price = $this->extractPriceFromMeta($crawler);
+        }
+        if ($price === null) {
+            $price = $this->extractPriceFromHtml($html);
         }
         if ($price === null) {
             throw new \RuntimeException('Could not extract price from page.');
@@ -222,6 +233,14 @@ class PriceScraperService
                     ? (float) $structured['price']
                     : $this->parsePrice((string) $structured['price']);
             }
+        }
+
+        if ($price === null) {
+            $price = $this->extractPriceFromMeta($crawler);
+        }
+
+        if ($price === null) {
+            $price = $this->extractPriceFromHtml($html);
         }
 
         return $price;
@@ -574,6 +593,54 @@ class PriceScraperService
         return false;
     }
 
+    protected function extractPriceFromMeta(Crawler $crawler): ?float
+    {
+        $metaSelectors = [
+            'meta[property="product:price:amount"]',
+            'meta[property="og:price:amount"]',
+            'meta[itemprop="price"]',
+            'meta[name="price"]',
+        ];
+
+        foreach ($metaSelectors as $selector) {
+            try {
+                $node = $crawler->filter($selector)->first();
+                if ($node->count()) {
+                    $content = trim((string) ($node->attr('content') ?? ''));
+                    $price = $this->parsePrice($content);
+                    if ($price !== null) {
+                        return $price;
+                    }
+                }
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return null;
+    }
+
+    protected function extractPriceFromHtml(string $html): ?float
+    {
+        $patterns = [
+            '/"price"\s*:\s*"?([0-9]+(?:[.,][0-9]{1,2})?)"?/i',
+            '/product:price:amount"\s+content="([0-9]+(?:[.,][0-9]{1,2})?)"/i',
+            '/data-price\s*=\s*"([0-9]+(?:[.,][0-9]{1,2})?)"/i',
+            '/([0-9]{1,4}(?:[\s.][0-9]{3})*[.,][0-9]{2})\s*(?:€|eur)/iu',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $html, $m) && isset($m[1])) {
+                $price = $this->parsePrice((string) $m[1]);
+                if ($price !== null) {
+                    return $price;
+                }
+            }
+        }
+
+        return null;
+    }
+
     // ─── Price parsing ───────────────────────────────────────
 
     /**
@@ -582,6 +649,22 @@ class PriceScraperService
     protected function parsePrice(?string $text): ?float
     {
         if (!$text) return null;
+
+        // Prefer explicit decimal price tokens if text contains multiple numbers.
+        if (preg_match('/(\d{1,4}(?:[\s.]\d{3})*[.,]\d{2})/u', $text, $token)) {
+            $candidate = str_replace(' ', '', $token[1]);
+            $candidate = str_contains($candidate, ',')
+                ? str_replace('.', '', $candidate)
+                : str_replace(',', '', $candidate);
+            $candidate = str_replace(',', '.', $candidate);
+
+            if (is_numeric($candidate)) {
+                $value = (float) $candidate;
+                if ($value > 0) {
+                    return $value;
+                }
+            }
+        }
 
         // Remove everything except digits, dots, commas
         $cleaned = preg_replace('/[^\d.,]/', '', $text);
@@ -800,7 +883,7 @@ class PriceScraperService
 
         try {
             $result = Process::timeout((int) env('SCRAPER_BROWSER_TIMEOUT', 60))
-                ->run(['bash', '-lc', $command]);
+                ->run($command);
 
             if ($result->successful()) {
                 $html = trim($result->output());
@@ -819,12 +902,24 @@ class PriceScraperService
                     'category' => 'scraper',
                     'message' => 'Browser fallback process failed: ' . trim($result->errorOutput()),
                 ]);
+
+                Log::warning('Browser fallback process failed.', [
+                    'url' => $url,
+                    'error' => trim($result->errorOutput()),
+                    'command' => $baseCommand,
+                ]);
             }
         } catch (\Throwable $e) {
             SystemLog::create([
                 'level' => 'warning',
                 'category' => 'scraper',
                 'message' => 'Browser fallback process exception: ' . $e->getMessage(),
+            ]);
+
+            Log::warning('Browser fallback process exception.', [
+                'url' => $url,
+                'error' => $e->getMessage(),
+                'command' => $baseCommand,
             ]);
         }
 
