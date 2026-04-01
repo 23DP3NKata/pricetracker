@@ -9,6 +9,7 @@ use App\Models\SystemLog;
 use App\Models\UserProduct;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\Response;
 use Symfony\Component\DomCrawler\Crawler;
 
 class PriceScraperService
@@ -134,7 +135,8 @@ class PriceScraperService
             throw new \RuntimeException("Unsupported store. Supported: {$supported}");
         }
 
-        $html = $this->fetchHtml($url);
+        // Product creation is user-facing: prefer quick failure over very long waits.
+        $html = $this->fetchHtml($url, 0, true);
         $crawler = new Crawler($html);
 
         // Check for unavailable product
@@ -295,15 +297,32 @@ class PriceScraperService
     /**
      * Fetch HTML from URL with retry logic and randomized headers.
      */
-    protected function fetchHtml(string $url, int $attempt = 0): string
+    protected function fetchHtml(string $url, int $attempt = 0, bool $interactive = false): string
     {
         $domain = $this->extractDomain($url);
+        $maxRetries = $interactive
+            ? (int) env('SCRAPER_MAX_RETRIES_INTERACTIVE', 1)
+            : (int) env('SCRAPER_MAX_RETRIES', $this->maxRetries);
+        $retryBaseDelay = $interactive
+            ? (int) env('SCRAPER_RETRY_DELAY_INTERACTIVE', 2)
+            : (int) env('SCRAPER_RETRY_DELAY', $this->retryDelay);
+        $requestTimeout = $interactive
+            ? (int) env('SCRAPER_TIMEOUT_INTERACTIVE', 12)
+            : (int) env('SCRAPER_TIMEOUT', 20);
+        $connectTimeout = $interactive
+            ? (int) env('SCRAPER_CONNECT_TIMEOUT_INTERACTIVE', 6)
+            : (int) env('SCRAPER_CONNECT_TIMEOUT', 8);
 
         if ($this->isDomainCircuitOpen($domain)) {
+            $fallbackHtml = $this->fallbackFetchHtml($url, $interactive);
+            if ($fallbackHtml !== null) {
+                return $fallbackHtml;
+            }
+
             throw new \RuntimeException("Circuit breaker active for {$domain}. Skipping request temporarily.");
         }
 
-        $this->enforceDomainPacing($domain);
+        $this->enforceDomainPacing($domain, $interactive);
 
         $headers = [
             'User-Agent' => $this->userAgents[array_rand($this->userAgents)],
@@ -321,26 +340,55 @@ class PriceScraperService
         // Small random delay before each request to avoid deterministic traffic patterns.
         usleep(random_int(500_000, 1_200_000));
 
-        $response = Http::timeout(20)
+        $response = Http::timeout($requestTimeout)
+            ->connectTimeout($connectTimeout)
+            ->withOptions([
+                'allow_redirects' => true,
+                'http_errors' => false,
+            ])
             ->withHeaders($headers)
             ->get($url);
+
+        if ($this->isAntiBotResponse($response)) {
+            if ($attempt < $maxRetries) {
+                $this->registerDomainFailure($domain, $response->status());
+
+                $backoffSeconds = max(1, $retryBaseDelay * (2 ** $attempt));
+                $backoffMs = ($backoffSeconds * 1000) + random_int(300, 1500);
+                usleep($backoffMs * 1000);
+
+                return $this->fetchHtml($url, $attempt + 1, $interactive);
+            }
+
+            $fallbackHtml = $this->fallbackFetchHtml($url, $interactive);
+            if ($fallbackHtml !== null) {
+                return $fallbackHtml;
+            }
+
+            throw new \RuntimeException("Anti-bot protection blocked request for {$url}. HTTP {$response->status()}.");
+        }
 
         if ($response->status() === 404) {
             throw new \RuntimeException('Product page returned 404 — product may have been removed.');
         }
 
-        if (in_array($response->status(), [403, 429, 503]) && $attempt < $this->maxRetries) {
+        if (in_array($response->status(), [403, 429, 503]) && $attempt < $maxRetries) {
             $this->registerDomainFailure($domain, $response->status());
 
             // Exponential backoff + jitter to soften repeated retry patterns.
-            $backoffSeconds = $this->retryDelay * (2 ** $attempt);
+            $backoffSeconds = max(1, $retryBaseDelay * (2 ** $attempt));
             $backoffMs = ($backoffSeconds * 1000) + random_int(300, 1500);
             usleep($backoffMs * 1000);
 
-            return $this->fetchHtml($url, $attempt + 1);
+            return $this->fetchHtml($url, $attempt + 1, $interactive);
         }
 
         if (!$response->successful()) {
+            $fallbackHtml = $this->fallbackFetchHtml($url, $interactive);
+            if ($fallbackHtml !== null) {
+                return $fallbackHtml;
+            }
+
             throw new \RuntimeException("HTTP {$response->status()} fetching {$url}");
         }
 
@@ -552,11 +600,15 @@ class PriceScraperService
         return "scraper:domain:{$domain}:{$suffix}";
     }
 
-    protected function enforceDomainPacing(string $domain): void
+    protected function enforceDomainPacing(string $domain, bool $interactive = false): void
     {
         if ($domain === 'unknown') {
             return;
         }
+
+        $minIntervalMs = $interactive
+            ? (int) env('SCRAPER_DOMAIN_MIN_INTERVAL_MS_INTERACTIVE', 1500)
+            : (int) env('SCRAPER_DOMAIN_MIN_INTERVAL_MS', $this->domainMinIntervalMs);
 
         $lastAtKey = $this->cacheKeyForDomain($domain, 'last_request_at_ms');
         $nowMs = (int) floor(microtime(true) * 1000);
@@ -564,7 +616,7 @@ class PriceScraperService
 
         if ($lastAtMs > 0) {
             $elapsed = $nowMs - $lastAtMs;
-            $waitMs = max(0, $this->domainMinIntervalMs - $elapsed);
+            $waitMs = max(0, $minIntervalMs - $elapsed);
 
             if ($waitMs > 0) {
                 // Add a small jitter so multiple domains do not align into bursts.
@@ -573,6 +625,102 @@ class PriceScraperService
         }
 
         Cache::put($lastAtKey, (int) floor(microtime(true) * 1000), now()->addHours(2));
+    }
+
+    protected function isAntiBotResponse(Response $response): bool
+    {
+        if (in_array($response->status(), [403, 429, 503], true)) {
+            return true;
+        }
+
+        if ($response->header('cf-mitigated')) {
+            return true;
+        }
+
+        $body = mb_strtolower(substr($response->body(), 0, 6000));
+
+        return str_contains($body, 'cf-mitigated')
+            || str_contains($body, 'attention required')
+            || str_contains($body, 'just a moment')
+            || str_contains($body, '/cdn-cgi/challenge-platform')
+            || str_contains($body, 'cloudflare');
+    }
+
+    protected function fallbackFetchHtml(string $url, bool $interactive = false): ?string
+    {
+        $html = $this->fetchViaNodeBrowser($url, $interactive);
+        if ($html !== null) {
+            return $html;
+        }
+
+        return $this->fetchViaRenderEndpoint($url, $interactive);
+    }
+
+    protected function fetchViaNodeBrowser(string $url, bool $interactive = false): ?string
+    {
+        $baseCommand = trim((string) env('SCRAPER_BROWSER_COMMAND', ''));
+        if ($baseCommand === '') {
+            return null;
+        }
+
+        if (!function_exists('shell_exec')) {
+            return null;
+        }
+
+        $command = $baseCommand . ' ' . escapeshellarg($url) . ' 2>/dev/null';
+        $output = shell_exec($command);
+        $html = is_string($output) ? trim($output) : '';
+
+        if ($html === '' || !$this->looksLikeHtml($html)) {
+            return null;
+        }
+
+        return $html;
+    }
+
+    protected function fetchViaRenderEndpoint(string $url, bool $interactive = false): ?string
+    {
+        $endpoint = trim((string) env('SCRAPER_RENDER_ENDPOINT', ''));
+        if ($endpoint === '') {
+            return null;
+        }
+
+        $token = trim((string) env('SCRAPER_RENDER_TOKEN', ''));
+        $timeout = $interactive
+            ? (int) env('SCRAPER_RENDER_TIMEOUT_INTERACTIVE', 18)
+            : (int) env('SCRAPER_RENDER_TIMEOUT', 35);
+
+        $client = Http::timeout($timeout)->acceptJson();
+        if ($token !== '') {
+            $client = $client->withToken($token);
+        }
+
+        $response = $client->post($endpoint, [
+            'url' => $url,
+            'wait' => 'networkidle',
+            'timeout_ms' => $timeout * 1000,
+        ]);
+
+        if (!$response->successful()) {
+            return null;
+        }
+
+        $json = $response->json();
+        if (is_array($json) && isset($json['html']) && is_string($json['html']) && $this->looksLikeHtml($json['html'])) {
+            return $json['html'];
+        }
+
+        $body = trim($response->body());
+        return $this->looksLikeHtml($body) ? $body : null;
+    }
+
+    protected function looksLikeHtml(string $html): bool
+    {
+        $head = mb_strtolower(substr(trim($html), 0, 500));
+        return str_contains($head, '<!doctype html')
+            || str_contains($head, '<html')
+            || str_contains($head, '<body')
+            || str_contains($head, '<div');
     }
 
     protected function registerDomainFailure(string $domain, int $statusCode): void

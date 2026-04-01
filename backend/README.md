@@ -57,3 +57,27 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## VPS scraper anti-bot fallback
+
+Some stores can block server IPs (Cloudflare challenge / HTTP 403). The backend supports two optional fallbacks:
+
+1) Local browser command (recommended)
+
+- Install Node.js on VPS.
+- In backend folder run: `npm init -y && npm install puppeteer` (or in a separate folder with copied script).
+- Use `scripts/puppeteer-fetch.js` as browser fetcher.
+- Set in `.env`:
+
+`SCRAPER_BROWSER_COMMAND="node /var/www/pricetracker/backend/scripts/puppeteer-fetch.js"`
+
+2) Remote render endpoint
+
+- If you have a render API returning HTML (or JSON `{"html":"..."}`), set:
+
+`SCRAPER_RENDER_ENDPOINT=...`
+`SCRAPER_RENDER_TOKEN=...`
+
+After env changes run:
+
+`php artisan optimize:clear`

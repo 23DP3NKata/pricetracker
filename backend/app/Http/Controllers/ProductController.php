@@ -117,8 +117,12 @@ class ProductController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
+            $message = str_contains(strtolower($e->getMessage()), 'anti-bot')
+                ? 'The store blocked automated access from server IP. Configure browser fallback and try again.'
+                : 'Failed to fetch product details. Please verify the product URL and try again later.';
+
             return response()->json([
-                'message' => 'Failed to fetch product details. Please verify the product URL and try again later.',
+                'message' => $message,
             ], 422);
         }
 
