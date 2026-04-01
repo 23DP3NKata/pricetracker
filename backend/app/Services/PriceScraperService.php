@@ -37,10 +37,10 @@ class PriceScraperService
         'rdveikals.lv' => [
             'name' => 'RD Veikals',
             'selectors' => [
-                'title' => '.product-info h1',
-                'price' => '.price strong',
-                'image' => '.carousel_center_img img',
-                'currency' => '.price',
+                'title' => '.product-info h1, h1[itemprop="name"], h1, .product-title',
+                'price' => '.price strong, [itemprop="price"], .product-price, .price .sum, span[data-price]',
+                'image' => '.carousel_center_img img, img[itemprop="image"], meta[property="og:image"]',
+                'currency' => '.price, [itemprop="priceCurrency"], meta[itemprop="priceCurrency"]',
             ],
             'canonicalPattern' => '/\/products\/[a-z]{2}\/(\d+)\/(\d+)\//i',
             'canonicalUrl' => 'https://www.rdveikals.lv/products/lv/{1}/{2}/',
@@ -150,21 +150,42 @@ class PriceScraperService
             }
         }
 
+        // Try CSS selectors first, then fall back to JSON-LD/meta tags
         $title = $this->extractText($crawler, $config['selectors']['title']);
         $priceText = $this->extractText($crawler, $config['selectors']['price']);
-        $imageUrl = $this->extractAttribute($crawler, $config['selectors']['image'], 'src');
+        $imageUrl = $this->extractImageUrl($crawler, $config['selectors']['image'] ?? '');
         $currencyText = $this->extractText($crawler, $config['selectors']['currency'] ?? '');
+
+        // Try to extract from structured data if CSS selectors failed
+        $structured = $this->extractProductDataFromStructured($crawler);
+        if (!$title && isset($structured['name'])) {
+            $title = $structured['name'];
+        }
+        if (!$imageUrl && isset($structured['image'])) {
+            $imageUrl = $structured['image'];
+        }
+        if (!$priceText && isset($structured['price'])) {
+            $priceText = (string) $structured['price'];
+        }
+        if (!$currencyText && isset($structured['priceCurrency'])) {
+            $currencyText = $structured['priceCurrency'];
+        }
 
         if (!$title) {
             throw new \RuntimeException('Could not extract product title from page.');
         }
 
         $price = $this->parsePrice($priceText);
+        if ($price === null && isset($structured['price']) && is_numeric($structured['price'])) {
+            $price = (float) $structured['price'];
+        }
         if ($price === null) {
             throw new \RuntimeException('Could not extract price from page.');
         }
 
-        $currency = $this->parseCurrency($priceText . ' ' . ($currencyText ?? ''));
+        $currency = (isset($structured['priceCurrency']) && is_string($structured['priceCurrency']))
+            ? strtoupper(trim($structured['priceCurrency']))
+            : $this->parseCurrency(($priceText ?? '') . ' ' . ($currencyText ?? ''));
 
         return [
             'title' => trim($title),
@@ -191,7 +212,19 @@ class PriceScraperService
         $crawler = new Crawler($html);
 
         $priceText = $this->extractText($crawler, $config['selectors']['price']);
-        return $this->parsePrice($priceText);
+        $price = $this->parsePrice($priceText);
+
+        // Fall back to structured data if CSS selector failed
+        if ($price === null) {
+            $structured = $this->extractProductDataFromStructured($crawler);
+            if (isset($structured['price'])) {
+                $price = is_numeric($structured['price'])
+                    ? (float) $structured['price']
+                    : $this->parsePrice((string) $structured['price']);
+            }
+        }
+
+        return $price;
     }
 
     /**
@@ -440,6 +473,105 @@ class PriceScraperService
             }
         }
         return null;
+    }
+
+    /**
+     * Extract image URL trying common image attributes.
+     */
+    protected function extractImageUrl(Crawler $crawler, string $selectors): ?string
+    {
+        if (!$selectors) return null;
+        
+        foreach (['src', 'data-src', 'content'] as $attribute) {
+            $value = $this->extractAttribute($crawler, $selectors, $attribute);
+            if ($value) {
+                return $value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Extract product fields from JSON-LD structured data blocks.
+     */
+    protected function extractProductDataFromStructured(Crawler $crawler): array
+    {
+        $result = [];
+
+        try {
+            $scripts = $crawler->filter('script[type="application/ld+json"]');
+        } catch (\Throwable) {
+            return $result;
+        }
+
+        foreach ($scripts as $script) {
+            $raw = trim((string) ($script->textContent ?? ''));
+            if ($raw === '') {
+                continue;
+            }
+
+            $decoded = json_decode($raw, true);
+            if (!is_array($decoded)) {
+                continue;
+            }
+
+            foreach ($this->flattenJsonLdNodes($decoded) as $node) {
+                if (!is_array($node) || !$this->isJsonLdProductNode($node)) {
+                    continue;
+                }
+
+                if (!isset($result['name']) && !empty($node['name']) && is_string($node['name'])) {
+                    $result['name'] = trim($node['name']);
+                }
+
+                if (!isset($result['image']) && isset($node['image'])) {
+                    if (is_string($node['image'])) {
+                        $result['image'] = trim($node['image']);
+                    } elseif (is_array($node['image']) && isset($node['image'][0])) {
+                        $result['image'] = is_string($node['image'][0]) ? trim($node['image'][0]) : null;
+                    }
+                }
+
+                $offers = $node['offers'] ?? null;
+                if (is_array($offers)) {
+                    $offersList = array_is_list($offers) ? $offers : [$offers];
+                    foreach ($offersList as $offer) {
+                        if (!is_array($offer)) continue;
+                        if (!isset($result['price']) && isset($offer['price'])) {
+                            $result['price'] = $offer['price'];
+                        }
+                        if (!isset($result['priceCurrency']) && isset($offer['priceCurrency'])) {
+                            $result['priceCurrency'] = $offer['priceCurrency'];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    protected function flattenJsonLdNodes(array $decoded): array
+    {
+        if (array_is_list($decoded)) {
+            return $decoded;
+        }
+        if (isset($decoded['@graph']) && is_array($decoded['@graph'])) {
+            return $decoded['@graph'];
+        }
+        return [$decoded];
+    }
+
+    protected function isJsonLdProductNode(array $node): bool
+    {
+        if (!isset($node['@type'])) return false;
+        $types = is_array($node['@type']) ? $node['@type'] : [$node['@type']];
+        foreach ($types as $type) {
+            if (is_string($type) && strtolower(trim($type)) === 'product') {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ─── Price parsing ───────────────────────────────────────
