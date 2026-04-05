@@ -1,7 +1,20 @@
 import axios from 'axios'
 
+function resolveApiBaseUrl() {
+  const envUrl = import.meta.env.VITE_API_URL
+  if (envUrl && String(envUrl).trim() !== '') {
+    return String(envUrl).trim()
+  }
+
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin
+  }
+
+  return 'http://localhost:8000'
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: resolveApiBaseUrl(),
   withCredentials: true,
   withXSRFToken: true,
   headers: {
