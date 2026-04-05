@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AppSetting;
 use App\Models\AdminAction;
 use App\Models\Notification;
 use App\Models\Product;
@@ -56,7 +55,6 @@ class AdminDashboardController extends Controller
             'errors_24h' => $errors24h,
             'actions_7d' => $actions7d,
             'notifications_24h' => $notifications24h,
-            'add_product_enabled' => AppSetting::getBool('products.add_enabled', true),
         ]);
     }
 }

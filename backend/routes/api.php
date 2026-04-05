@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin\AdminActionController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AdminProductController;
-use App\Http\Controllers\Admin\AdminSystemController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
@@ -17,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/ping', function () {
     return response()->json(['status' => 'ok', 'time' => now()->toIso8601String()]);
 });
+
+Route::get('/market/top-assets', [ProductController::class, 'topAssets']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // User profile
@@ -35,12 +36,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
 
         // Products CRUD
-        Route::get('/products/supported-stores', [ProductController::class, 'supportedStores']);
-        Route::get('/products/availability', [ProductController::class, 'availability']);
         Route::apiResource('products', ProductController::class);
 
         // Price history for a product
         Route::get('/products/{product}/prices', [PriceHistoryController::class, 'index']);
+
+        // Asset-style aliases (crypto tracking)
+        Route::post('/assets', [ProductController::class, 'store']);
+        Route::get('/assets/{product}/current-price', [ProductController::class, 'currentPrice']);
+        Route::get('/assets/{product}/history', [PriceHistoryController::class, 'index']);
+        Route::patch('/assets/{product}/alerts', [ProductController::class, 'updateAlerts']);
 
         // Notifications
         Route::get('/notifications', [NotificationController::class, 'index']);
@@ -59,9 +64,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             Route::get('/products', [AdminProductController::class, 'index']);
             Route::patch('/products/{product}/status', [AdminProductController::class, 'updateStatus']);
-
-            Route::get('/system/settings', [AdminSystemController::class, 'show']);
-            Route::patch('/system/settings/add-product', [AdminSystemController::class, 'updateAddProduct']);
 
             Route::get('/logs', [AdminLogController::class, 'index']);
             Route::get('/logs/export', [AdminLogController::class, 'exportCsv']);

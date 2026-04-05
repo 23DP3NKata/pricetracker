@@ -21,7 +21,7 @@ class PriceHistoryController extends Controller
             ->exists();
 
         if (!$tracking) {
-            return response()->json(['message' => 'Product not found in your tracking list.'], 404);
+            return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
         }
 
         $validated = $request->validate([
@@ -55,6 +55,7 @@ class PriceHistoryController extends Controller
 
         return response()->json([
             'product_id' => $product->id,
+            'symbol' => $product->symbol,
             'period_days' => $days,
             'stats' => $stats,
             'history' => $history,

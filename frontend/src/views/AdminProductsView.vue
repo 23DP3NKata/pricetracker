@@ -35,7 +35,7 @@
           <v-select v-model="filters.status" :label="$t('adminProducts.status')" variant="outlined" :items="statusOptions" clearable />
         </v-col>
         <v-col cols="12" md="2">
-          <v-text-field v-model="filters.store_name" :label="$t('adminProducts.store')" variant="outlined" clearable />
+          <v-text-field v-model="filters.symbol" label="Symbol" variant="outlined" clearable />
         </v-col>
         <v-col cols="12" md="2" class="d-flex align-center">
           <v-btn color="primary" block rounded="xl" :loading="loading" @click="loadProducts(1)">{{ $t('adminCommon.apply') }}</v-btn>
@@ -61,9 +61,9 @@
               </v-btn>
             </th>
             <th>
-              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('store_name')">
-                {{ $t('adminProducts.store') }}
-                <v-icon end size="16">{{ sortIcon('store_name') }}</v-icon>
+              <v-btn variant="text" size="small" class="px-0" @click="toggleSort('symbol')">
+                Symbol
+                <v-icon end size="16">{{ sortIcon('symbol') }}</v-icon>
               </v-btn>
             </th>
             <th>
@@ -92,9 +92,9 @@
             <td>{{ p.id }}</td>
             <td>
               <div class="font-weight-medium">{{ p.title }}</div>
-              <a :href="p.product_page_url || p.url" target="_blank" class="text-caption">{{ $t('adminProducts.openPage') }}</a>
+              <a :href="p.product_page_url" target="_blank" class="text-caption">{{ $t('adminProducts.openPage') }}</a>
             </td>
-            <td>{{ p.store_name || '-' }}</td>
+            <td>{{ (p.symbol || '-').toUpperCase() }}</td>
             <td>
               <v-chip size="small" :color="statusColor(p.status)">{{ statusLabel(p.status) }}</v-chip>
             </td>
@@ -147,7 +147,7 @@ function isTabActive(name) {
 const filters = reactive({
   search: '',
   status: null,
-  store_name: '',
+  symbol: '',
   sort_by: 'id',
   sort_dir: 'desc',
 })
@@ -212,7 +212,7 @@ async function loadProducts(page = 1) {
       product_id: activeProductId.value || undefined,
       search: filters.search || undefined,
       status: filters.status || undefined,
-      store_name: filters.store_name || undefined,
+      symbol: filters.symbol || undefined,
       sort_by: filters.sort_by,
       sort_dir: filters.sort_dir,
     })

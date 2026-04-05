@@ -1,188 +1,405 @@
 <template>
-  <v-container class="py-8">
-    <h1 class="text-h4 font-weight-bold mb-6">{{ $t('dashboard.title') }}</h1>
-
-    <!-- Email verification banner -->
-    <v-alert
-      v-if="!auth.emailVerified"
-      type="warning"
-      variant="tonal"
-      rounded="lg"
-      class="mb-6"
-      prominent
-    >
-      <div class="d-flex align-center justify-space-between flex-wrap ga-3">
-        <div>
-          <strong>{{ $t('dashboard.emailNotVerified') }}</strong> {{ $t('dashboard.monthlyLimit5') }}
-          {{ $t('dashboard.verifyTo180') }}
-        </div>
-        <div class="d-flex ga-2">
-          <v-btn
-            v-if="!verifySent"
-            color="warning"
-            variant="flat"
-            size="small"
-            rounded="xl"
-            :loading="verifyLoading"
-            @click="handleResend"
-          >
-            {{ $t('dashboard.sendVerificationLink') }}
-          </v-btn>
-          <v-chip v-else color="success" size="small" variant="tonal">{{ $t('dashboard.linkSent') }}</v-chip>
-        </div>
+  <v-container class="py-8 py-md-10 dashboard-crypto">
+    <div class="d-flex flex-wrap align-end justify-space-between mb-4 ga-3">
+      <div>
+        <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">{{ $t('dashboard.title') }}</h1>
+        <p class="text-medium-emphasis ma-0">
+          {{ $t('dashboard.topAssetsSubtitle') }}
+        </p>
       </div>
-    </v-alert>
-
-    <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
-
-    <div v-if="stats" class="mb-8">
-      <!-- Stats cards -->
-      <v-row>
-        <v-col cols="12" sm="6" md="3">
-          <v-card rounded="xl" class="pa-4">
-            <div class="d-flex align-center ga-3">
-              <v-avatar color="primary" variant="tonal" size="48">
-                <v-icon>mdi-package-variant</v-icon>
-              </v-avatar>
-              <div>
-                <div class="text-h5 font-weight-bold">{{ stats.total_products }}</div>
-                <div class="text-medium-emphasis text-body-2">{{ $t('dashboard.products') }}</div>
-              </div>
-            </div>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6" md="3">
-          <v-card rounded="xl" class="pa-4">
-            <div class="d-flex align-center ga-3">
-              <v-avatar color="error" variant="tonal" size="48">
-                <v-icon>mdi-bell-ring</v-icon>
-              </v-avatar>
-              <div>
-                <div class="text-h5 font-weight-bold">{{ stats.unread_notifications }}</div>
-                <div class="text-medium-emphasis text-body-2">{{ $t('dashboard.unread') }}</div>
-              </div>
-            </div>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6" md="3">
-          <v-card rounded="xl" class="pa-4">
-            <div class="d-flex align-center ga-3">
-              <v-avatar color="success" variant="tonal" size="48">
-                <v-icon>mdi-arrow-down-bold</v-icon>
-              </v-avatar>
-              <div>
-                <div class="text-h5 font-weight-bold">{{ stats.recent_drops }}</div>
-                <div class="text-medium-emphasis text-body-2">{{ $t('dashboard.priceDrops7d') }}</div>
-              </div>
-            </div>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6" md="3">
-          <v-card rounded="xl" class="pa-4">
-            <div class="d-flex align-center ga-3">
-              <v-avatar color="warning" variant="tonal" size="48">
-                <v-icon>mdi-arrow-up-bold</v-icon>
-              </v-avatar>
-              <div>
-                <div class="text-h5 font-weight-bold">{{ stats.recent_increases }}</div>
-                <div class="text-medium-emphasis text-body-2">{{ $t('dashboard.increases7d') }}</div>
-              </div>
-            </div>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Monthly limit -->
-      <v-card rounded="xl" class="pa-4 mt-4">
-        <div class="d-flex justify-space-between align-center mb-2">
-          <span class="font-weight-medium">{{ $t('dashboard.monthlyChecks') }}</span>
-          <span class="text-medium-emphasis">{{ stats.checks_used }} / {{ stats.monthly_limit }}</span>
-        </div>
-        <v-progress-linear
-          :model-value="(stats.checks_used / stats.monthly_limit) * 100"
-          color="primary"
-          rounded
-          height="8"
-        />
-      </v-card>
-
-      <!-- Top Drops -->
-      <v-card v-if="stats.top_drops && stats.top_drops.length" rounded="xl" class="pa-4 mt-4">
-        <h3 class="text-h6 font-weight-bold mb-3">
-          <v-icon color="success" class="mr-1">mdi-trending-down</v-icon>
-          {{ $t('dashboard.biggestDrops7d') }}
-        </h3>
-        <v-list>
-          <v-list-item
-            v-for="drop in stats.top_drops"
-            :key="drop.product_id"
-            :to="`/products/${drop.product_id}`"
-            rounded="lg"
-          >
-            <v-list-item-title>{{ drop.title }}</v-list-item-title>
-            <v-list-item-subtitle>
-              {{ formatPrice(drop.old_price) }} → {{ formatPrice(drop.new_price) }}
-            </v-list-item-subtitle>
-            <template #append>
-              <v-chip color="success" size="small" variant="tonal">
-                -{{ formatPrice(drop.old_price - drop.new_price) }}
-              </v-chip>
-            </template>
-          </v-list-item>
-        </v-list>
-      </v-card>
-
-      <!-- Quick actions -->
-      <v-row class="mt-4">
-        <v-col cols="12" sm="6">
-          <v-btn to="/products" color="primary" variant="tonal" block rounded="xl" size="large" prepend-icon="mdi-package-variant">
-            {{ $t('dashboard.myProducts') }}
-          </v-btn>
-        </v-col>
-        <v-col cols="12" sm="6">
-          <v-btn to="/notifications" color="secondary" variant="tonal" block rounded="xl" size="large" prepend-icon="mdi-bell">
-            {{ $t('dashboard.notifications') }}
-          </v-btn>
-        </v-col>
-      </v-row>
+      <v-btn variant="outlined" rounded="xl" prepend-icon="mdi-refresh" :loading="loading" @click="loadTopAssets">
+        {{ $t('dashboard.refresh') }}
+      </v-btn>
     </div>
+
+    <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-5" />
+
+        <v-alert
+          v-if="error"
+          type="error"
+          variant="tonal"
+          rounded="lg"
+          class="mb-6"
+          closable
+          @click:close="error = null"
+        >
+          {{ error }}
+        </v-alert>
+
+        <v-alert
+          v-else-if="!loading && assets.length === 0"
+          type="info"
+          variant="tonal"
+          rounded="lg"
+          class="mb-6"
+          icon="mdi-information-outline"
+        >
+          {{ $t('dashboard.emptyTopAssetsHint') }}
+        </v-alert>
+
+      <v-card rounded="xl" class="list-shell" v-if="assets.length">
+          <div class="list-head d-none d-md-grid">
+            <div>#</div>
+            <div>{{ $t('dashboard.asset') }}</div>
+            <div class="text-right">{{ $t('dashboard.lastPrice') }}</div>
+            <div class="text-right">{{ $t('dashboard.change24h') }}</div>
+            <div>{{ $t('dashboard.miniChart') }}</div>
+            <div class="text-right">{{ $t('dashboard.action') }}</div>
+          </div>
+
+          <div
+            v-for="(asset, index) in assets"
+            :key="asset.id"
+            class="list-row"
+          >
+            <div class="rank-col">
+              <span class="rank-badge">{{ index + 1 }}</span>
+            </div>
+
+            <div class="asset-col">
+              <v-avatar size="34" color="grey-lighten-4" class="mr-2">
+                <v-img v-if="asset.image_url" :src="asset.image_url" :alt="asset.symbol" />
+                <span v-else class="text-caption font-weight-bold">{{ asset.symbol?.slice(0, 1) }}</span>
+              </v-avatar>
+              <div>
+                <div class="text-subtitle-2 font-weight-bold">{{ asset.symbol }}</div>
+                <div class="text-caption text-medium-emphasis">{{ asset.title }}</div>
+              </div>
+            </div>
+
+            <div class="price-col text-md-right">
+              <div class="font-weight-bold">{{ formatPrice(asset.current_price, asset.currency) }}</div>
+            </div>
+
+            <div class="change-col text-md-right">
+              <v-chip size="small" variant="tonal" :color="trendColor(asset.trend)">
+                {{ formatPercent(asset.price_change_24h) }}
+              </v-chip>
+            </div>
+
+            <div class="chart-col">
+              <div class="sparkline-wrap">
+                <svg viewBox="0 0 220 64" preserveAspectRatio="none" class="sparkline" role="img" :aria-label="t('dashboard.chartAria', { symbol: asset.symbol })">
+                  <polyline
+                    :points="sparklinePoints(asset.history)"
+                    fill="none"
+                    :stroke="sparklineStroke(asset.price_change_24h)"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <div class="action-col text-md-right">
+              <v-btn
+                size="small"
+                rounded="xl"
+                :variant="asset.is_tracked ? 'outlined' : 'tonal'"
+                color="primary"
+                :prepend-icon="asset.is_tracked ? 'mdi-check-circle-outline' : 'mdi-crosshairs-gps'"
+                @click="openTrackDialog(asset)"
+              >
+                {{ asset.is_tracked ? $t('dashboard.tracked') : $t('dashboard.track') }}
+              </v-btn>
+            </div>
+          </div>
+    </v-card>
+
+    <v-dialog v-model="showTrackDialog" max-width="520">
+      <v-card rounded="xl" class="pa-6">
+        <h2 class="text-h6 font-weight-bold mb-4">{{ $t('dashboard.trackingSetupTitle') }}</h2>
+
+        <v-alert
+          v-if="trackError"
+          type="error"
+          variant="tonal"
+          rounded="lg"
+          class="mb-4"
+          closable
+          @click:close="trackError = null"
+        >
+          {{ trackError }}
+        </v-alert>
+
+        <div v-if="selectedAsset" class="text-body-2 mb-4">
+          <span class="font-weight-bold">{{ selectedAsset.title }}</span>
+          <span class="text-medium-emphasis"> ({{ selectedAsset.symbol }})</span>
+        </div>
+
+        <v-form @submit.prevent="submitTracking">
+          <v-text-field
+            v-model.number="trackForm.targetPrice"
+            :label="$t('dashboard.targetPrice')"
+            type="number"
+            min="0"
+            step="0.00000001"
+            rounded="lg"
+            variant="outlined"
+            prepend-inner-icon="mdi-target"
+          />
+
+          <v-select
+            v-model="trackForm.notifyWhen"
+            :items="notifyWhenOptions"
+            item-title="text"
+            item-value="value"
+            :label="$t('dashboard.notifyCondition')"
+            rounded="lg"
+            variant="outlined"
+          />
+
+          <v-select
+            v-model="trackForm.interval"
+            :items="intervalOptions"
+            item-title="text"
+            item-value="value"
+            :label="$t('dashboard.updateInterval')"
+            rounded="lg"
+            variant="outlined"
+          />
+
+          <div class="d-flex justify-end ga-2 mt-2">
+            <v-btn variant="text" rounded="xl" :disabled="trackLoading" @click="showTrackDialog = false">{{ $t('form.cancel') }}</v-btn>
+            <v-btn type="submit" color="primary" rounded="xl" :loading="trackLoading" :disabled="trackLoading" prepend-icon="mdi-bell-ring-outline">
+              {{ $t('dashboard.saveTracking') }}
+            </v-btn>
+          </div>
+        </v-form>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getDashboard, resendVerification } from '@/api'
-import { useAuthStore } from '@/stores/auth'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { getTopAssets, trackAsset } from '@/api'
 
-const auth = useAuthStore()
-const stats = ref(null)
-const loading = ref(true)
-const verifyLoading = ref(false)
-const verifySent = ref(false)
+const { t } = useI18n()
 
-function formatPrice(price) {
-  return Number(price).toFixed(2) + ' €'
-}
+const loading = ref(false)
+const error = ref(null)
+const assets = ref([])
 
-async function handleResend() {
-  verifyLoading.value = true
-  try {
-    await resendVerification()
-    verifySent.value = true
-  } finally {
-    verifyLoading.value = false
+const showTrackDialog = ref(false)
+const selectedAsset = ref(null)
+const trackLoading = ref(false)
+const trackError = ref(null)
+
+const trackForm = ref({
+  targetPrice: null,
+  notifyWhen: 'below',
+  interval: 5,
+})
+
+const notifyWhenOptions = computed(() => [
+  { text: t('dashboard.conditionBelow'), value: 'below' },
+  { text: t('dashboard.conditionAbove'), value: 'above' },
+])
+
+const intervalOptions = computed(() => [
+  { text: t('form.every5min'), value: 5 },
+  { text: t('form.every30min'), value: 30 },
+  { text: t('form.every1h'), value: 60 },
+  { text: t('form.every6h'), value: 360 },
+  { text: t('form.every24h'), value: 1440 },
+])
+
+function formatPrice(price, currency = 'USD') {
+  if (price === null || price === undefined || Number.isNaN(Number(price))) {
+    return 'N/A'
   }
+
+  return `${Number(price).toFixed(8)} ${String(currency).toUpperCase()}`
 }
 
-onMounted(async () => {
+function formatPercent(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return 'N/A'
+  }
+
+  const num = Number(value)
+  const sign = num > 0 ? '+' : ''
+  return `${sign}${num.toFixed(2)}%`
+}
+
+function trendColor(trend) {
+  if (trend === 'up') return 'success'
+  if (trend === 'down') return 'error'
+  return 'grey'
+}
+
+function sparklineStroke(change) {
+  if (change === null || change === undefined || Number.isNaN(Number(change))) return '#9ca3af'
+  return Number(change) >= 0 ? '#16a34a' : '#dc2626'
+}
+
+function sparklinePoints(history) {
+  const rows = Array.isArray(history) ? history : []
+  if (!rows.length) {
+    return '0,32 220,32'
+  }
+
+  const values = rows.map((entry) => Number(entry.price)).filter((n) => !Number.isNaN(n))
+  if (!values.length) {
+    return '0,32 220,32'
+  }
+
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const span = max - min || 1
+
+  return values
+    .map((price, index) => {
+      const x = (index / Math.max(values.length - 1, 1)) * 220
+      const y = 56 - ((price - min) / span) * 48
+      return `${x.toFixed(2)},${y.toFixed(2)}`
+    })
+    .join(' ')
+}
+
+async function loadTopAssets() {
+  loading.value = true
+  error.value = null
   try {
-    const { data } = await getDashboard()
-    stats.value = data
+    const { data } = await getTopAssets(10)
+    assets.value = Array.isArray(data?.data) ? data.data : []
+  } catch (e) {
+    error.value = e.response?.data?.message || t('dashboard.failedLoadAssets')
   } finally {
     loading.value = false
   }
+}
+
+function openTrackDialog(asset) {
+  selectedAsset.value = asset
+  trackForm.value = {
+    targetPrice: asset.current_price ? Number(asset.current_price) : null,
+    notifyWhen: 'below',
+    interval: 5,
+  }
+  trackError.value = null
+  showTrackDialog.value = true
+}
+
+async function submitTracking() {
+  if (!selectedAsset.value || trackLoading.value) return
+
+  if (trackForm.value.targetPrice === null || Number(trackForm.value.targetPrice) <= 0) {
+    trackError.value = t('dashboard.invalidTargetPrice')
+    return
+  }
+
+  trackLoading.value = true
+  trackError.value = null
+
+  try {
+    await trackAsset({
+      symbol: selectedAsset.value.symbol,
+      check_interval: trackForm.value.interval,
+      target_price: Number(trackForm.value.targetPrice),
+      notify_when: trackForm.value.notifyWhen,
+    })
+
+    showTrackDialog.value = false
+    await loadTopAssets()
+  } catch (e) {
+    trackError.value = e.response?.data?.message || t('dashboard.failedSaveTracking')
+  } finally {
+    trackLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadTopAssets()
 })
 </script>
+
+<style scoped>
+.dashboard-crypto {
+  max-width: 1180px;
+}
+
+.list-shell {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  overflow: hidden;
+}
+
+.list-head {
+  grid-template-columns: 72px minmax(210px, 1.6fr) minmax(160px, 1fr) minmax(120px, 0.7fr) minmax(160px, 1.1fr) minmax(160px, 0.9fr);
+  gap: 12px;
+  padding: 12px 18px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.list-row {
+  display: grid;
+  grid-template-columns: 72px minmax(210px, 1.6fr) minmax(160px, 1fr) minmax(120px, 0.7fr) minmax(160px, 1.1fr) minmax(160px, 0.9fr);
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.list-row:last-child {
+  border-bottom: 0;
+}
+
+.rank-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  background: rgba(var(--v-theme-primary), 0.14);
+  color: rgb(var(--v-theme-primary));
+}
+
+.asset-col {
+  display: flex;
+  align-items: center;
+}
+
+.sparkline-wrap {
+  height: 56px;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  padding: 8px;
+}
+
+.sparkline {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@media (max-width: 959px) {
+  .list-row {
+    grid-template-columns: 52px 1fr;
+    gap: 10px;
+  }
+
+  .price-col,
+  .change-col,
+  .chart-col,
+  .action-col {
+    grid-column: 2;
+  }
+
+  .action-col {
+    margin-top: 4px;
+  }
+
+  .sparkline-wrap {
+    height: 48px;
+  }
+}
+</style>

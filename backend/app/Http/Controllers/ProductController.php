@@ -2,38 +2,117 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AppSetting;
 use App\Models\PriceHistory;
 use App\Models\Product;
+use App\Models\User;
 use App\Models\UserProduct;
-use App\Services\PriceScraperService;
+use App\Services\CoinGeckoPriceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
     public function __construct(
-        protected PriceScraperService $scraper,
+        protected CoinGeckoPriceService $priceService,
     ) {}
 
     /**
-     * List products tracked by the authenticated user.
+     * Public top assets feed for homepage cards.
+     */
+    public function topAssets(Request $request): JsonResponse
+    {
+        $limit = max(1, min((int) $request->integer('limit', 10), 20));
+
+        $assets = Product::query()
+            ->where('status', 'active')
+            ->whereNotNull('symbol')
+            ->whereNotNull('current_price')
+            ->orderByDesc('tracking_count')
+            ->orderByDesc('checks_count')
+            ->limit($limit)
+            ->get([
+                'id',
+                'title',
+                'symbol',
+                'image_url',
+                'current_price',
+                'price_change_24h',
+                'trend',
+                'currency',
+                'tracking_count',
+                'product_page_url',
+            ]);
+
+        if ($assets->isEmpty()) {
+            return response()->json(['data' => []]);
+        }
+
+        $assetIds = $assets->pluck('id')->all();
+
+        $historyByAsset = PriceHistory::query()
+            ->whereIn('product_id', $assetIds)
+            ->where('checked_at', '>=', now()->subDays(7))
+            ->orderBy('checked_at')
+            ->get(['product_id', 'price', 'checked_at'])
+            ->groupBy('product_id');
+
+        $trackedMap = [];
+        if ($request->user()) {
+            $trackedMap = UserProduct::query()
+                ->where('user_id', $request->user()->id)
+                ->whereIn('product_id', $assetIds)
+                ->pluck('id', 'product_id')
+                ->map(fn() => true)
+                ->all();
+        }
+
+        $data = $assets->map(function (Product $asset) use ($historyByAsset, $trackedMap) {
+            $points = collect($historyByAsset->get($asset->id, []))
+                ->take(-48)
+                ->map(fn($row) => [
+                    'price' => (float) $row->price,
+                    'checked_at' => optional($row->checked_at)->toDateTimeString(),
+                ])
+                ->values();
+
+            return [
+                'id' => $asset->id,
+                'title' => $asset->title,
+                'symbol' => $asset->symbol,
+                'image_url' => $asset->image_url,
+                'current_price' => $asset->current_price,
+                'price_change_24h' => $asset->price_change_24h,
+                'trend' => $asset->trend,
+                'currency' => $asset->currency,
+                'tracking_count' => $asset->tracking_count,
+                'product_page_url' => $asset->product_page_url,
+                'is_tracked' => (bool) ($trackedMap[$asset->id] ?? false),
+                'history' => $points,
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * List assets tracked by authenticated user.
      */
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'sort_by' => ['nullable', Rule::in(['created_at', 'title', 'current_price', 'store_name', 'next_check_at', 'last_checked_at'])],
+            'sort_by' => ['nullable', Rule::in(['created_at', 'title', 'symbol', 'current_price', 'next_check_at', 'last_checked_at'])],
             'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
-            'store_name' => ['nullable', 'string', 'max:100'],
+            'symbol' => ['nullable', 'string', 'max:20'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
         $sortMap = [
             'created_at' => 'user_products.created_at',
             'title' => 'products.title',
+            'symbol' => 'products.symbol',
             'current_price' => 'products.current_price',
-            'store_name' => 'products.store_name',
             'next_check_at' => 'user_products.next_check_at',
             'last_checked_at' => 'user_products.last_checked_at',
         ];
@@ -41,124 +120,81 @@ class ProductController extends Controller
         $sortBy = $validated['sort_by'] ?? 'created_at';
         $sortDir = $validated['sort_dir'] ?? 'desc';
         $sortColumn = $sortMap[$sortBy] ?? 'user_products.created_at';
-        $storeFilter = trim((string) ($validated['store_name'] ?? ''));
+        $symbolFilter = strtoupper(trim((string) ($validated['symbol'] ?? '')));
+        $perPage = (int) ($validated['per_page'] ?? 20);
 
         $query = $request->user()
             ->products()
             ->where('products.status', 'active')
-            ->withPivot('check_interval', 'is_active', 'last_checked_at', 'next_check_at', 'created_at')
+            ->withPivot('check_interval', 'target_price', 'notify_when', 'is_active', 'last_checked_at', 'next_check_at', 'last_notified_at', 'created_at')
             ->orderBy($sortColumn, $sortDir);
 
-        if ($storeFilter !== '') {
-            $query->where('products.store_name', $storeFilter);
+        if ($symbolFilter !== '') {
+            $query->where('products.symbol', $symbolFilter);
         }
 
-        $products = $query->paginate(20);
-
-        return response()->json($products);
+        return response()->json($query->paginate($perPage));
     }
 
     /**
-     * Add a product to tracking. User sends only the URL —
-     * the system scrapes title, price, image, store name automatically.
+     * Add an asset to tracking by ticker symbol (e.g., BTC, ETH, LTC).
      */
     public function store(Request $request): JsonResponse
     {
-        if (!AppSetting::getBool('products.add_enabled', true)) {
-            return response()->json([
-                'message' => 'Adding products is temporarily unavailable.',
-            ], 503);
-        }
-
         $validated = $request->validate([
-            'url' => ['required', 'url', 'max:500'],
-            'check_interval' => ['sometimes', 'integer', 'min:30', 'max:44640'],
+            'symbol' => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9._-]+$/'],
+            'check_interval' => ['sometimes', 'integer', 'min:5', 'max:44640'],
+            'target_price' => ['nullable', 'numeric', 'min:0.00000001'],
+            'notify_when' => ['nullable', Rule::in(['below', 'above'])],
         ]);
 
-        $url = $validated['url'];
+        $authUser = $request->user();
 
-        // Validate that the store is supported
-        if (!$this->scraper->canHandle($url)) {
-            $supported = implode(', ', array_keys($this->scraper->supportedStores()));
+        if (!$authUser->hasVerifiedEmail()) {
             return response()->json([
-                'message' => "This store is not supported. Supported stores: {$supported}",
-            ], 422);
-        }
-
-        $user = $request->user();
-
-        if (!$user->hasVerifiedEmail()) {
-            return response()->json([
-                'message' => 'Email verification required before adding products.',
+                'message' => 'Email verification required before adding assets.',
             ], 403);
         }
 
-        // Check monthly limit
-        if ($user->checks_used >= $user->monthly_limit) {
-            return response()->json(['message' => 'Monthly tracking limit reached.'], 403);
-        }
+        $symbol = strtoupper(trim($validated['symbol']));
 
-        // Normalize URL to canonical form
-        try {
-            $canonicalUrl = $this->scraper->normalizeUrl($url);
-        } catch (\Throwable) {
-            $canonicalUrl = $url;
-        }
-
-        // Check if user already tracks this product
-        $existingProduct = Product::where('canonical_url', $canonicalUrl)
-            ->orWhere(function ($query) use ($canonicalUrl) {
-                $query->whereNull('canonical_url')->where('url', $canonicalUrl);
-            })
+        $product = Product::query()
+            ->where('symbol', $symbol)
             ->first();
-        if ($existingProduct) {
-            $alreadyTracking = UserProduct::where('user_id', $user->id)
-                ->where('product_id', $existingProduct->id)
-                ->exists();
-            if ($alreadyTracking) {
-                return response()->json(['message' => 'You are already tracking this product.'], 409);
+
+        if (!$product) {
+            try {
+                $details = $this->priceService->fetchAssetDetails($symbol);
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                ], 422);
             }
-        }
 
-        // Scrape product details from the page
-        try {
-            $details = $this->scraper->fetchProductDetails($url);
-        } catch (\Throwable $e) {
-            Log::warning('Failed to fetch product details during tracking create.', [
-                'user_id' => $request->user()?->id,
-                'url' => $url,
-                'error' => $e->getMessage(),
-            ]);
+            $product = Product::firstOrCreate(
+                ['coingecko_id' => $details['coingecko_id']],
+                [
+                    'title' => $details['title'],
+                    'symbol' => $details['symbol'],
+                    'coingecko_id' => $details['coingecko_id'],
+                    'product_page_url' => $details['product_page_url'],
+                    'image_url' => $details['image_url'],
+                    'current_price' => $details['current_price'],
+                    'currency' => $details['currency'],
+                ]
+            );
 
-            $message = str_contains(strtolower($e->getMessage()), 'anti-bot')
-                ? 'The store blocked automated access from server IP. Configure browser fallback and try again.'
-                : 'Failed to fetch product details. Please verify the product URL and try again later.';
-
-            return response()->json([
-                'message' => $message,
-            ], 422);
-        }
-
-        // Find or create the global product record
-        $product = Product::firstOrCreate(
-            ['canonical_url' => $details['canonical_url']],
-            [
-                'url' => $details['product_page_url'],
-                'product_page_url' => $details['product_page_url'],
-                'title' => $details['title'],
-                'current_price' => $details['current_price'],
-                'currency' => $details['currency'],
-                'store_name' => $details['store_name'],
-                'image_url' => $details['image_url'],
-            ]
-        );
-
-        if (!$product->product_page_url) {
-            $product->update(['product_page_url' => $details['product_page_url']]);
-        }
-
-        if (!$product->url) {
-            $product->update(['url' => $details['product_page_url']]);
+            if (!$product->symbol || !$product->coingecko_id) {
+                $product->update([
+                    'title' => $details['title'],
+                    'symbol' => $details['symbol'],
+                    'coingecko_id' => $details['coingecko_id'],
+                    'product_page_url' => $details['product_page_url'],
+                    'image_url' => $details['image_url'],
+                    'current_price' => $details['current_price'],
+                    'currency' => $details['currency'],
+                ]);
+            }
         }
 
         if (!PriceHistory::where('product_id', $product->id)->exists() && $product->current_price !== null) {
@@ -169,52 +205,56 @@ class ProductController extends Controller
             ]);
         }
 
-        // Double-check user isn't already tracking (race condition guard)
-        $exists = UserProduct::where('user_id', $user->id)
-            ->where('product_id', $product->id)
-            ->exists();
-        if ($exists) {
-            return response()->json(['message' => 'You are already tracking this product.'], 409);
+        $checkInterval = $validated['check_interval'] ?? 1440;
+
+        $createResult = DB::transaction(function () use ($authUser, $product, $checkInterval, $validated) {
+            $user = User::query()->lockForUpdate()->findOrFail($authUser->id);
+
+            if ($user->checks_used >= $user->monthly_limit) {
+                return ['created' => false, 'reason' => 'limit'];
+            }
+
+            $tracking = UserProduct::query()->firstOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'product_id' => $product->id,
+                ],
+                [
+                    'check_interval' => $checkInterval,
+                    'target_price' => $validated['target_price'] ?? null,
+                    'notify_when' => $validated['notify_when'] ?? 'below',
+                    'next_check_at' => now()->addMinutes($checkInterval),
+                ]
+            );
+
+            if (!$tracking->wasRecentlyCreated) {
+                return ['created' => false, 'reason' => 'exists'];
+            }
+
+            $product->increment('tracking_count');
+            $user->increment('checks_used');
+
+            return ['created' => true, 'reason' => null];
+        });
+
+        if (!$createResult['created']) {
+            if ($createResult['reason'] === 'limit') {
+                return response()->json([
+                    'message' => 'Monthly request limit reached.',
+                ], 403);
+            }
+
+            return response()->json(['message' => 'You are already tracking this asset.'], 409);
         }
 
-        // Create the user-product link
-        $checkInterval = $validated['check_interval'] ?? 1440;
-        UserProduct::create([
-            'user_id' => $user->id,
-            'product_id' => $product->id,
-            'check_interval' => $checkInterval,
-            'next_check_at' => now()->addMinutes($checkInterval),
-        ]);
-
-        $product->increment('tracking_count');
-        $user->increment('checks_used');
-
         return response()->json([
-            'message' => 'Product added to tracking.',
+            'message' => 'Asset added to tracking.',
             'product' => $product->fresh(),
         ], 201);
     }
 
     /**
-     * List supported stores.
-     */
-    public function supportedStores(): JsonResponse
-    {
-        return response()->json([
-            'stores' => $this->scraper->supportedStores(),
-            'add_product_enabled' => AppSetting::getBool('products.add_enabled', true),
-        ]);
-    }
-
-    public function availability(): JsonResponse
-    {
-        return response()->json([
-            'add_product_enabled' => AppSetting::getBool('products.add_enabled', true),
-        ]);
-    }
-
-    /**
-     * Show a single tracked product with pivot data.
+     * Show single tracked asset with pivot data.
      */
     public function show(Request $request, Product $product): JsonResponse
     {
@@ -223,7 +263,7 @@ class ProductController extends Controller
             ->first();
 
         if (!$pivot) {
-            return response()->json(['message' => 'Product not found in your tracking list.'], 404);
+            return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
         }
 
         $product->load('priceHistory');
@@ -233,13 +273,45 @@ class ProductController extends Controller
     }
 
     /**
-     * Update tracking settings for a product.
+     * Return current cached price from DB without external API calls.
+     */
+    public function currentPrice(Request $request, Product $product): JsonResponse
+    {
+        $tracking = UserProduct::where('user_id', $request->user()->id)
+            ->where('product_id', $product->id)
+            ->first();
+
+        if (!$tracking) {
+            return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
+        }
+
+        $latestHistory = PriceHistory::query()
+            ->where('product_id', $product->id)
+            ->orderByDesc('checked_at')
+            ->first();
+
+        return response()->json([
+            'product_id' => $product->id,
+            'symbol' => $product->symbol,
+            'price' => $product->current_price,
+            'currency' => $product->currency,
+            'price_change_24h' => $product->price_change_24h,
+            'trend' => $product->trend,
+            'checked_at' => optional($latestHistory?->checked_at)->toDateTimeString() ?: optional($product->last_successful_check)->toDateTimeString(),
+            'next_check_at' => optional($tracking->next_check_at)->toDateTimeString(),
+        ]);
+    }
+
+    /**
+     * Update tracker settings.
      */
     public function update(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'check_interval' => ['sometimes', 'integer', 'min:30', 'max:44640'],
+            'check_interval' => ['sometimes', 'integer', 'min:5', 'max:44640'],
             'is_active' => ['sometimes', 'boolean'],
+            'target_price' => ['nullable', 'numeric', 'min:0.00000001'],
+            'notify_when' => ['sometimes', Rule::in(['below', 'above'])],
         ]);
 
         $pivot = UserProduct::where('user_id', $request->user()->id)
@@ -247,7 +319,7 @@ class ProductController extends Controller
             ->first();
 
         if (!$pivot) {
-            return response()->json(['message' => 'Product not found in your tracking list.'], 404);
+            return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
         }
 
         $updates = $validated;
@@ -257,21 +329,35 @@ class ProductController extends Controller
         $effectiveInterval = $validated['check_interval'] ?? $pivot->check_interval;
         $effectiveActive = $hasActiveUpdate ? (bool) $validated['is_active'] : (bool) $pivot->is_active;
 
-        // Keep schedule in sync with updated tracking settings.
         if ($hasIntervalUpdate || $hasActiveUpdate) {
             $updates['next_check_at'] = $effectiveActive
                 ? now()->addMinutes((int) $effectiveInterval)
                 : null;
         }
 
+        if (array_key_exists('target_price', $validated) && $validated['target_price'] === null) {
+            $updates['last_notified_at'] = null;
+        }
+
         $pivot->update($updates);
         $pivot->refresh();
 
-        return response()->json(['message' => 'Tracking settings updated.', 'tracking' => $pivot]);
+        return response()->json([
+            'message' => 'Tracking settings updated.',
+            'tracking' => $pivot,
+        ]);
     }
 
     /**
-     * Remove a product from the user's tracking list.
+     * Alias endpoint dedicated to alert setup.
+     */
+    public function updateAlerts(Request $request, Product $product): JsonResponse
+    {
+        return $this->update($request, $product);
+    }
+
+    /**
+     * Remove an asset from user's tracking list.
      */
     public function destroy(Request $request, Product $product): JsonResponse
     {
@@ -280,7 +366,7 @@ class ProductController extends Controller
             ->delete();
 
         if (!$deleted) {
-            return response()->json(['message' => 'Product not found in your tracking list.'], 404);
+            return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
         }
 
         $product->decrement('tracking_count');

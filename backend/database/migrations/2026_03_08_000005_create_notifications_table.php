@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->decimal('old_price', 10, 2);
-            $table->decimal('new_price', 10, 2);
+            $table->decimal('old_price', 20, 8);
+            $table->decimal('new_price', 20, 8);
             $table->text('message')->nullable();
             $table->boolean('is_read')->default(false);
             $table->timestamp('created_at')->useCurrent();

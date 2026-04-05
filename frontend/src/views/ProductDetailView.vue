@@ -1,6 +1,6 @@
 <template>
   <v-container class="py-8">
-    <v-btn variant="text" rounded="xl" prepend-icon="mdi-arrow-left" class="mb-4" @click="$router.push('/products')">
+    <v-btn variant="text" rounded="xl" prepend-icon="mdi-arrow-left" class="mb-4" @click="$router.push('/dashboard')">
       {{ $t('productDetail.backToProducts') }}
     </v-btn>
 
@@ -13,7 +13,7 @@
           <div>
             <h1 class="text-h5 font-weight-bold mb-1">{{ product.title }}</h1>
             <div class="text-medium-emphasis mb-3">
-              <v-icon size="16">mdi-store</v-icon> {{ product.store_name || $t('productDetail.unknown') }}
+              <v-icon size="16">mdi-currency-btc</v-icon> {{ (product.symbol || 'N/A').toUpperCase() }}
             </div>
             <v-btn
               :href="productPageUrl"
@@ -30,6 +30,14 @@
           </div>
           <div class="text-right">
             <div class="text-h4 font-weight-bold">{{ formatPrice(product.current_price) }}</div>
+            <div class="d-flex justify-end ga-2 mt-2 mb-1">
+              <v-chip :color="trendColor(product.trend)" size="small" variant="tonal">
+                {{ trendLabel(product.trend) }}
+              </v-chip>
+              <v-chip :color="changeColor(product.price_change_24h)" size="small" variant="tonal">
+                24h: {{ formatPercent(product.price_change_24h) }}
+              </v-chip>
+            </div>
             <v-chip :color="product.status === 'active' ? 'success' : 'grey'" size="small" variant="tonal" class="mt-1">
               {{ statusLabel(product.status) }}
             </v-chip>
@@ -58,6 +66,28 @@
               :label="$t('productDetail.active')"
               color="primary"
               hide-details
+            />
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-text-field
+              v-model="trackingForm.target_price"
+              label="Target price"
+              variant="outlined"
+              rounded="lg"
+              type="number"
+              min="0"
+              step="0.00000001"
+            />
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-select
+              v-model="trackingForm.notify_when"
+              :items="alertDirectionOptions"
+              label="Notify when"
+              variant="outlined"
+              rounded="lg"
+              item-title="text"
+              item-value="value"
             />
           </v-col>
           <v-col cols="12" sm="4" class="d-flex ga-2">
@@ -105,6 +135,10 @@
           </v-col>
         </v-row>
 
+        <div class="mb-4 chart-wrap">
+          <Line :data="chartData" :options="chartOptions" />
+        </div>
+
         <!-- Price table -->
         <v-table v-if="historyData.length" density="compact">
           <thead>
@@ -135,7 +169,7 @@
                     size="x-small"
                     variant="tonal"
                   >
-                    {{ priceDiff(entry.price, sortedHistoryData[i + 1].price) > 0 ? '+' : '' }}{{ priceDiff(entry.price, sortedHistoryData[i + 1].price).toFixed(2) }} €
+                    {{ priceDiff(entry.price, sortedHistoryData[i + 1].price) > 0 ? '+' : '' }}{{ priceDiff(entry.price, sortedHistoryData[i + 1].price).toFixed(8) }} {{ (product?.currency || 'USD').toUpperCase() }}
                   </v-chip>
                 </template>
               </td>
@@ -164,11 +198,24 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, computed } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useProductsStore } from '@/stores/products'
 import { getPriceHistory } from '@/api'
+import { Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js'
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const route = useRoute()
 const router = useRouter()
@@ -187,11 +234,14 @@ const confirmDelete = ref(false)
 const deleting = ref(false)
 
 const trackingForm = reactive({
-  check_interval: 1440,
+  check_interval: 5,
   is_active: true,
+  target_price: '',
+  notify_when: 'below',
 })
 
 const intervalOptions = computed(() => [
+  { text: 'Every 5 min', value: 5 },
   { text: t('productDetail.every30min'), value: 30 },
   { text: t('productDetail.everyHour'), value: 60 },
   { text: t('productDetail.every6hours'), value: 360 },
@@ -202,12 +252,49 @@ const intervalOptions = computed(() => [
   { text: t('productDetail.every2weeks'), value: 20160 },
 ])
 
+const alertDirectionOptions = [
+  { text: 'At or below target', value: 'below' },
+  { text: 'At or above target', value: 'above' },
+]
+
 function statusLabel(status) {
   return status === 'active' ? t('productDetail.active') : t('productDetail.paused')
 }
 
+function trendLabel(trend) {
+  if (trend === 'up') return `📈 ${t('productDetail.trendUp')}`
+  if (trend === 'down') return `📉 ${t('productDetail.trendDown')}`
+  return `⏸ ${t('productDetail.trendFlat')}`
+}
+
+function trendColor(trend) {
+  if (trend === 'up') return 'success'
+  if (trend === 'down') return 'error'
+  return 'grey'
+}
+
+function formatPercent(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return 'N/A'
+  }
+
+  const num = Number(value)
+  const sign = num > 0 ? '+' : ''
+  return `${sign}${num.toFixed(2)}%`
+}
+
+function changeColor(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return 'grey'
+  }
+
+  if (Number(value) > 0) return 'success'
+  if (Number(value) < 0) return 'error'
+  return 'grey'
+}
+
 const productPageUrl = computed(() => {
-  const url = (product.value?.product_page_url || product.value?.url || '').trim()
+  const url = (product.value?.product_page_url || '').trim()
 
   if (!url) return ''
   if (/^https?:\/\//i.test(url)) return url
@@ -220,7 +307,8 @@ function formatPrice(price) {
     return t('productDetail.noData')
   }
 
-  return Number(price).toFixed(2) + ' €'
+  const currency = (product.value?.currency || 'USD').toUpperCase()
+  return `${Number(price).toFixed(8)} ${currency}`
 }
 
 function formatDate(dateStr) {
@@ -280,6 +368,60 @@ const sortedHistoryData = computed(() => {
   return rows
 })
 
+const chartData = computed(() => {
+  const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
+
+  return {
+    labels: asc.map((entry) => formatDate(entry.checked_at)),
+    datasets: [
+      {
+        label: 'Price',
+        data: asc.map((entry) => Number(entry.price)),
+        borderColor: '#1976d2',
+        backgroundColor: 'rgba(25, 118, 210, 0.15)',
+        borderWidth: 2,
+        pointRadius: 2,
+        tension: 0.25,
+        fill: true,
+      },
+    ],
+  }
+})
+
+const chartOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      callbacks: {
+        label(context) {
+          const currency = (product.value?.currency || 'USD').toUpperCase()
+          return `${Number(context.parsed.y).toFixed(8)} ${currency}`
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      ticks: {
+        maxRotation: 0,
+        autoSkip: true,
+        maxTicksLimit: 6,
+      },
+    },
+    y: {
+      ticks: {
+        callback(value) {
+          return Number(value).toFixed(4)
+        },
+      },
+    },
+  },
+}))
+
 function setHistorySort(key) {
   if (historySortKey.value === key) {
     historySortDir.value = historySortDir.value === 'desc' ? 'asc' : 'desc'
@@ -303,8 +445,10 @@ async function loadProduct() {
   await store.fetchProduct(route.params.id)
   product.value = store.currentProduct
   if (product.value?.tracking) {
-    trackingForm.check_interval = product.value.tracking.check_interval || 1440
+    trackingForm.check_interval = product.value.tracking.check_interval || 5
     trackingForm.is_active = product.value.tracking.is_active ?? true
+    trackingForm.target_price = product.value.tracking.target_price ?? ''
+    trackingForm.notify_when = product.value.tracking.notify_when || 'below'
   }
 }
 
@@ -323,7 +467,12 @@ async function saveSettings() {
   saving.value = true
   saveMsg.value = null
   try {
-    await store.updateProduct(product.value.id, trackingForm)
+    await store.updateProduct(product.value.id, {
+      check_interval: trackingForm.check_interval,
+      is_active: trackingForm.is_active,
+      target_price: trackingForm.target_price === '' ? null : Number(trackingForm.target_price),
+      notify_when: trackingForm.notify_when,
+    })
     await loadProduct()
     saveMsg.value = { type: 'success', text: t('productDetail.settingsSaved') }
   } catch {
@@ -371,5 +520,9 @@ watch(
 
 .table-sort-btn-right {
   margin-left: auto;
+}
+
+.chart-wrap {
+  min-height: 280px;
 }
 </style>

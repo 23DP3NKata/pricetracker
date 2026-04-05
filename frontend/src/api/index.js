@@ -7,7 +7,13 @@ function resolveApiBaseUrl() {
   }
 
   if (typeof window !== 'undefined' && window.location?.origin) {
-    return window.location.origin
+    const origin = window.location.origin
+
+    if (/^https?:\/\/localhost:(5173|5174)$/i.test(origin)) {
+      return 'http://localhost:8000'
+    }
+
+    return origin
   }
 
   return 'http://localhost:8000'
@@ -79,6 +85,11 @@ export function getDashboard() {
   return api.get('/api/dashboard')
 }
 
+// Market feed
+export function getTopAssets(limit = 10) {
+  return api.get('/api/market/top-assets', { params: { limit } })
+}
+
 // Products
 export function getProducts(params = {}) {
   return api.get('/api/products', { params })
@@ -88,8 +99,8 @@ export function getProduct(id) {
   return api.get(`/api/products/${id}`)
 }
 
-export function addProduct(data) {
-  return api.post('/api/products', data)
+export function trackAsset(data) {
+  return api.post('/api/assets', data)
 }
 
 export function updateProduct(id, data) {
@@ -100,17 +111,17 @@ export function deleteProduct(id) {
   return api.delete(`/api/products/${id}`)
 }
 
-export function getSupportedStores() {
-  return api.get('/api/products/supported-stores')
-}
-
-export function getProductAvailability() {
-  return api.get('/api/products/availability')
-}
-
 // Price History
 export function getPriceHistory(productId, days = 30) {
   return api.get(`/api/products/${productId}/prices`, { params: { days } })
+}
+
+export function getCurrentAssetPrice(productId) {
+  return api.get(`/api/assets/${productId}/current-price`)
+}
+
+export function updateAssetAlerts(productId, data) {
+  return api.patch(`/api/assets/${productId}/alerts`, data)
 }
 
 // Notifications
@@ -138,14 +149,6 @@ export function resendVerification() {
 // Admin - Users
 export function getAdminDashboard() {
   return api.get('/api/admin/dashboard')
-}
-
-export function getAdminSystemSettings() {
-  return api.get('/api/admin/system/settings')
-}
-
-export function updateAdminAddProductSetting(data) {
-  return api.patch('/api/admin/system/settings/add-product', data)
 }
 
 export function getAdminUsers(params = {}) {

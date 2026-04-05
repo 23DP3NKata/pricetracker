@@ -11,11 +11,15 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('url', 500)->unique();
+            $table->string('symbol', 20)->nullable();
+            $table->string('coingecko_id', 120)->nullable();
+            $table->string('product_page_url', 500)->nullable();
+            $table->string('canonical_url', 500)->unique();
             $table->string('image_url', 500)->nullable();
-            $table->decimal('current_price', 10, 2)->nullable();
+            $table->decimal('current_price', 20, 8)->nullable();
+            $table->decimal('price_change_24h', 10, 4)->nullable();
+            $table->enum('trend', ['up', 'down', 'flat'])->default('flat');
             $table->string('currency', 10)->default('EUR');
-            $table->string('store_name', 100)->nullable();
             $table->enum('status', ['active', 'hidden', 'deleted'])->default('active');
             $table->unsignedInteger('tracking_count')->default(0);
             $table->unsignedInteger('checks_count')->default(0);
@@ -24,6 +28,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('status');
+            $table->index('symbol');
+            $table->index('coingecko_id');
         });
     }
 

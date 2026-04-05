@@ -47,7 +47,7 @@ class DashboardController extends Controller
         $topDrops = Notification::where('user_id', $userId)
             ->where('created_at', '>=', now()->subDays(7))
             ->whereColumn('new_price', '<', 'old_price')
-            ->with('product:id,title,url,image_url,store_name,currency')
+            ->with('product:id,title,symbol,image_url,product_page_url,currency')
             ->orderByRaw('(old_price - new_price) DESC')
             ->limit(5)
             ->get();

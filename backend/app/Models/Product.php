@@ -10,13 +10,15 @@ class Product extends Model
 {
     protected $fillable = [
         'title',
-        'url',
-        'product_page_url',
+        'symbol',
+        'coingecko_id',
         'canonical_url',
+        'product_page_url',
         'image_url',
         'current_price',
+        'price_change_24h',
+        'trend',
         'currency',
-        'store_name',
         'status',
         'tracking_count',
         'checks_count',
@@ -27,7 +29,8 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'current_price' => 'decimal:2',
+            'current_price' => 'decimal:8',
+            'price_change_24h' => 'decimal:4',
             'last_successful_check' => 'datetime',
         ];
     }
@@ -35,7 +38,7 @@ class Product extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_products')
-            ->withPivot('check_interval', 'last_checked_at', 'next_check_at', 'is_active', 'created_at');
+            ->withPivot('check_interval', 'target_price', 'notify_when', 'last_checked_at', 'next_check_at', 'last_notified_at', 'is_active', 'created_at');
     }
 
     public function priceHistory(): HasMany

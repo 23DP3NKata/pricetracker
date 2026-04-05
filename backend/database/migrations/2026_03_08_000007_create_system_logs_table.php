@@ -14,6 +14,7 @@ return new class extends Migration
             $table->enum('category', [
                 'scraper', 'price_check', 'auth', 'email',
                 'database', 'api', 'system',
+                'admin',
             ]);
             $table->text('message');
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();

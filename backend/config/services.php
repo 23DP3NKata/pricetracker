@@ -35,4 +35,35 @@ return [
         ],
     ],
 
+    'coingecko' => [
+        'base_url' => env('COINGECKO_BASE_URL', 'https://api.coingecko.com/api/v3'),
+        'vs_currency' => env('COINGECKO_VS_CURRENCY', 'usd'),
+        'api_key' => env('COINGECKO_API_KEY'),
+        'timeout' => (int) env('COINGECKO_TIMEOUT', 15),
+        'default_assets' => [
+            ['symbol' => 'BTC', 'name' => 'Bitcoin'],
+            ['symbol' => 'ETH', 'name' => 'Ethereum'],
+            ['symbol' => 'SOL', 'name' => 'Solana'],
+            ['symbol' => 'BNB', 'name' => 'BNB'],
+            ['symbol' => 'XRP', 'name' => 'XRP'],
+            ['symbol' => 'ADA', 'name' => 'Cardano'],
+            ['symbol' => 'DOGE', 'name' => 'Dogecoin'],
+            ['symbol' => 'TRX', 'name' => 'TRON'],
+            ['symbol' => 'DOT', 'name' => 'Polkadot'],
+            ['symbol' => 'LTC', 'name' => 'Litecoin'],
+        ],
+        'symbol_map' => [
+            'BTC' => 'bitcoin',
+            'ETH' => 'ethereum',
+            'SOL' => 'solana',
+            'BNB' => 'binancecoin',
+            'XRP' => 'ripple',
+            'ADA' => 'cardano',
+            'DOGE' => 'dogecoin',
+            'TRX' => 'tron',
+            'DOT' => 'polkadot',
+            'LTC' => 'litecoin',
+        ],
+    ],
+
 ];

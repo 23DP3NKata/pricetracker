@@ -16,10 +16,10 @@ class AdminProductController extends Controller
         $validated = $request->validate([
             'product_id' => ['nullable', 'integer', 'min:1'],
             'search' => ['nullable', 'string', 'max:180'],
+            'symbol' => ['nullable', 'string', 'max:20'],
             'status' => ['nullable', Rule::in(['active', 'hidden', 'deleted'])],
-            'store_name' => ['nullable', 'string', 'max:100'],
             'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
-            'sort_by' => ['nullable', Rule::in(['id', 'title', 'store_name', 'status', 'current_price', 'tracking_count', 'created_at'])],
+            'sort_by' => ['nullable', Rule::in(['id', 'title', 'symbol', 'status', 'current_price', 'tracking_count', 'created_at'])],
             'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
 
@@ -28,7 +28,7 @@ class AdminProductController extends Controller
         $sortMap = [
             'id' => 'id',
             'title' => 'title',
-            'store_name' => 'store_name',
+            'symbol' => 'symbol',
             'status' => 'status',
             'current_price' => 'current_price',
             'tracking_count' => 'tracking_count',
@@ -43,12 +43,13 @@ class AdminProductController extends Controller
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('url', 'like', "%{$search}%")
+                        ->orWhere('symbol', 'like', "%{$search}%")
+                        ->orWhere('coingecko_id', 'like', "%{$search}%")
                         ->orWhere('product_page_url', 'like', "%{$search}%");
                 });
             })
+            ->when(isset($validated['symbol']), fn($query) => $query->where('symbol', strtoupper(trim((string) $validated['symbol']))))
             ->when(isset($validated['status']), fn($query) => $query->where('status', $validated['status']))
-            ->when(isset($validated['store_name']), fn($query) => $query->where('store_name', $validated['store_name']))
             ->orderBy($sortColumn, $sortDir)
             ->paginate($perPage);
 

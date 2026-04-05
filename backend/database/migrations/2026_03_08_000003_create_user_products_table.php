@@ -13,13 +13,17 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->unsignedInteger('check_interval')->default(1440);
+            $table->decimal('target_price', 20, 8)->nullable();
+            $table->enum('notify_when', ['below', 'above'])->default('below');
             $table->timestamp('last_checked_at')->nullable();
             $table->timestamp('next_check_at')->nullable();
+            $table->timestamp('last_notified_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamp('created_at')->useCurrent();
 
             $table->unique(['user_id', 'product_id']);
             $table->index(['next_check_at', 'is_active']);
+            $table->index(['is_active', 'target_price']);
         });
     }
 

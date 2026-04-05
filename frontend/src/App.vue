@@ -18,7 +18,8 @@
           </template>
           <template v-else>
             <v-btn to="/dashboard" variant="text" rounded>{{ $t('nav.dashboard') }}</v-btn>
-            <v-btn to="/products" variant="text" rounded>{{ $t('nav.products') }}</v-btn>
+            <v-btn to="/tracking" variant="text" rounded>{{ $t('nav.tracking') }}</v-btn>
+            <v-btn to="/markets" variant="text" rounded>{{ $t('nav.markets') }}</v-btn>
             <v-btn v-if="auth.isAdmin" to="/admin/dashboard" variant="text" rounded>{{ $t('nav.admin') }}</v-btn>
           </template>
         </div>
@@ -71,18 +72,6 @@
                 </v-card-actions>
               </v-card>
             </v-menu>
-
-            <!-- Add product -->
-            <v-btn
-              v-if="addProductEnabled"
-              color="primary"
-              rounded="xl"
-              prepend-icon="mdi-plus"
-              @click="openAddProduct"
-            >{{ $t('nav.addProduct') }}</v-btn>
-            <v-chip v-else color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
-              {{ $t('messages.addProductTemporarilyDisabled') }}
-            </v-chip>
 
             <!-- User menu -->
             <v-menu location="bottom end" offset="12" :close-on-content-click="false">
@@ -218,7 +207,8 @@
         <v-divider />
         <v-list class="pa-2">
           <v-list-item to="/dashboard" rounded prepend-icon="mdi-view-dashboard-outline" :title="$t('nav.dashboard')" />
-          <v-list-item to="/products" rounded prepend-icon="mdi-tag-outline" :title="$t('nav.products')" />
+          <v-list-item to="/tracking" rounded prepend-icon="mdi-clipboard-check-outline" :title="$t('nav.tracking')" />
+          <v-list-item to="/markets" rounded prepend-icon="mdi-finance" :title="$t('nav.markets')" />
           <v-list-item to="/notifications" rounded prepend-icon="mdi-bell-outline" :title="$t('notificationsPage.title')">
             <template v-if="notificationsStore.unreadCount > 0" #append>
               <v-chip size="x-small" color="error">{{ notificationsStore.unreadCount }}</v-chip>
@@ -231,22 +221,6 @@
             <v-list-item to="/admin/logs" rounded prepend-icon="mdi-text-box-search-outline" :title="$t('nav.admin') + ': ' + $t('adminCommon.logs')" />
             <v-list-item to="/admin/actions" rounded prepend-icon="mdi-history" :title="$t('nav.admin') + ': ' + $t('adminCommon.actions')" />
           </template>
-          <v-divider class="my-2" />
-          <v-list-item
-            v-if="addProductEnabled"
-            rounded
-            prepend-icon="mdi-plus"
-            :title="$t('nav.addProduct')"
-            base-color="primary"
-            @click="openAddProduct"
-          />
-          <v-list-item
-            v-else
-            rounded
-            prepend-icon="mdi-alert-circle-outline"
-            :title="$t('messages.addProductTemporarilyDisabled')"
-            base-color="warning"
-          />
           <v-divider class="my-2" />
           <v-list-item
             rounded
@@ -295,70 +269,6 @@
       <router-view />
     </v-main>
 
-    <v-dialog v-model="showAddDialog" max-width="520">
-      <v-card rounded="xl" class="pa-6">
-        <h2 class="text-h6 font-weight-bold mb-4">{{ $t('nav.addProduct') }}</h2>
-
-        <v-alert
-          v-if="addError"
-          type="error"
-          variant="tonal"
-          rounded="lg"
-          class="mb-4"
-          closable
-          @click:close="addError = null"
-        >
-          {{ addError }}
-        </v-alert>
-
-        <v-form ref="addFormRef" @submit.prevent="handleAddProduct">
-          <v-text-field
-            v-model="addForm.url"
-            :label="$t('form.url')"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-link-variant"
-            :placeholder="$t('form.urlPlaceholder')"
-            :error="addUrlErrors().length > 0"
-            :error-messages="addUrlErrors()"
-            :disabled="addLoading"
-          />
-
-          <v-select
-            v-model="addForm.checkInterval"
-            :label="$t('form.checkFrequency')"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-timer-outline"
-            :items="checkIntervalOptions"
-            item-title="label"
-            item-value="value"
-            :disabled="addLoading"
-          />
-
-          <div class="text-caption text-medium-emphasis mb-4">
-            <v-icon size="14">mdi-information-outline</v-icon>
-            {{ $t('productsPage.supportedStores') }}
-          </div>
-
-          <div class="d-flex ga-2 justify-end mt-2">
-            <v-btn variant="text" rounded="xl" :disabled="addLoading" @click="closeAddProduct">{{ $t('form.cancel') }}</v-btn>
-            <v-btn
-              v-if="addProductEnabled"
-              type="submit"
-              color="primary"
-              rounded="xl"
-              :loading="addLoading"
-              prepend-icon="mdi-plus"
-            >{{ $t('form.track') }}</v-btn>
-            <v-btn v-else type="button" color="warning" rounded="xl" disabled prepend-icon="mdi-alert-circle-outline">
-              {{ $t('messages.addProductTemporarilyDisabled') }}
-            </v-btn>
-          </div>
-        </v-form>
-      </v-card>
-    </v-dialog>
-
     <!-- footer -->
     <footer class="footer">
       <v-container>
@@ -390,58 +300,25 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
-import { useProductsStore } from '@/stores/products'
-import { getProductAvailability } from '@/api'
 
 const theme = useTheme()
 const router = useRouter()
 const i18n = useI18n()
 const auth = useAuthStore()
 const notificationsStore = useNotificationsStore()
-const productsStore = useProductsStore()
 const drawer = ref(false)
 const scrolled = ref(false)
 const showLanguageNotice = ref(false)
 const notificationsMenu = ref(false)
-const showAddDialog = ref(false)
-const addProductEnabled = ref(true)
-const addFormRef = ref(null)
-const addLoading = ref(false)
-const addError = ref(null)
-const addSubmitted = ref(false)
 const languageMenuUser = ref(false)
 const languageMenuGuest = ref(false)
 const languageMenuMobile = ref(false)
-const checkIntervalOptions = computed(() => [
-  { label: i18n.t('form.every30min'), value: 30 },
-  { label: i18n.t('form.every1h'), value: 60 },
-  { label: i18n.t('form.every6h'), value: 360 },
-  { label: i18n.t('form.every12h'), value: 720 },
-  { label: i18n.t('form.every24h'), value: 1440 },
-  { label: i18n.t('form.every3d'), value: 4320 },
-  { label: i18n.t('form.every7d'), value: 10080 },
-  { label: i18n.t('form.every14d'), value: 20160 },
-])
-const addForm = reactive({
-  url: '',
-  targetPrice: '',
-  checkInterval: 1440,
-})
-
-function addUrlErrors() {
-  if (!addSubmitted.value) return []
-
-  const url = addForm.url?.trim() || ''
-  if (!url) return [`${i18n.t('form.url')} ${i18n.t('form.required')}`]
-  if (!/^https?:\/\/.+/.test(url)) return [i18n.t('form.invalidUrl')]
-  return []
-}
 
 const isDark = computed(() => theme.global.current.value.dark)
 const currentLanguageLabel = computed(() => {
@@ -482,8 +359,8 @@ async function openNotification(notification) {
   if (!notification.is_read) {
     try {
       await notificationsStore.markRead(notification.id)
-    } catch (_) {
-
+    } catch {
+      // Non-critical: keep navigation flow even if mark-as-read fails.
     }
   }
 
@@ -497,55 +374,9 @@ async function openNotification(notification) {
   router.push({ name: 'notifications' })
 }
 
-async function loadAddProductAvailability() {
-  try {
-    const { data } = await getProductAvailability()
-    addProductEnabled.value = !!data?.add_product_enabled
-  } catch (_) {
-    addProductEnabled.value = true
-  }
-}
-
-function openAddProduct() {
-  if (!addProductEnabled.value) return
-  showAddDialog.value = true
-  drawer.value = false
-}
-
-function closeAddProduct() {
-  showAddDialog.value = false
-  addError.value = null
-  addSubmitted.value = false
-  addForm.url = ''
-  addForm.targetPrice = ''
-  addForm.checkInterval = 1440
-}
-
-async function handleAddProduct() {
-  addSubmitted.value = true
-  if (addUrlErrors().length) return
-
-  addLoading.value = true
-  addError.value = null
-  try {
-    const result = await productsStore.addProduct({
-      url: addForm.url.trim(),
-      check_interval: addForm.checkInterval,
-    })
-    closeAddProduct()
-    if (result?.product?.id) {
-      router.push({ name: 'product-detail', params: { id: result.product.id } })
-    }
-  } catch (e) {
-    addError.value = e.response?.data?.message || i18n.t('productsPage.failedAdd')
-  } finally {
-    addLoading.value = false
-  }
-}
-
 function toggleTheme() {
   const nextTheme = isDark.value ? 'light' : 'dark'
-  theme.global.name.value = nextTheme
+  theme.change(nextTheme)
   localStorage.setItem('pt-theme', nextTheme)
 }
 
@@ -579,12 +410,11 @@ let pollInterval = null
 onMounted(() => {
   const savedTheme = localStorage.getItem('pt-theme')
   if (savedTheme === 'light' || savedTheme === 'dark') {
-    theme.global.name.value = savedTheme
+    theme.change(savedTheme)
   }
 
   if (auth.isAuthenticated) {
     notificationsStore.fetchUnreadCount()
-    loadAddProductAvailability()
   }
 
   pollInterval = setInterval(() => {
@@ -598,13 +428,11 @@ watch(
   (isAuthenticated) => {
     if (isAuthenticated) {
       notificationsStore.fetchUnreadCount()
-      loadAddProductAvailability()
       return
     }
 
     notificationsStore.reset()
     notificationsMenu.value = false
-    addProductEnabled.value = true
   }
 )
 

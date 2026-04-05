@@ -14,7 +14,7 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $notifications = Notification::where('user_id', $request->user()->id)
-            ->with('product:id,title,url,image_url,store_name')
+            ->with('product:id,title,symbol,image_url,product_page_url')
             ->orderByDesc('created_at')
             ->paginate(20);
 

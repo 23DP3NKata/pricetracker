@@ -80,9 +80,15 @@ const router = createRouter({
       meta: { auth: true },
     },
     {
-      path: '/products',
-      name: 'products',
-      component: () => import('../views/ProductsView.vue'),
+      path: '/tracking',
+      name: 'tracking',
+      component: () => import('../views/TrackingView.vue'),
+      meta: { auth: true },
+    },
+    {
+      path: '/markets',
+      name: 'markets',
+      component: () => import('../views/MarketsView.vue'),
       meta: { auth: true },
     },
     {

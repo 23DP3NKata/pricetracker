@@ -21,8 +21,8 @@ class Notification extends Model
     protected function casts(): array
     {
         return [
-            'old_price' => 'decimal:2',
-            'new_price' => 'decimal:2',
+            'old_price' => 'decimal:8',
+            'new_price' => 'decimal:8',
             'is_read' => 'boolean',
             'created_at' => 'datetime',
         ];

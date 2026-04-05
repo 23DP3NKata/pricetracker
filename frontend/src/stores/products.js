@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import {
   getProducts as apiGetProducts,
   getProduct as apiGetProduct,
-  addProduct as apiAddProduct,
   updateProduct as apiUpdateProduct,
   deleteProduct as apiDeleteProduct,
   getPriceHistory as apiGetPriceHistory,
@@ -33,7 +32,7 @@ export const useProductsStore = defineStore('products', () => {
         page: query.page ?? 1,
         sort_by: query.sort_by,
         sort_dir: query.sort_dir,
-        store_name: query.store_name,
+        symbol: query.symbol,
       })
       products.value = data.data
       pagination.value = {
@@ -56,11 +55,6 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
-  async function addProduct(productData) {
-    const { data } = await apiAddProduct(productData)
-    return data
-  }
-
   async function updateProduct(id, productData) {
     const { data } = await apiUpdateProduct(id, productData)
     const idx = products.value.findIndex(p => p.id === id)
@@ -81,6 +75,6 @@ export const useProductsStore = defineStore('products', () => {
 
   return {
     products, pagination, currentProduct, priceHistory, loading,
-    fetchProducts, fetchProduct, addProduct, updateProduct, removeProduct, fetchPriceHistory, reset,
+    fetchProducts, fetchProduct, updateProduct, removeProduct, fetchPriceHistory, reset,
   }
 })

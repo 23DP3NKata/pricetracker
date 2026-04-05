@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminLogController extends Controller
 {
-    protected const CATEGORIES = ['scraper', 'price_check', 'auth', 'email', 'database', 'api', 'system'];
+    protected const CATEGORIES = ['scraper', 'price_check', 'auth', 'email', 'database', 'api', 'system', 'admin'];
 
     public function index(Request $request): JsonResponse
     {
