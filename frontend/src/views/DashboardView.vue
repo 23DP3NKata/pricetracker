@@ -150,16 +150,6 @@
             variant="outlined"
           />
 
-          <v-select
-            v-model="trackForm.interval"
-            :items="intervalOptions"
-            item-title="text"
-            item-value="value"
-            :label="$t('dashboard.updateInterval')"
-            rounded="lg"
-            variant="outlined"
-          />
-
           <div class="d-flex justify-end ga-2 mt-2">
             <v-btn variant="text" rounded="xl" :disabled="trackLoading" @click="showTrackDialog = false">{{ $t('form.cancel') }}</v-btn>
             <v-btn type="submit" color="primary" rounded="xl" :loading="trackLoading" :disabled="trackLoading" prepend-icon="mdi-bell-ring-outline">
@@ -191,20 +181,11 @@ const trackError = ref(null)
 const trackForm = ref({
   targetPrice: null,
   notifyWhen: 'below',
-  interval: 5,
 })
 
 const notifyWhenOptions = computed(() => [
   { text: t('dashboard.conditionBelow'), value: 'below' },
   { text: t('dashboard.conditionAbove'), value: 'above' },
-])
-
-const intervalOptions = computed(() => [
-  { text: t('form.every5min'), value: 5 },
-  { text: t('form.every30min'), value: 30 },
-  { text: t('form.every1h'), value: 60 },
-  { text: t('form.every6h'), value: 360 },
-  { text: t('form.every24h'), value: 1440 },
 ])
 
 function formatPrice(price, currency = 'USD') {
@@ -278,7 +259,6 @@ function openTrackDialog(asset) {
   trackForm.value = {
     targetPrice: asset.current_price ? Number(asset.current_price) : null,
     notifyWhen: 'below',
-    interval: 5,
   }
   trackError.value = null
   showTrackDialog.value = true
@@ -298,7 +278,6 @@ async function submitTracking() {
   try {
     await trackAsset({
       symbol: selectedAsset.value.symbol,
-      check_interval: trackForm.value.interval,
       target_price: Number(trackForm.value.targetPrice),
       notify_when: trackForm.value.notifyWhen,
     })

@@ -50,17 +50,6 @@
         <h3 class="text-h6 font-weight-bold mb-4">{{ $t('productDetail.trackingSettings') }}</h3>
         <v-row align="center">
           <v-col cols="12" sm="4">
-            <v-select
-              v-model="trackingForm.check_interval"
-              :items="intervalOptions"
-              :label="$t('productDetail.checkInterval')"
-              variant="outlined"
-              rounded="lg"
-              item-title="text"
-              item-value="value"
-            />
-          </v-col>
-          <v-col cols="12" sm="4">
             <v-switch
               v-model="trackingForm.is_active"
               :label="$t('productDetail.active')"
@@ -234,23 +223,10 @@ const confirmDelete = ref(false)
 const deleting = ref(false)
 
 const trackingForm = reactive({
-  check_interval: 5,
   is_active: true,
   target_price: '',
   notify_when: 'below',
 })
-
-const intervalOptions = computed(() => [
-  { text: 'Every 5 min', value: 5 },
-  { text: t('productDetail.every30min'), value: 30 },
-  { text: t('productDetail.everyHour'), value: 60 },
-  { text: t('productDetail.every6hours'), value: 360 },
-  { text: t('productDetail.every12hours'), value: 720 },
-  { text: t('productDetail.everyDay'), value: 1440 },
-  { text: t('productDetail.every3days'), value: 4320 },
-  { text: t('productDetail.everyWeek'), value: 10080 },
-  { text: t('productDetail.every2weeks'), value: 20160 },
-])
 
 const alertDirectionOptions = [
   { text: 'At or below target', value: 'below' },
@@ -445,7 +421,6 @@ async function loadProduct() {
   await store.fetchProduct(route.params.id)
   product.value = store.currentProduct
   if (product.value?.tracking) {
-    trackingForm.check_interval = product.value.tracking.check_interval || 5
     trackingForm.is_active = product.value.tracking.is_active ?? true
     trackingForm.target_price = product.value.tracking.target_price ?? ''
     trackingForm.notify_when = product.value.tracking.notify_when || 'below'
@@ -468,7 +443,6 @@ async function saveSettings() {
   saveMsg.value = null
   try {
     await store.updateProduct(product.value.id, {
-      check_interval: trackingForm.check_interval,
       is_active: trackingForm.is_active,
       target_price: trackingForm.target_price === '' ? null : Number(trackingForm.target_price),
       notify_when: trackingForm.notify_when,

@@ -85,17 +85,7 @@
           />
         </div>
 
-        <div>
-          <v-select
-            v-model="item.check_interval"
-            :items="intervalOptions"
-            item-title="text"
-            item-value="value"
-            density="compact"
-            variant="outlined"
-            hide-details
-          />
-        </div>
+        <div>{{ $t('tracking.fixedEvery5m') }}</div>
 
         <div>
           <v-chip size="small" variant="tonal" :color="statusColor(item)">
@@ -141,14 +131,6 @@ const monthlyLimit = ref(0)
 const notifyWhenOptions = computed(() => [
   { text: t('tracking.conditionBelow'), value: 'below' },
   { text: t('tracking.conditionAbove'), value: 'above' },
-])
-
-const intervalOptions = computed(() => [
-  { text: t('form.every5minShort'), value: 5 },
-  { text: t('form.every30minShort'), value: 30 },
-  { text: t('form.every1hShort'), value: 60 },
-  { text: t('form.every6hShort'), value: 360 },
-  { text: t('form.every24hShort'), value: 1440 },
 ])
 
 const usagePercent = computed(() => {
@@ -199,7 +181,6 @@ async function loadTracking() {
 
     return {
       ...entry,
-      check_interval: pivot.check_interval ?? 5,
       target_price: pivot.target_price ?? null,
       notify_when: pivot.notify_when || 'below',
       is_active: pivot.is_active ?? true,
@@ -228,7 +209,6 @@ async function saveItem(item) {
   item._saving = true
   try {
     await updateProduct(item.id, {
-      check_interval: Number(item.check_interval),
       target_price: item.target_price === '' || item.target_price === null ? null : Number(item.target_price),
       notify_when: item.notify_when,
       is_active: !!item.is_active,

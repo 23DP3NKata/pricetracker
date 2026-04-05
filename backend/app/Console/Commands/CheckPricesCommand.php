@@ -24,7 +24,7 @@ class CheckPricesCommand extends Command
             $this->info('Starting price check...');
         }
 
-        $result = $priceService->checkDuePrices($force);
+        $result = $priceService->checkDuePrices($force, $sync['product_ids'] ?? []);
 
         $this->info("Done. Checked: {$result['checked']}, Errors: {$result['errors']}");
 

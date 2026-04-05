@@ -14,6 +14,8 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
+    private const TRACKING_INTERVAL_MINUTES = 5;
+
     public function __construct(
         protected CoinGeckoPriceService $priceService,
     ) {}
@@ -143,7 +145,6 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'symbol' => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9._-]+$/'],
-            'check_interval' => ['sometimes', 'integer', 'min:5', 'max:44640'],
             'target_price' => ['nullable', 'numeric', 'min:0.00000001'],
             'notify_when' => ['nullable', Rule::in(['below', 'above'])],
         ]);
@@ -205,7 +206,7 @@ class ProductController extends Controller
             ]);
         }
 
-        $checkInterval = $validated['check_interval'] ?? 1440;
+        $checkInterval = self::TRACKING_INTERVAL_MINUTES;
 
         $createResult = DB::transaction(function () use ($authUser, $product, $checkInterval, $validated) {
             $user = User::query()->lockForUpdate()->findOrFail($authUser->id);
@@ -308,7 +309,6 @@ class ProductController extends Controller
     public function update(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'check_interval' => ['sometimes', 'integer', 'min:5', 'max:44640'],
             'is_active' => ['sometimes', 'boolean'],
             'target_price' => ['nullable', 'numeric', 'min:0.00000001'],
             'notify_when' => ['sometimes', Rule::in(['below', 'above'])],
@@ -324,14 +324,13 @@ class ProductController extends Controller
 
         $updates = $validated;
 
-        $hasIntervalUpdate = array_key_exists('check_interval', $validated);
         $hasActiveUpdate = array_key_exists('is_active', $validated);
-        $effectiveInterval = $validated['check_interval'] ?? $pivot->check_interval;
         $effectiveActive = $hasActiveUpdate ? (bool) $validated['is_active'] : (bool) $pivot->is_active;
 
-        if ($hasIntervalUpdate || $hasActiveUpdate) {
+        if ($hasActiveUpdate) {
+            $updates['check_interval'] = self::TRACKING_INTERVAL_MINUTES;
             $updates['next_check_at'] = $effectiveActive
-                ? now()->addMinutes((int) $effectiveInterval)
+                ? now()->addMinutes(self::TRACKING_INTERVAL_MINUTES)
                 : null;
         }
 

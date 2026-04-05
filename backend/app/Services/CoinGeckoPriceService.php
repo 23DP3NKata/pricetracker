@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Http;
 
 class CoinGeckoPriceService
 {
+    private const TRACKING_INTERVAL_MINUTES = 5;
+    private const MARKETS_CACHE_TTL_SECONDS = 8;
+    private const MARKETS_LOCK_SECONDS = 5;
+
     protected string $apiBase;
     protected string $vsCurrency;
 
@@ -49,6 +53,7 @@ class CoinGeckoPriceService
         $synced = 0;
         $errors = 0;
         $errorDetails = [];
+        $syncedProductIds = [];
 
         $defaults = collect($this->supportedAssets())
             ->map(fn(array $asset) => strtoupper((string) ($asset['symbol'] ?? '')))
@@ -56,7 +61,7 @@ class CoinGeckoPriceService
             ->values();
 
         if ($defaults->isEmpty()) {
-            return ['synced' => 0, 'errors' => 0, 'error_details' => []];
+            return ['synced' => 0, 'errors' => 0, 'error_details' => [], 'product_ids' => []];
         }
 
         $coinIdBySymbol = [];
@@ -70,7 +75,7 @@ class CoinGeckoPriceService
         }
 
         if (empty($coinIdBySymbol)) {
-            return ['synced' => 0, 'errors' => $errors, 'error_details' => $errorDetails];
+            return ['synced' => 0, 'errors' => $errors, 'error_details' => $errorDetails, 'product_ids' => []];
         }
 
         $marketById = $this->fetchMarketData(array_values($coinIdBySymbol))->keyBy('id');
@@ -135,10 +140,16 @@ class CoinGeckoPriceService
                 ]);
             }
 
+            $syncedProductIds[] = $product->id;
             $synced++;
         }
 
-        return ['synced' => $synced, 'errors' => $errors, 'error_details' => $errorDetails];
+        return [
+            'synced' => $synced,
+            'errors' => $errors,
+            'error_details' => $errorDetails,
+            'product_ids' => array_values(array_unique($syncedProductIds)),
+        ];
     }
 
     public function fetchAssetDetails(string $symbol): array
@@ -184,7 +195,7 @@ class CoinGeckoPriceService
         return (float) $market['current_price'];
     }
 
-    public function checkDuePrices(bool $force = false): array
+    public function checkDuePrices(bool $force = false, array $skipProductIds = []): array
     {
         $checked = 0;
         $errors = 0;
@@ -196,12 +207,12 @@ class CoinGeckoPriceService
                 $q->where('status', 'active');
             });
 
-        if (!$force) {
-            $query->where(function ($q) {
-                $q->whereNull('next_check_at')
-                    ->orWhere('next_check_at', '<=', now());
-            });
+        if (!empty($skipProductIds)) {
+            $query->whereNotIn('product_id', $skipProductIds);
         }
+
+        // Scheduler runs every 5 minutes, so all active trackers are checked each cycle.
+        // Force mode is preserved for command compatibility.
 
         $dueItems = $query->with('product')->get()->unique('product_id');
         $products = $dueItems
@@ -288,7 +299,8 @@ class CoinGeckoPriceService
                 ->each(function (UserProduct $up) {
                     $up->update([
                         'last_checked_at' => now(),
-                        'next_check_at' => now()->addMinutes($up->check_interval),
+                        'check_interval' => self::TRACKING_INTERVAL_MINUTES,
+                        'next_check_at' => now()->addMinutes(self::TRACKING_INTERVAL_MINUTES),
                     ]);
                 });
         }
@@ -429,17 +441,62 @@ class CoinGeckoPriceService
             return collect();
         }
 
-        $response = $this->httpGet('/coins/markets', [
-            'vs_currency' => $this->vsCurrency,
-            'ids' => implode(',', $ids),
-            'order' => 'market_cap_desc',
-            'per_page' => count($ids),
-            'page' => 1,
-            'sparkline' => 'false',
-            'price_change_percentage' => '24h',
-        ]);
+        sort($ids);
 
-        return collect($response->json());
+        $cacheKey = 'coingecko:markets:' . $this->vsCurrency . ':' . sha1(implode(',', $ids));
+        $lockKey = $cacheKey . ':lock';
+
+        $cachedPayload = Cache::get($cacheKey);
+        if (is_array($cachedPayload)) {
+            return collect($cachedPayload);
+        }
+
+        $lock = Cache::lock($lockKey, self::MARKETS_LOCK_SECONDS);
+
+        try {
+            $cachedPayload = $lock->block(1, function () use ($cacheKey, $ids) {
+                $cached = Cache::get($cacheKey);
+                if (is_array($cached)) {
+                    return $cached;
+                }
+
+                $response = $this->httpGet('/coins/markets', [
+                    'vs_currency' => $this->vsCurrency,
+                    'ids' => implode(',', $ids),
+                    'order' => 'market_cap_desc',
+                    'per_page' => count($ids),
+                    'page' => 1,
+                    'sparkline' => 'false',
+                    'price_change_percentage' => '24h',
+                ]);
+
+                $payload = $response->json();
+                Cache::put($cacheKey, $payload, now()->addSeconds(self::MARKETS_CACHE_TTL_SECONDS));
+
+                return $payload;
+            });
+        } catch (\Throwable) {
+            // If lock cannot be acquired quickly, perform direct call instead of failing the check cycle.
+            $response = $this->httpGet('/coins/markets', [
+                'vs_currency' => $this->vsCurrency,
+                'ids' => implode(',', $ids),
+                'order' => 'market_cap_desc',
+                'per_page' => count($ids),
+                'page' => 1,
+                'sparkline' => 'false',
+                'price_change_percentage' => '24h',
+            ]);
+            $cachedPayload = $response->json();
+            Cache::put($cacheKey, $cachedPayload, now()->addSeconds(self::MARKETS_CACHE_TTL_SECONDS));
+        } finally {
+            try {
+                $lock->release();
+            } catch (\Throwable) {
+                // No-op: lock may already be released by the store implementation.
+            }
+        }
+
+        return collect(is_array($cachedPayload) ? $cachedPayload : []);
     }
 
     protected function httpGet(string $path, array $query = []): Response
