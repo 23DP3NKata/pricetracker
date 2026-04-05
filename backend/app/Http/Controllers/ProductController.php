@@ -80,6 +80,12 @@ class ProductController extends Controller
 
         $user = $request->user();
 
+        if (!$user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Email verification required before adding products.',
+            ], 403);
+        }
+
         // Check monthly limit
         if ($user->checks_used >= $user->monthly_limit) {
             return response()->json(['message' => 'Monthly tracking limit reached.'], 403);

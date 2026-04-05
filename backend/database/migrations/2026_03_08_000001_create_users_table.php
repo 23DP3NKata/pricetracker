@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('status_changed_by')->nullable()
                 ->constrained('users')->nullOnDelete();
             $table->timestamp('status_changed_at')->nullable();
-            $table->unsignedInteger('monthly_limit')->default(5);
+            $table->unsignedInteger('monthly_limit')->default(0);
             $table->unsignedInteger('checks_used')->default(0);
             $table->timestamp('last_username_change')->nullable();
             $table->rememberToken();

@@ -7,6 +7,7 @@ use App\Models\PriceHistory;
 use App\Models\Product;
 use App\Models\SystemLog;
 use App\Models\UserProduct;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -393,14 +394,16 @@ class PriceScraperService
         // Small random delay before each request to avoid deterministic traffic patterns.
         usleep(random_int(500_000, 1_200_000));
 
-        $response = Http::timeout($requestTimeout)
+        $client = Http::timeout($requestTimeout)
             ->connectTimeout($connectTimeout)
             ->withOptions([
                 'allow_redirects' => true,
                 'http_errors' => false,
             ])
-            ->withHeaders($headers)
-            ->get($url);
+            ->withHeaders($headers);
+
+        $client = $this->applyProxy($client, false);
+        $response = $client->get($url);
 
         if ($this->isAntiBotResponse($response)) {
             if ($attempt < $maxRetries) {
@@ -864,6 +867,11 @@ class PriceScraperService
 
     protected function fallbackFetchHtml(string $url, bool $interactive = false): ?string
     {
+        $html = $this->fetchViaScraperApi($url, $interactive);
+        if ($html !== null) {
+            return $html;
+        }
+
         $html = $this->fetchViaNodeBrowser($url, $interactive);
         if ($html !== null) {
             return $html;
@@ -960,6 +968,8 @@ class PriceScraperService
             : (int) env('SCRAPER_RENDER_TIMEOUT', 35);
 
         $client = Http::timeout($timeout)->acceptJson();
+        $client = $this->applyProxy($client, false);
+
         if ($token !== '') {
             $client = $client->withToken($token);
         }
@@ -981,6 +991,73 @@ class PriceScraperService
 
         $body = trim($response->body());
         return $this->looksLikeHtml($body) ? $body : null;
+    }
+
+    protected function fetchViaScraperApi(string $url, bool $interactive = false): ?string
+    {
+        $apiKey = trim((string) env('SCRAPER_SCRAPERAPI_KEY', ''));
+        if ($apiKey === '') {
+            return null;
+        }
+
+        $endpoint = trim((string) env('SCRAPER_SCRAPERAPI_ENDPOINT', 'https://api.scraperapi.com'));
+        $timeout = $interactive
+            ? (int) env('SCRAPER_SCRAPERAPI_TIMEOUT_INTERACTIVE', 30)
+            : (int) env('SCRAPER_SCRAPERAPI_TIMEOUT', 60);
+
+        $query = [
+            'api_key' => $apiKey,
+            'url' => $url,
+            'render' => filter_var(env('SCRAPER_SCRAPERAPI_RENDER', true), FILTER_VALIDATE_BOOL) ? 'true' : 'false',
+        ];
+
+        $country = trim((string) env('SCRAPER_SCRAPERAPI_COUNTRY', ''));
+        if ($country !== '') {
+            $query['country_code'] = $country;
+        }
+
+        if (filter_var(env('SCRAPER_SCRAPERAPI_PREMIUM', false), FILTER_VALIDATE_BOOL)) {
+            $query['premium'] = 'true';
+        }
+
+        $client = Http::timeout($timeout)->accept('*/*');
+        $client = $this->applyProxy($client, true);
+
+        $response = $client->get($endpoint, $query);
+
+        if (!$response->successful()) {
+            Log::warning('ScraperAPI request failed.', [
+                'url' => $url,
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        }
+
+        $body = trim($response->body());
+        if ($this->looksLikeHtml($body)) {
+            return $body;
+        }
+
+        $json = $response->json();
+        if (is_array($json) && isset($json['html']) && is_string($json['html']) && $this->looksLikeHtml($json['html'])) {
+            return $json['html'];
+        }
+
+        return null;
+    }
+
+    protected function applyProxy(PendingRequest $client, bool $forScraperApi): PendingRequest
+    {
+        $proxy = $forScraperApi
+            ? trim((string) env('SCRAPER_SCRAPERAPI_PROXY', env('SCRAPER_PROXY', '')))
+            : trim((string) env('SCRAPER_PROXY', ''));
+
+        if ($proxy === '') {
+            return $client;
+        }
+
+        return $client->withOptions(['proxy' => $proxy]);
     }
 
     protected function looksLikeHtml(string $html): bool

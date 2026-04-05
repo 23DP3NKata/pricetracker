@@ -62,6 +62,20 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 Some stores can block server IPs (Cloudflare challenge / HTTP 403). The backend supports two optional fallbacks:
 
+0) ScraperAPI (recommended if your VPS IP is blocked)
+
+- Create a ScraperAPI account and copy the API key.
+- Set in `.env`:
+
+`SCRAPER_SCRAPERAPI_KEY=...`
+`SCRAPER_SCRAPERAPI_RENDER=true`
+`SCRAPER_SCRAPERAPI_COUNTRY=lv`
+
+Optional:
+
+`SCRAPER_SCRAPERAPI_PREMIUM=false`
+`SCRAPER_SCRAPERAPI_ENDPOINT=https://api.scraperapi.com`
+
 1) Local browser command (recommended)
 
 - Install Node.js on VPS.
