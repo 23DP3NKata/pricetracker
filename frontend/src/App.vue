@@ -73,8 +73,14 @@
             </v-menu>
 
             <!-- Add product -->
-            <!-- <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="openAddProduct">{{ $t('nav.addProduct') }}</v-btn> -->
-            <v-chip color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
+            <v-btn
+              v-if="addProductEnabled"
+              color="primary"
+              rounded="xl"
+              prepend-icon="mdi-plus"
+              @click="openAddProduct"
+            >{{ $t('nav.addProduct') }}</v-btn>
+            <v-chip v-else color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
               {{ $t('messages.addProductTemporarilyDisabled') }}
             </v-chip>
 
@@ -226,8 +232,21 @@
             <v-list-item to="/admin/actions" rounded prepend-icon="mdi-history" :title="$t('nav.admin') + ': ' + $t('adminCommon.actions')" />
           </template>
           <v-divider class="my-2" />
-          <!-- <v-list-item rounded prepend-icon="mdi-plus" :title="$t('nav.addProduct')" base-color="primary" @click="openAddProduct" /> -->
-          <v-list-item rounded prepend-icon="mdi-alert-circle-outline" :title="$t('messages.addProductTemporarilyDisabled')" base-color="warning" />
+          <v-list-item
+            v-if="addProductEnabled"
+            rounded
+            prepend-icon="mdi-plus"
+            :title="$t('nav.addProduct')"
+            base-color="primary"
+            @click="openAddProduct"
+          />
+          <v-list-item
+            v-else
+            rounded
+            prepend-icon="mdi-alert-circle-outline"
+            :title="$t('messages.addProductTemporarilyDisabled')"
+            base-color="warning"
+          />
           <v-divider class="my-2" />
           <v-list-item
             rounded
@@ -324,8 +343,15 @@
 
           <div class="d-flex ga-2 justify-end mt-2">
             <v-btn variant="text" rounded="xl" :disabled="addLoading" @click="closeAddProduct">{{ $t('form.cancel') }}</v-btn>
-            <!-- <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading" prepend-icon="mdi-plus">{{ $t('form.track') }}</v-btn> -->
-            <v-btn type="button" color="warning" rounded="xl" prepend-icon="mdi-alert-circle-outline" disabled>
+            <v-btn
+              v-if="addProductEnabled"
+              type="submit"
+              color="primary"
+              rounded="xl"
+              :loading="addLoading"
+              prepend-icon="mdi-plus"
+            >{{ $t('form.track') }}</v-btn>
+            <v-btn v-else type="button" color="warning" rounded="xl" disabled prepend-icon="mdi-alert-circle-outline">
               {{ $t('messages.addProductTemporarilyDisabled') }}
             </v-btn>
           </div>
@@ -371,6 +397,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useProductsStore } from '@/stores/products'
+import { getProductAvailability } from '@/api'
 
 const theme = useTheme()
 const router = useRouter()
@@ -383,6 +410,7 @@ const scrolled = ref(false)
 const showLanguageNotice = ref(false)
 const notificationsMenu = ref(false)
 const showAddDialog = ref(false)
+const addProductEnabled = ref(true)
 const addFormRef = ref(null)
 const addLoading = ref(false)
 const addError = ref(null)
@@ -469,7 +497,17 @@ async function openNotification(notification) {
   router.push({ name: 'notifications' })
 }
 
+async function loadAddProductAvailability() {
+  try {
+    const { data } = await getProductAvailability()
+    addProductEnabled.value = !!data?.add_product_enabled
+  } catch (_) {
+    addProductEnabled.value = true
+  }
+}
+
 function openAddProduct() {
+  if (!addProductEnabled.value) return
   showAddDialog.value = true
   drawer.value = false
 }
@@ -546,6 +584,7 @@ onMounted(() => {
 
   if (auth.isAuthenticated) {
     notificationsStore.fetchUnreadCount()
+    loadAddProductAvailability()
   }
 
   pollInterval = setInterval(() => {
@@ -559,11 +598,13 @@ watch(
   (isAuthenticated) => {
     if (isAuthenticated) {
       notificationsStore.fetchUnreadCount()
+      loadAddProductAvailability()
       return
     }
 
     notificationsStore.reset()
     notificationsMenu.value = false
+    addProductEnabled.value = true
   }
 )
 

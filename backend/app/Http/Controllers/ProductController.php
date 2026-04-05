@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\PriceHistory;
 use App\Models\Product;
 use App\Models\UserProduct;
@@ -63,6 +64,12 @@ class ProductController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        if (!AppSetting::getBool('products.add_enabled', true)) {
+            return response()->json([
+                'message' => 'Adding products is temporarily unavailable.',
+            ], 503);
+        }
+
         $validated = $request->validate([
             'url' => ['required', 'url', 'max:500'],
             'check_interval' => ['sometimes', 'integer', 'min:30', 'max:44640'],
@@ -195,6 +202,14 @@ class ProductController extends Controller
     {
         return response()->json([
             'stores' => $this->scraper->supportedStores(),
+            'add_product_enabled' => AppSetting::getBool('products.add_enabled', true),
+        ]);
+    }
+
+    public function availability(): JsonResponse
+    {
+        return response()->json([
+            'add_product_enabled' => AppSetting::getBool('products.add_enabled', true),
         ]);
     }
 

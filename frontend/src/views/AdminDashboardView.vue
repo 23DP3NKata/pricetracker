@@ -62,17 +62,73 @@
           <div class="text-h5 font-weight-bold">{{ stats.notifications_24h }}</div>
         </v-card>
       </v-col>
+
+      <v-col cols="12" md="6">
+        <v-card rounded="xl" class="pa-4">
+          <div class="d-flex justify-space-between align-center mb-3">
+            <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.addProductAvailability') }}</div>
+            <v-chip :color="addProductEnabled ? 'success' : 'warning'" variant="tonal" size="small">
+              {{ addProductEnabled ? $t('adminDashboard.enabled') : $t('adminDashboard.disabled') }}
+            </v-chip>
+          </div>
+          <div class="text-body-2 mb-4">{{ $t('adminDashboard.addProductAvailabilityHint') }}</div>
+          <v-btn
+            :color="addProductEnabled ? 'warning' : 'success'"
+            variant="flat"
+            rounded="xl"
+            :loading="savingToggle"
+            @click="openToggleDialog"
+          >
+            {{ addProductEnabled ? $t('adminDashboard.disableAddProduct') : $t('adminDashboard.enableAddProduct') }}
+          </v-btn>
+        </v-card>
+      </v-col>
     </v-row>
+
+    <v-dialog v-model="toggleDialog" max-width="520">
+      <v-card rounded="xl" class="pa-6">
+        <h3 class="text-h6 font-weight-bold mb-2">{{ $t('adminDashboard.confirmAction') }}</h3>
+        <p class="text-body-2 mb-4">
+          {{ addProductEnabled ? $t('adminDashboard.confirmDisableAddProduct') : $t('adminDashboard.confirmEnableAddProduct') }}
+        </p>
+
+        <v-textarea
+          v-model="toggleReason"
+          :label="$t('adminDashboard.reasonOptional')"
+          rows="3"
+          auto-grow
+          variant="outlined"
+          rounded="lg"
+          class="mb-4"
+        />
+
+        <div class="d-flex justify-end ga-2">
+          <v-btn variant="text" rounded="xl" @click="toggleDialog = false">{{ $t('adminCommon.cancel') }}</v-btn>
+          <v-btn
+            :color="addProductEnabled ? 'warning' : 'success'"
+            rounded="xl"
+            :loading="savingToggle"
+            @click="confirmToggle"
+          >
+            {{ $t('adminDashboard.confirm') }}
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { getAdminDashboard } from '@/api'
+import { getAdminDashboard, updateAdminAddProductSetting } from '@/api'
 
 const loading = ref(false)
 const stats = ref(null)
+const addProductEnabled = ref(true)
+const toggleDialog = ref(false)
+const toggleReason = ref('')
+const savingToggle = ref(false)
 const route = useRoute()
 
 function isTabActive(name) {
@@ -84,8 +140,29 @@ async function loadStats() {
   try {
     const { data } = await getAdminDashboard()
     stats.value = data
+    addProductEnabled.value = !!data?.add_product_enabled
   } finally {
     loading.value = false
+  }
+}
+
+function openToggleDialog() {
+  toggleReason.value = ''
+  toggleDialog.value = true
+}
+
+async function confirmToggle() {
+  savingToggle.value = true
+  try {
+    const { data } = await updateAdminAddProductSetting({
+      enabled: !addProductEnabled.value,
+      reason: toggleReason.value?.trim() || null,
+    })
+    addProductEnabled.value = !!data?.add_product_enabled
+    toggleDialog.value = false
+    await loadStats()
+  } finally {
+    savingToggle.value = false
   }
 }
 

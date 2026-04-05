@@ -2,10 +2,10 @@
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6">
       <h1 class="text-h4 font-weight-bold">{{ $t('productsPage.title') }}</h1>
-      <!-- <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">
+      <v-btn v-if="addProductEnabled" color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">
         {{ $t('productsPage.addProduct') }}
-      </v-btn> -->
-      <v-chip color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
+      </v-btn>
+      <v-chip v-else color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
         {{ $t('messages.addProductTemporarilyDisabled') }}
       </v-chip>
     </div>
@@ -55,8 +55,8 @@
       <v-icon size="64" color="primary" class="mb-4">mdi-package-variant-plus</v-icon>
       <h3 class="text-h6 mb-2">{{ $t('productsPage.noProductsYet') }}</h3>
       <p class="text-medium-emphasis mb-4">{{ $t('productsPage.startTrackingFirst') }}</p>
-      <!-- <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">{{ $t('productsPage.addProduct') }}</v-btn> -->
-      <v-chip color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
+      <v-btn v-if="addProductEnabled" color="primary" rounded="xl" prepend-icon="mdi-plus" @click="showAddDialog = true">{{ $t('productsPage.addProduct') }}</v-btn>
+      <v-chip v-else color="warning" variant="tonal" prepend-icon="mdi-alert-circle-outline">
         {{ $t('messages.addProductTemporarilyDisabled') }}
       </v-chip>
     </v-card>
@@ -161,10 +161,10 @@
 
           <div class="d-flex ga-2 justify-end mt-2">
             <v-btn variant="text" rounded="xl" @click="closeAddDialog" :disabled="addLoading">{{ $t('productsPage.cancel') }}</v-btn>
-            <!-- <v-btn type="submit" color="primary" rounded="xl" :loading="addLoading">
+            <v-btn v-if="addProductEnabled" type="submit" color="primary" rounded="xl" :loading="addLoading">
               <v-icon start>mdi-magnify</v-icon> {{ $t('productsPage.fetchTrack') }}
-            </v-btn> -->
-            <v-btn type="button" color="warning" rounded="xl" disabled>
+            </v-btn>
+            <v-btn v-else type="button" color="warning" rounded="xl" disabled>
               <v-icon start>mdi-alert-circle-outline</v-icon> {{ $t('messages.addProductTemporarilyDisabled') }}
             </v-btn>
           </div>
@@ -178,11 +178,13 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useProductsStore } from '@/stores/products'
+import { getProductAvailability } from '@/api'
 
 const store = useProductsStore()
 const { t } = useI18n()
 const currentPage = ref(1)
 const showAddDialog = ref(false)
+const addProductEnabled = ref(true)
 const addFormRef = ref(null)
 const addLoading = ref(false)
 const addError = ref(null)
@@ -289,6 +291,15 @@ async function loadProducts(page = 1) {
   currentPage.value = store.pagination.current_page
 }
 
+async function loadAvailability() {
+  try {
+    const { data } = await getProductAvailability()
+    addProductEnabled.value = !!data?.add_product_enabled
+  } catch (_) {
+    addProductEnabled.value = true
+  }
+}
+
 async function handleAdd() {
   addSubmitted.value = true
   if (addUrlErrors().length) return
@@ -309,7 +320,9 @@ async function handleAdd() {
   }
 }
 
-onMounted(() => loadProducts(1))
+onMounted(async () => {
+  await Promise.all([loadProducts(1), loadAvailability()])
+})
 </script>
 
 <style scoped>

@@ -91,6 +91,10 @@ export function getSupportedStores() {
   return api.get('/api/products/supported-stores')
 }
 
+export function getProductAvailability() {
+  return api.get('/api/products/availability')
+}
+
 // Price History
 export function getPriceHistory(productId, days = 30) {
   return api.get(`/api/products/${productId}/prices`, { params: { days } })
@@ -121,6 +125,14 @@ export function resendVerification() {
 // Admin - Users
 export function getAdminDashboard() {
   return api.get('/api/admin/dashboard')
+}
+
+export function getAdminSystemSettings() {
+  return api.get('/api/admin/system/settings')
+}
+
+export function updateAdminAddProductSetting(data) {
+  return api.patch('/api/admin/system/settings/add-product', data)
 }
 
 export function getAdminUsers(params = {}) {

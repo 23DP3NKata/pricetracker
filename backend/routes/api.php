@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminActionController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\AdminSystemController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
@@ -35,6 +36,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Products CRUD
         Route::get('/products/supported-stores', [ProductController::class, 'supportedStores']);
+        Route::get('/products/availability', [ProductController::class, 'availability']);
         Route::apiResource('products', ProductController::class);
 
         // Price history for a product
@@ -57,6 +59,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             Route::get('/products', [AdminProductController::class, 'index']);
             Route::patch('/products/{product}/status', [AdminProductController::class, 'updateStatus']);
+
+            Route::get('/system/settings', [AdminSystemController::class, 'show']);
+            Route::patch('/system/settings/add-product', [AdminSystemController::class, 'updateAddProduct']);
 
             Route::get('/logs', [AdminLogController::class, 'index']);
             Route::get('/logs/export', [AdminLogController::class, 'exportCsv']);
