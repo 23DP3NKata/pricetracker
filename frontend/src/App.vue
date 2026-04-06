@@ -363,8 +363,10 @@ async function openNotification(notification) {
 
   notificationsMenu.value = false
 
-  if (notification.product_id) {
-    router.push({ name: 'product-detail', params: { id: notification.product_id } })
+  const productId = notification.product_id || notification.product?.id
+
+  if (productId) {
+    router.push({ name: 'product-detail', params: { id: productId } })
     return
   }
 

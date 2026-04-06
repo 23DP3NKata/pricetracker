@@ -53,16 +53,18 @@
       </div>
 
       <div v-for="item in activeRows" :key="item.id" class="list-row">
-        <div class="asset-col">
-          <v-avatar size="30" color="grey-lighten-4" class="mr-2">
-            <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
-            <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
-          </v-avatar>
-          <div>
-            <div class="font-weight-bold">{{ item.symbol }}</div>
-            <div class="text-caption text-medium-emphasis">{{ item.title }}</div>
+        <router-link :to="`/products/${item.product_id}`" class="asset-link">
+          <div class="asset-col">
+            <v-avatar size="30" color="grey-lighten-4" class="mr-2">
+              <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
+              <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
+            </v-avatar>
+            <div>
+              <div class="font-weight-bold">{{ item.symbol }}</div>
+              <div class="text-caption text-medium-emphasis">{{ item.title }}</div>
+            </div>
           </div>
-        </div>
+        </router-link>
 
         <div>
           <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
@@ -132,16 +134,18 @@
         </div>
 
         <div v-for="item in completedRows" :key="item.id" class="list-row list-row--completed">
-          <div class="asset-col">
-            <v-avatar size="30" color="grey-lighten-4" class="mr-2">
-              <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
-              <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
-            </v-avatar>
-            <div>
-              <div class="font-weight-bold">{{ item.symbol }}</div>
-              <div class="text-caption text-medium-emphasis">{{ item.title }}</div>
+          <router-link :to="`/products/${item.product_id}`" class="asset-link">
+            <div class="asset-col">
+              <v-avatar size="30" color="grey-lighten-4" class="mr-2">
+                <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
+                <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
+              </v-avatar>
+              <div>
+                <div class="font-weight-bold">{{ item.symbol }}</div>
+                <div class="text-caption text-medium-emphasis">{{ item.title }}</div>
+              </div>
             </div>
-          </div>
+          </router-link>
 
           <div>
             <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
@@ -401,6 +405,18 @@ onMounted(() => {
 .asset-col {
   display: flex;
   align-items: center;
+}
+
+.asset-link {
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  width: fit-content;
+}
+
+.asset-link:hover .font-weight-bold,
+.asset-link:hover .text-caption {
+  color: rgb(var(--v-theme-primary));
 }
 
 .list-row--completed {

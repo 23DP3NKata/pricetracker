@@ -32,7 +32,11 @@
           rounded="xl"
           :class="{ 'notification-unread': !n.is_read }"
           class="notification-card"
+          tabindex="0"
+          role="button"
           @click="handleClick(n)"
+          @keydown.enter.prevent="handleClick(n)"
+          @keydown.space.prevent="handleClick(n)"
         >
           <v-card-text class="pa-4 d-flex align-center ga-4">
             <v-avatar
@@ -127,7 +131,11 @@ function formatDate(dateStr) {
 
 async function handleClick(n) {
   if (!n.is_read) await store.markRead(n.id)
-  router.push(`/products/${n.product_id}`)
+
+  const productId = n?.product_id || n?.product?.id
+  if (!productId) return
+
+  router.push(`/products/${productId}`)
 }
 
 onMounted(() => store.fetchNotifications(1))

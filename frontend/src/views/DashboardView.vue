@@ -56,16 +56,18 @@
               <span class="rank-badge">{{ index + 1 }}</span>
             </div>
 
-            <div class="asset-col">
-              <v-avatar size="34" color="grey-lighten-4" class="mr-2">
-                <v-img v-if="asset.image_url" :src="asset.image_url" :alt="asset.symbol" />
-                <span v-else class="text-caption font-weight-bold">{{ asset.symbol?.slice(0, 1) }}</span>
-              </v-avatar>
-              <div>
-                <div class="text-subtitle-2 font-weight-bold">{{ asset.symbol }}</div>
-                <div class="text-caption text-medium-emphasis">{{ asset.title }}</div>
+            <router-link :to="`/products/${asset.id}`" class="asset-link">
+              <div class="asset-col">
+                <v-avatar size="34" color="grey-lighten-4" class="mr-2">
+                  <v-img v-if="asset.image_url" :src="asset.image_url" :alt="asset.symbol" />
+                  <span v-else class="text-caption font-weight-bold">{{ asset.symbol?.slice(0, 1) }}</span>
+                </v-avatar>
+                <div>
+                  <div class="text-subtitle-2 font-weight-bold">{{ asset.symbol }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ asset.title }}</div>
+                </div>
               </div>
-            </div>
+            </router-link>
 
             <div class="price-col text-md-right">
               <div class="price-main">{{ formatPrice(asset.current_price, asset.currency) }}</div>
@@ -386,6 +388,18 @@ onMounted(() => {
 .asset-col {
   display: flex;
   align-items: center;
+}
+
+.asset-link {
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  width: fit-content;
+}
+
+.asset-link:hover .text-subtitle-2,
+.asset-link:hover .text-caption {
+  color: rgb(var(--v-theme-primary));
 }
 
 .price-main {
