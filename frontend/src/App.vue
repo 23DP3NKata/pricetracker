@@ -281,9 +281,6 @@
           <div class="footer-links">
             <router-link to="/">{{ $t('nav.home') }}</router-link>
             <router-link to="/about">{{ $t('nav.about') }}</router-link>
-            <router-link to="/terms">{{ $t('footer.terms') }}</router-link>
-            <router-link to="/privacy">{{ $t('footer.privacy') }}</router-link>
-            <router-link to="/disclaimer">{{ $t('footer.disclaimer') }}</router-link>
           </div>
         </div>
 
