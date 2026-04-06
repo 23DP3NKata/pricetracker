@@ -116,7 +116,7 @@
         rel="noopener noreferrer"
         aria-label="Source: CoinGecko"
       >
-        <img src="/branding/CGAPI-Lockup.svg" alt="CoinGecko" class="coingecko-logo" />
+        <img :src="coingeckoLogoSrc" alt="CoinGecko" class="coingecko-logo" />
       </a>
     </div>
 
@@ -178,9 +178,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useTheme } from 'vuetify'
 import { getTopAssets, trackAsset } from '@/api'
 
 const { t } = useI18n()
+const theme = useTheme()
 
 const loading = ref(false)
 const error = ref(null)
@@ -200,6 +202,12 @@ const notifyWhenOptions = computed(() => [
   { text: t('dashboard.conditionBelow'), value: 'below' },
   { text: t('dashboard.conditionAbove'), value: 'above' },
 ])
+
+const coingeckoLogoSrc = computed(() => (
+  theme.global.current.value.dark
+    ? '/branding/CGAPI-Lockup-1.svg'
+    : '/branding/CGAPI-Lockup.svg'
+))
 
 function formatPrice(price, currency = 'USD') {
   if (price === null || price === undefined || Number.isNaN(Number(price))) {
