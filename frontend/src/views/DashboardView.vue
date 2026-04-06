@@ -109,14 +109,14 @@
     </v-card>
 
     <div v-if="assets.length" class="coingecko-attribution">
-      <span class="coingecko-source">Powered by:</span>
+      <span class="coingecko-source">Source:</span>
       <a
-        href="https://www.coingecko.com/en/api"
+        href="https://www.coingecko.com/"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Powered by: CoinGecko"
+        aria-label="Source: CoinGecko"
       >
-        <img src="/branding/CGAPI-Lockup2x.png" alt="CoinGecko" class="coingecko-logo" />
+        <img src="/branding/coingecko-wordmark.svg" alt="CoinGecko" class="coingecko-logo" />
       </a>
     </div>
 
@@ -403,7 +403,7 @@ onMounted(() => {
 
 .coingecko-logo {
   display: block;
-  height: 18px;
+  height: 20px;
   width: auto;
   opacity: 0.9;
   transition: opacity 0.2s ease;

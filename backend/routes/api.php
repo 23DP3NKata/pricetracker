@@ -47,6 +47,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/assets/{product}/history', [PriceHistoryController::class, 'index']);
         Route::patch('/assets/{product}/alerts', [ProductController::class, 'updateAlerts']);
 
+        // Tracking rules (multiple rules per asset)
+        Route::get('/tracking-rules', [ProductController::class, 'trackingRules']);
+        Route::put('/tracking-rules/{tracking}', [ProductController::class, 'updateTrackingRule']);
+        Route::delete('/tracking-rules/{tracking}', [ProductController::class, 'destroyTrackingRule']);
+
         // Notifications
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);

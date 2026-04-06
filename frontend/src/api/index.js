@@ -111,6 +111,18 @@ export function deleteProduct(id) {
   return api.delete(`/api/products/${id}`)
 }
 
+export function getTrackingRules(params = {}) {
+  return api.get('/api/tracking-rules', { params })
+}
+
+export function updateTrackingRule(id, data) {
+  return api.put(`/api/tracking-rules/${id}`, data)
+}
+
+export function deleteTrackingRule(id) {
+  return api.delete(`/api/tracking-rules/${id}`)
+}
+
 // Price History
 export function getPriceHistory(productId, days = 30) {
   return api.get(`/api/products/${productId}/prices`, { params: { days } })

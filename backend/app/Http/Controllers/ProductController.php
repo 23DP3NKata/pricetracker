@@ -65,6 +65,8 @@ class ProductController extends Controller
             $trackedMap = UserProduct::query()
                 ->where('user_id', $request->user()->id)
                 ->whereIn('product_id', $assetIds)
+                ->where('is_active', true)
+                ->whereNull('last_notified_at')
                 ->pluck('id', 'product_id')
                 ->map(fn() => true)
                 ->all();
@@ -215,27 +217,19 @@ class ProductController extends Controller
                 return ['created' => false, 'reason' => 'limit'];
             }
 
-            $tracking = UserProduct::query()->firstOrCreate(
-                [
-                    'user_id' => $user->id,
-                    'product_id' => $product->id,
-                ],
-                [
-                    'check_interval' => $checkInterval,
-                    'target_price' => $validated['target_price'] ?? null,
-                    'notify_when' => $validated['notify_when'] ?? 'below',
-                    'next_check_at' => now()->addMinutes($checkInterval),
-                ]
-            );
-
-            if (!$tracking->wasRecentlyCreated) {
-                return ['created' => false, 'reason' => 'exists'];
-            }
+            $tracking = UserProduct::query()->create([
+                'user_id' => $user->id,
+                'product_id' => $product->id,
+                'check_interval' => $checkInterval,
+                'target_price' => $validated['target_price'] ?? null,
+                'notify_when' => $validated['notify_when'] ?? 'below',
+                'next_check_at' => now()->addMinutes($checkInterval),
+            ]);
 
             $product->increment('tracking_count');
             $user->increment('checks_used');
 
-            return ['created' => true, 'reason' => null];
+            return ['created' => true, 'reason' => null, 'tracking' => $tracking];
         });
 
         if (!$createResult['created']) {
@@ -245,13 +239,124 @@ class ProductController extends Controller
                 ], 403);
             }
 
-            return response()->json(['message' => 'You are already tracking this asset.'], 409);
+            return response()->json(['message' => 'Unable to create tracking rule.'], 409);
         }
 
         return response()->json([
             'message' => 'Asset added to tracking.',
             'product' => $product->fresh(),
+            'tracking' => $createResult['tracking'],
         ], 201);
+    }
+
+    /**
+     * List tracking rules for authenticated user.
+     */
+    public function trackingRules(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $perPage = (int) ($validated['per_page'] ?? 100);
+
+        $rules = UserProduct::query()
+            ->where('user_id', $request->user()->id)
+            ->with(['product' => function ($query) {
+                $query->where('status', 'active');
+            }])
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        $rules->getCollection()->transform(function (UserProduct $rule) {
+            if (!$rule->product) {
+                return null;
+            }
+
+            return [
+                'id' => $rule->id,
+                'user_id' => $rule->user_id,
+                'product_id' => $rule->product_id,
+                'check_interval' => $rule->check_interval,
+                'target_price' => $rule->target_price,
+                'notify_when' => $rule->notify_when,
+                'is_active' => (bool) $rule->is_active,
+                'last_checked_at' => optional($rule->last_checked_at)->toDateTimeString(),
+                'next_check_at' => optional($rule->next_check_at)->toDateTimeString(),
+                'last_notified_at' => optional($rule->last_notified_at)->toDateTimeString(),
+                'created_at' => optional($rule->created_at)->toDateTimeString(),
+                'product' => [
+                    'id' => $rule->product->id,
+                    'title' => $rule->product->title,
+                    'symbol' => $rule->product->symbol,
+                    'image_url' => $rule->product->image_url,
+                    'current_price' => $rule->product->current_price,
+                    'currency' => $rule->product->currency,
+                ],
+            ];
+        });
+
+        $rules->setCollection($rules->getCollection()->filter()->values());
+
+        return response()->json($rules);
+    }
+
+    /**
+     * Update one tracking rule by id.
+     */
+    public function updateTrackingRule(Request $request, UserProduct $tracking): JsonResponse
+    {
+        if ((int) $tracking->user_id !== (int) $request->user()->id) {
+            return response()->json(['message' => 'Tracking rule not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'is_active' => ['sometimes', 'boolean'],
+            'target_price' => ['nullable', 'numeric', 'min:0.00000001'],
+            'notify_when' => ['sometimes', Rule::in(['below', 'above'])],
+        ]);
+
+        $updates = $validated;
+        $hasActiveUpdate = array_key_exists('is_active', $validated);
+        $effectiveActive = $hasActiveUpdate ? (bool) $validated['is_active'] : (bool) $tracking->is_active;
+
+        if ($hasActiveUpdate) {
+            $updates['check_interval'] = self::TRACKING_INTERVAL_MINUTES;
+            $updates['next_check_at'] = $effectiveActive
+                ? now()->addMinutes(self::TRACKING_INTERVAL_MINUTES)
+                : null;
+        }
+
+        if (array_key_exists('target_price', $validated) && $validated['target_price'] === null) {
+            $updates['last_notified_at'] = null;
+        }
+
+        $tracking->update($updates);
+        $tracking->refresh();
+
+        return response()->json([
+            'message' => 'Tracking rule updated.',
+            'tracking' => $tracking,
+        ]);
+    }
+
+    /**
+     * Delete one tracking rule by id.
+     */
+    public function destroyTrackingRule(Request $request, UserProduct $tracking): JsonResponse
+    {
+        if ((int) $tracking->user_id !== (int) $request->user()->id) {
+            return response()->json(['message' => 'Tracking rule not found.'], 404);
+        }
+
+        $product = Product::query()->find($tracking->product_id);
+        $tracking->delete();
+
+        if ($product && $product->tracking_count > 0) {
+            $product->decrement('tracking_count');
+        }
+
+        return response()->json(null, 204);
     }
 
     /**
@@ -261,6 +366,7 @@ class ProductController extends Controller
     {
         $pivot = UserProduct::where('user_id', $request->user()->id)
             ->where('product_id', $product->id)
+            ->orderByDesc('created_at')
             ->first();
 
         if (!$pivot) {
@@ -280,6 +386,7 @@ class ProductController extends Controller
     {
         $tracking = UserProduct::where('user_id', $request->user()->id)
             ->where('product_id', $product->id)
+            ->orderByDesc('created_at')
             ->first();
 
         if (!$tracking) {
@@ -316,6 +423,7 @@ class ProductController extends Controller
 
         $pivot = UserProduct::where('user_id', $request->user()->id)
             ->where('product_id', $product->id)
+            ->orderByDesc('created_at')
             ->first();
 
         if (!$pivot) {
