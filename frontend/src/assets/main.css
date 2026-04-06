@@ -11,14 +11,20 @@ a,
 .green {
   text-decoration: none;
   color: rgb(var(--v-theme-primary));
-  transition: 0.4s;
+  transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
   padding: 3px;
+  border-radius: 10px;
 }
 
 @media (hover: hover) {
   a:hover {
     background-color: rgba(var(--v-theme-primary), 0.12);
   }
+}
+
+a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.28);
 }
 
 @media (min-width: 1024px) {

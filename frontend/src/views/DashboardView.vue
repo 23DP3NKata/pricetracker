@@ -68,7 +68,8 @@
             </div>
 
             <div class="price-col text-md-right">
-              <div class="font-weight-bold">{{ formatPrice(asset.current_price, asset.currency) }}</div>
+              <div class="price-main">{{ formatPrice(asset.current_price, asset.currency) }}</div>
+              <div class="price-sub text-medium-emphasis">{{ formatPriceUsdHint(asset.current_price) }}</div>
             </div>
 
             <div class="change-col text-md-right">
@@ -106,6 +107,18 @@
             </div>
           </div>
     </v-card>
+
+    <div v-if="assets.length" class="coingecko-attribution">
+      <span class="coingecko-source">Powered by:</span>
+      <a
+        href="https://www.coingecko.com/en/api"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Powered by: CoinGecko"
+      >
+        <img src="/branding/CGAPI-Lockup2x.png" alt="CoinGecko" class="coingecko-logo" />
+      </a>
+    </div>
 
     <v-dialog v-model="showTrackDialog" max-width="520">
       <v-card rounded="xl" class="pa-6">
@@ -193,7 +206,24 @@ function formatPrice(price, currency = 'USD') {
     return 'N/A'
   }
 
-  return `${Number(price).toFixed(8)} ${String(currency).toUpperCase()}`
+  const numeric = Number(price)
+  const code = String(currency).toUpperCase()
+  const fractionDigits = numeric >= 1000 ? 2 : numeric >= 1 ? 4 : 8
+
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: code,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: fractionDigits,
+  }).format(numeric)
+}
+
+function formatPriceUsdHint(price) {
+  if (price === null || price === undefined || Number.isNaN(Number(price))) {
+    return ' '
+  }
+
+  return `≈ ${Number(price).toFixed(8)} USD`
 }
 
 function formatPercent(value) {
@@ -347,6 +377,42 @@ onMounted(() => {
   align-items: center;
 }
 
+.price-main {
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+}
+
+.price-sub {
+  font-size: 0.76rem;
+  margin-top: 2px;
+}
+
+.coingecko-attribution {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.coingecko-source {
+  font-size: 0.78rem;
+  color: rgba(var(--v-theme-on-surface), 0.66);
+}
+
+.coingecko-logo {
+  display: block;
+  height: 18px;
+  width: auto;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.coingecko-logo:hover {
+  opacity: 1;
+}
+
 .sparkline-wrap {
   height: 56px;
   border-radius: 12px;
@@ -379,6 +445,10 @@ onMounted(() => {
 
   .sparkline-wrap {
     height: 48px;
+  }
+
+  .coingecko-attribution {
+    justify-content: flex-start;
   }
 }
 </style>

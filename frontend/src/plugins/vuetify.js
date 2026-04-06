@@ -44,7 +44,11 @@ export default createVuetify({
   },
   defaults: {
     VBtn: {
+      rounded: 'lg',
       style: 'text-transform: none; letter-spacing: 0;',
+    },
+    VListItem: {
+      rounded: 'lg',
     },
     VCard: {
       elevation: 0,
