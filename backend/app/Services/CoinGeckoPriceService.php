@@ -186,13 +186,13 @@ class CoinGeckoPriceService
             $product->update(['coingecko_id' => $coinId]);
         }
 
-        $market = $this->fetchMarketData([$coinId])->first();
+        $priceData = $this->fetchSimplePriceData([$coinId])->get($coinId);
 
-        if (!$market || !isset($market['current_price'])) {
+        if (!$priceData || !isset($priceData['current_price'])) {
             return null;
         }
 
-        return (float) $market['current_price'];
+        return (float) $priceData['current_price'];
     }
 
     public function checkDuePrices(bool $force = false, array $skipProductIds = []): array
@@ -247,10 +247,10 @@ class CoinGeckoPriceService
             }
         }
 
-        $marketById = collect();
+        $priceById = collect();
         if (!empty($coinIdByProductId)) {
             try {
-                $marketById = $this->fetchMarketData(array_values($coinIdByProductId))->keyBy('id');
+                $priceById = $this->fetchSimplePriceData(array_values($coinIdByProductId));
             } catch (\Throwable $e) {
                 return [
                     'checked' => $checked,
@@ -273,9 +273,9 @@ class CoinGeckoPriceService
             }
 
             try {
-                $market = $marketById->get($coinId);
-                $newPrice = $market ? (float) ($market['current_price'] ?? 0) : null;
-                $change24h = $market ? (float) ($market['price_change_percentage_24h'] ?? 0) : null;
+                $priceData = $priceById->get($coinId);
+                $newPrice = $priceData ? (float) ($priceData['current_price'] ?? 0) : null;
+                $change24h = $priceData ? (float) ($priceData['price_change_percentage_24h'] ?? 0) : null;
 
                 if ($newPrice === null || $newPrice <= 0) {
                     throw new \RuntimeException('CoinGecko did not return a valid price.');
@@ -497,6 +497,84 @@ class CoinGeckoPriceService
         }
 
         return collect(is_array($cachedPayload) ? $cachedPayload : []);
+    }
+
+    protected function fetchSimplePriceData(array $coinIds): Collection
+    {
+        $ids = array_values(array_unique(array_filter(array_map(fn($id) => trim((string) $id), $coinIds))));
+
+        if (empty($ids)) {
+            return collect();
+        }
+
+        sort($ids);
+
+        $cacheKey = 'coingecko:simple-price:' . $this->vsCurrency . ':' . sha1(implode(',', $ids));
+        $lockKey = $cacheKey . ':lock';
+
+        $cachedPayload = Cache::get($cacheKey);
+        if (is_array($cachedPayload)) {
+            return collect($cachedPayload);
+        }
+
+        $lock = Cache::lock($lockKey, self::MARKETS_LOCK_SECONDS);
+
+        try {
+            $cachedPayload = $lock->block(1, function () use ($cacheKey, $ids) {
+                $cached = Cache::get($cacheKey);
+                if (is_array($cached)) {
+                    return $cached;
+                }
+
+                $response = $this->httpGet('/simple/price', [
+                    'ids' => implode(',', $ids),
+                    'vs_currencies' => $this->vsCurrency,
+                    'include_24hr_change' => 'true',
+                ]);
+
+                $payload = $this->normalizeSimplePricePayload($ids, $response->json());
+                Cache::put($cacheKey, $payload, now()->addSeconds(self::MARKETS_CACHE_TTL_SECONDS));
+
+                return $payload;
+            });
+        } catch (\Throwable) {
+            // If lock cannot be acquired quickly, perform direct call instead of failing the check cycle.
+            $response = $this->httpGet('/simple/price', [
+                'ids' => implode(',', $ids),
+                'vs_currencies' => $this->vsCurrency,
+                'include_24hr_change' => 'true',
+            ]);
+            $cachedPayload = $this->normalizeSimplePricePayload($ids, $response->json());
+            Cache::put($cacheKey, $cachedPayload, now()->addSeconds(self::MARKETS_CACHE_TTL_SECONDS));
+        } finally {
+            try {
+                $lock->release();
+            } catch (\Throwable) {
+                // No-op: lock may already be released by the store implementation.
+            }
+        }
+
+        return collect(is_array($cachedPayload) ? $cachedPayload : []);
+    }
+
+    protected function normalizeSimplePricePayload(array $ids, mixed $raw): array
+    {
+        $source = is_array($raw) ? $raw : [];
+        $payload = [];
+
+        foreach ($ids as $id) {
+            $entry = is_array($source[$id] ?? null) ? $source[$id] : [];
+
+            $payload[$id] = [
+                'id' => $id,
+                'current_price' => isset($entry[$this->vsCurrency]) ? (float) $entry[$this->vsCurrency] : null,
+                'price_change_percentage_24h' => isset($entry[$this->vsCurrency . '_24h_change'])
+                    ? (float) $entry[$this->vsCurrency . '_24h_change']
+                    : null,
+            ];
+        }
+
+        return $payload;
     }
 
     protected function httpGet(string $path, array $query = []): Response
