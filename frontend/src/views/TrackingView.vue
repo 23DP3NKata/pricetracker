@@ -234,7 +234,16 @@ function formatPrice(price, currency = 'USD') {
 
 function formatPriceHint(price) {
   if (price === null || price === undefined || Number.isNaN(Number(price))) return ' '
-  return `≈ ${Number(price).toFixed(8)} USD`
+  return `≈ ${new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 8,
+  }).format(Number(price))} USD`
+}
+
+function normalizeEditablePrice(value) {
+  if (value === null || value === undefined || value === '') return null
+  const numeric = Number(value)
+  return Number.isNaN(numeric) ? null : numeric
 }
 
 function formatDate(value) {
@@ -265,7 +274,7 @@ async function loadTracking() {
       image_url: product.image_url || null,
       current_price: product.current_price,
       currency: product.currency || 'USD',
-      target_price: entry.target_price ?? null,
+      target_price: normalizeEditablePrice(entry.target_price),
       notify_when: entry.notify_when || 'below',
       is_active: entry.is_active ?? true,
       next_check_at: entry.next_check_at || null,

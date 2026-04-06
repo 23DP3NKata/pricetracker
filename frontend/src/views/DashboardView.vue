@@ -223,7 +223,10 @@ function formatPriceUsdHint(price) {
     return ' '
   }
 
-  return `≈ ${Number(price).toFixed(8)} USD`
+  return `≈ ${new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 8,
+  }).format(Number(price))} USD`
 }
 
 function formatPercent(value) {
