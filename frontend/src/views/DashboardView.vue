@@ -116,7 +116,7 @@
         rel="noopener noreferrer"
         aria-label="Source: CoinGecko"
       >
-        <img src="/branding/coingecko-wordmark.svg" alt="CoinGecko" class="coingecko-logo" />
+        <img src="/branding/CGAPI-Lockup.svg" alt="CoinGecko" class="coingecko-logo" />
       </a>
     </div>
 
