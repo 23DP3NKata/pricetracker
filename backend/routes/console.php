@@ -9,6 +9,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('prices:check')->everyFiveMinutes();
-Schedule::command('prices:check --sync-top --skip-check')->hourlyAt(2);
+Schedule::command('prices:check --sync-top --skip-check')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('prices:cleanup')->dailyAt('03:30');
 Schedule::command('users:reset-monthly-usage')->monthlyOn(1, '00:05');

@@ -6,6 +6,9 @@
         <p class="text-medium-emphasis ma-0">
           {{ $t('dashboard.topAssetsSubtitle') }}
         </p>
+        <p v-if="lastUpdatedLabel" class="text-caption text-medium-emphasis ma-0 mt-1">
+          {{ $t('dashboard.lastUpdated') }}: {{ lastUpdatedLabel }}
+        </p>
       </div>
       <v-btn variant="outlined" rounded="xl" prepend-icon="mdi-refresh" :loading="loading" @click="loadTopAssets">
         {{ $t('dashboard.refresh') }}
@@ -189,6 +192,7 @@ const theme = useTheme()
 const loading = ref(false)
 const error = ref(null)
 const assets = ref([])
+const lastUpdatedAt = ref(null)
 
 const showTrackDialog = ref(false)
 const selectedAsset = ref(null)
@@ -210,6 +214,14 @@ const coingeckoLogoSrc = computed(() => (
     ? '/branding/CGAPI-Lockup-1.svg'
     : '/branding/CGAPI-Lockup.svg'
 ))
+
+const lastUpdatedLabel = computed(() => {
+  if (!lastUpdatedAt.value) return ''
+
+  const date = new Date(lastUpdatedAt.value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString()
+})
 
 function formatPrice(price, currency = 'USD') {
   if (price === null || price === undefined || Number.isNaN(Number(price))) {
@@ -290,6 +302,19 @@ async function loadTopAssets() {
   try {
     const { data } = await getTopAssets(10)
     assets.value = Array.isArray(data?.data) ? data.data : []
+
+    const fromMeta = data?.meta?.last_updated_at || null
+    if (fromMeta) {
+      lastUpdatedAt.value = fromMeta
+      return
+    }
+
+    const perAssetTimes = assets.value
+      .map((asset) => asset?.last_updated_at || null)
+      .filter(Boolean)
+      .sort()
+
+    lastUpdatedAt.value = perAssetTimes.length ? perAssetTimes[perAssetTimes.length - 1] : null
   } catch (e) {
     error.value = e.response?.data?.message || t('dashboard.failedLoadAssets')
   } finally {

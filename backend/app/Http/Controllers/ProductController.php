@@ -45,6 +45,8 @@ class ProductController extends Controller
                 'currency',
                 'tracking_count',
                 'product_page_url',
+                'last_successful_check',
+                'updated_at',
             ]);
 
         if ($assets->isEmpty()) {
@@ -92,12 +94,24 @@ class ProductController extends Controller
                 'currency' => $asset->currency,
                 'tracking_count' => $asset->tracking_count,
                 'product_page_url' => $asset->product_page_url,
+                'last_updated_at' => optional($asset->last_successful_check ?? $asset->updated_at)?->toIso8601String(),
                 'is_tracked' => (bool) ($trackedMap[$asset->id] ?? false),
                 'history' => $points,
             ];
         })->values();
 
-        return response()->json(['data' => $data]);
+        $lastUpdatedAt = $assets
+            ->map(fn(Product $asset) => $asset->last_successful_check ?? $asset->updated_at)
+            ->filter()
+            ->sortDesc()
+            ->first();
+
+        return response()->json([
+            'data' => $data,
+            'meta' => [
+                'last_updated_at' => optional($lastUpdatedAt)?->toIso8601String(),
+            ],
+        ]);
     }
 
     /**

@@ -185,6 +185,7 @@ const messages = {
     dashboard: {
       title: 'Crypto',
       topAssetsSubtitle: 'Top-10 popular coins.',
+      lastUpdated: 'Last updated',
       refresh: 'Refresh',
       emptyTopAssetsHint: 'The list is empty because top assets are not yet available in the database. Data will appear automatically after the next server sync or after adding assets.',
       asset: 'Asset',
@@ -639,6 +640,7 @@ const messages = {
     dashboard: {
       title: 'Kriptovalūta',
       topAssetsSubtitle: 'Top-10 populārākās monētas.',
+      lastUpdated: 'Pēdējais atjauninājums',
       refresh: 'Atjaunot',
       emptyTopAssetsHint: 'Saraksts ir tukšs, jo datubāzē vēl nav top aktīvu. Dati parādīsies automātiski pēc nākamās servera sinhronizācijas vai pēc aktīvu pievienošanas.',
       asset: 'Aktīvs',
@@ -1092,6 +1094,7 @@ messages.ru = {
     ...messages.en.dashboard,
     title: 'Криптовалюта',
     topAssetsSubtitle: 'Топ-10 популярных монет.',
+    lastUpdated: 'Последнее обновление',
     refresh: 'Обновить',
     emptyTopAssetsHint: 'Список пуст, потому что в базе пока нет топ-активов. Данные появятся автоматически после следующей синхронизации сервера или после добавления активов.',
     asset: 'Актив',
