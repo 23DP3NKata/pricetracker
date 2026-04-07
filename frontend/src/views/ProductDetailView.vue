@@ -158,7 +158,7 @@
                     size="x-small"
                     variant="tonal"
                   >
-                    {{ priceDiff(entry.price, sortedHistoryData[i + 1].price) > 0 ? '+' : '' }}{{ priceDiff(entry.price, sortedHistoryData[i + 1].price).toFixed(8) }} {{ (product?.currency || 'USD').toUpperCase() }}
+                    {{ formatPriceDiff(entry.price, sortedHistoryData[i + 1].price) }} {{ (product?.currency || 'USD').toUpperCase() }}
                   </v-chip>
                 </template>
               </td>
@@ -284,7 +284,28 @@ function formatPrice(price) {
   }
 
   const currency = (product.value?.currency || 'USD').toUpperCase()
-  return `${Number(price).toFixed(8)} ${currency}`
+  const numeric = Number(price)
+  const fractionDigits = numeric >= 1000 ? 2 : numeric >= 1 ? 4 : 8
+
+  const formatted = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: fractionDigits,
+  }).format(numeric)
+
+  return `${formatted} ${currency}`
+}
+
+function formatPriceDiff(current, previous) {
+  const diff = Number(current) - Number(previous)
+  if (Number.isNaN(diff)) return '0'
+
+  const sign = diff > 0 ? '+' : ''
+  const formatted = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 8,
+  }).format(diff)
+
+  return `${sign}${formatted}`
 }
 
 function formatDate(dateStr) {
@@ -375,7 +396,13 @@ const chartOptions = computed(() => ({
       callbacks: {
         label(context) {
           const currency = (product.value?.currency || 'USD').toUpperCase()
-          return `${Number(context.parsed.y).toFixed(8)} ${currency}`
+          const y = Number(context.parsed.y)
+          const fractionDigits = y >= 1000 ? 2 : y >= 1 ? 4 : 8
+
+          return `${new Intl.NumberFormat(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: fractionDigits,
+          }).format(y)} ${currency}`
         },
       },
     },
@@ -391,7 +418,10 @@ const chartOptions = computed(() => ({
     y: {
       ticks: {
         callback(value) {
-          return Number(value).toFixed(4)
+          return new Intl.NumberFormat(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 8,
+          }).format(Number(value))
         },
       },
     },

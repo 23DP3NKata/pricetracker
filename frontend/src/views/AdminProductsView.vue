@@ -98,7 +98,7 @@
             <td>
               <v-chip size="small" :color="statusColor(p.status)">{{ statusLabel(p.status) }}</v-chip>
             </td>
-            <td>{{ p.current_price !== null ? Number(p.current_price).toFixed(2) + ' ' + (p.currency || '') : '-' }}</td>
+            <td>{{ formatPrice(p.current_price, p.currency) }}</td>
             <td>{{ p.tracking_count }}</td>
             <td class="text-right">
               <v-menu location="bottom end">
@@ -182,6 +182,19 @@ function statusLabel(status) {
   if (status === 'hidden') return t('adminProducts.hidden')
   if (status === 'deleted') return t('adminProducts.deleted')
   return status
+}
+
+function formatPrice(price, currency) {
+  if (price === null || price === undefined || Number.isNaN(Number(price))) return '-'
+
+  const numeric = Number(price)
+  const fractionDigits = numeric >= 1000 ? 2 : numeric >= 1 ? 4 : 8
+  const code = (currency || 'USD').toUpperCase()
+
+  return `${new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: fractionDigits,
+  }).format(numeric)} ${code}`
 }
 
 function toggleSort(field) {
