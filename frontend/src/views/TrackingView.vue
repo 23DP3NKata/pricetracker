@@ -71,30 +71,33 @@
           <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
         </div>
 
-        <div class="target-col">
+        <div class="target-col field-stack">
+          <div class="field-label">{{ $t('tracking.target') }}</div>
           <v-text-field
             v-model.number="item.target_price"
             type="number"
             min="0"
             step="0.00000001"
-            density="compact"
-            variant="outlined"
+            density="comfortable"
+            variant="solo-filled"
             hide-details
-            class="target-input"
-            prepend-inner-icon="mdi-target"
+            class="target-input modern-input"
+            rounded="lg"
           />
         </div>
 
-        <div class="condition-col">
+        <div class="condition-col field-stack">
+          <div class="field-label">{{ $t('tracking.condition') }}</div>
           <v-select
             v-model="item.notify_when"
             :items="notifyWhenOptions"
             item-title="text"
             item-value="value"
-            density="compact"
-            variant="outlined"
+            density="comfortable"
+            variant="solo-filled"
             hide-details
-            class="condition-select"
+            class="condition-select modern-input"
+            rounded="lg"
           />
         </div>
 
@@ -434,10 +437,28 @@ onMounted(() => {
   margin-top: 2px;
 }
 
-.target-input :deep(.v-field),
-.condition-select :deep(.v-field) {
-  border-radius: 12px;
-  background: rgba(var(--v-theme-on-surface), 0.02);
+.field-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+}
+
+.modern-input :deep(.v-field) {
+  border-radius: 14px;
+  background: rgba(var(--v-theme-primary), 0.04);
+  box-shadow: inset 0 0 0 1px rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.modern-input :deep(.v-field__input) {
+  font-weight: 600;
 }
 
 .save-btn {

@@ -238,9 +238,9 @@ function statusLabel(status) {
 }
 
 function trendLabel(trend) {
-  if (trend === 'up') return `📈 ${t('productDetail.trendUp')}`
-  if (trend === 'down') return `📉 ${t('productDetail.trendDown')}`
-  return `⏸ ${t('productDetail.trendFlat')}`
+  if (trend === 'up') return t('productDetail.trendUp')
+  if (trend === 'down') return t('productDetail.trendDown')
+  return t('productDetail.trendFlat')
 }
 
 function trendColor(trend) {
