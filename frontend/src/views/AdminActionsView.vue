@@ -126,10 +126,7 @@ const actionTypes = computed(() => [
   { title: t('adminActions.restore_user'), value: 'restore_user' },
   { title: t('adminActions.hide_product'), value: 'hide_product' },
   { title: t('adminActions.restore_product'), value: 'restore_product' },
-  { title: t('adminActions.promote_user'), value: 'promote_user' },
-  { title: t('adminActions.demote_user'), value: 'demote_user' },
   { title: t('adminActions.change_user_limit'), value: 'change_user_limit' },
-  { title: t('adminActions.change_user_role'), value: 'change_user_role' },
 ])
 
 const filters = reactive({

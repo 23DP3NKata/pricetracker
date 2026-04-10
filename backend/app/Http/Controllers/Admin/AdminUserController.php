@@ -155,50 +155,8 @@ class AdminUserController extends Controller
 
     public function updateRole(Request $request, User $user): JsonResponse
     {
-        $validated = $request->validate([
-            'role' => ['required', Rule::in(['user', 'admin'])],
-            'reason' => ['nullable', 'string', 'max:500'],
-        ]);
-
-        $reason = $validated['reason'] ?? null;
-
-        if ($request->user()->id === $user->id && $validated['role'] !== 'admin') {
-            return response()->json(['message' => 'You cannot remove your own admin role.'], 422);
-        }
-
-        $oldRole = $user->role;
-        $newRole = $validated['role'];
-
-        if ($oldRole !== $newRole) {
-            $user->update(['role' => $newRole]);
-
-            AdminAction::create([
-                'admin_user_id' => $request->user()->id,
-                'action_type' => $newRole === 'admin' ? 'promote_user' : 'demote_user',
-                'target_user_id' => $user->id,
-                'reason' => 'Role changed from ' . $oldRole . ' to ' . $newRole . ($reason ? '. ' . $reason : ''),
-            ]);
-
-            SystemLog::create([
-                'level' => 'info',
-                'category' => 'admin',
-                'message' => sprintf(
-                    'Admin #%d changed user #%d (%s) role: %s -> %s%s',
-                    $request->user()->id,
-                    $user->id,
-                    $user->email,
-                    $oldRole,
-                    $newRole,
-                    $reason ? '. Reason: ' . $reason : ''
-                ),
-                'user_id' => $request->user()->id,
-                'user_name_snapshot' => $request->user()->name,
-            ]);
-        }
-
         return response()->json([
-            'message' => 'User role updated.',
-            'user' => $user->fresh(),
-        ]);
+            'message' => 'User role changes are disabled in the admin panel.',
+        ], 403);
     }
 }

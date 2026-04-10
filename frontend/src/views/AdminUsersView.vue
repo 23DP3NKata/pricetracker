@@ -117,9 +117,6 @@
                   <v-list-item @click="openStatusDialog(u)">
                     <v-list-item-title>{{ u.status === 'active' ? $t('adminUsers.blockUser') : $t('adminUsers.unblockUser') }}</v-list-item-title>
                   </v-list-item>
-                  <v-list-item @click="toggleRole(u)">
-                    <v-list-item-title>{{ u.role === 'admin' ? $t('adminUsers.setAsUser') : $t('adminUsers.setAsAdmin') }}</v-list-item-title>
-                  </v-list-item>
                   <v-list-item @click="openLimitDialog(u)">
                     <v-list-item-title>{{ $t('adminUsers.changeMonthlyLimit') }}</v-list-item-title>
                   </v-list-item>
@@ -185,7 +182,7 @@
 import { onMounted, reactive, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { getAdminUsers, updateAdminUserLimit, updateAdminUserRole, updateAdminUserStatus } from '@/api'
+import { getAdminUsers, updateAdminUserLimit, updateAdminUserStatus } from '@/api'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -303,17 +300,6 @@ async function saveStatus() {
     })
     closeStatusDialog()
     await loadUsers(1)
-  } finally {
-    saving.value = false
-  }
-}
-
-async function toggleRole(user) {
-  saving.value = true
-  try {
-    const role = user.role === 'admin' ? 'user' : 'admin'
-    await updateAdminUserRole(user.id, { role })
-    await loadUsers(pagination.current_page)
   } finally {
     saving.value = false
   }
