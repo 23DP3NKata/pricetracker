@@ -14,6 +14,18 @@
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
     <v-row v-if="stats">
+      <v-col cols="12" class="d-flex justify-end">
+        <v-btn
+          color="primary"
+          rounded="xl"
+          prepend-icon="mdi-refresh"
+          :loading="refreshingAll"
+          @click="refreshAllPrices"
+        >
+          {{ $t('adminDashboard.forceRefreshAllPrices') }}
+        </v-btn>
+      </v-col>
+
       <v-col cols="12" md="3" sm="6">
         <v-card rounded="xl" class="pa-4">
           <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.usersTotal') }}</div>
@@ -39,7 +51,7 @@
         <v-card rounded="xl" class="pa-4">
           <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.trackingLinks') }}</div>
           <div class="text-h5 font-weight-bold">{{ stats.active_tracking_links }}</div>
-          <div class="text-caption">{{ $t('adminDashboard.deletedProducts') }}: {{ stats.products_deleted }}</div>
+          <div class="text-caption">{{ $t('adminDashboard.hidden') }}: {{ stats.products_hidden }}</div>
         </v-card>
       </v-col>
 
@@ -70,9 +82,10 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { getAdminDashboard } from '@/api'
+import { getAdminDashboard, refreshAllAdminProductPrices } from '@/api'
 
 const loading = ref(false)
+const refreshingAll = ref(false)
 const stats = ref(null)
 const route = useRoute()
 
@@ -87,6 +100,16 @@ async function loadStats() {
     stats.value = data
   } finally {
     loading.value = false
+  }
+}
+
+async function refreshAllPrices() {
+  refreshingAll.value = true
+  try {
+    await refreshAllAdminProductPrices()
+    await loadStats()
+  } finally {
+    refreshingAll.value = false
   }
 }
 

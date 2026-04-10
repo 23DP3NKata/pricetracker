@@ -68,7 +68,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole']);
 
             Route::get('/products', [AdminProductController::class, 'index']);
+            Route::post('/products/refresh-prices', [AdminProductController::class, 'refreshAllPrices']);
             Route::patch('/products/{product}/status', [AdminProductController::class, 'updateStatus']);
+            Route::post('/products/{product}/refresh-price', [AdminProductController::class, 'refreshPrice']);
 
             Route::get('/logs', [AdminLogController::class, 'index']);
             Route::get('/logs/export', [AdminLogController::class, 'exportCsv']);

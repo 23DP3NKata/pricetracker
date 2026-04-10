@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('price_change_24h', 10, 4)->nullable();
             $table->enum('trend', ['up', 'down', 'flat'])->default('flat');
             $table->string('currency', 10)->default('EUR');
-            $table->enum('status', ['active', 'hidden', 'deleted'])->default('active');
+            $table->enum('status', ['active', 'hidden'])->default('active');
             $table->unsignedInteger('tracking_count')->default(0);
             $table->unsignedInteger('checks_count')->default(0);
             $table->timestamp('last_successful_check')->nullable();

@@ -81,7 +81,7 @@ CREATE TABLE `products` (
   `current_price` DECIMAL(10,2) NULL,
   `currency` VARCHAR(10) NOT NULL DEFAULT 'EUR',
   `store_name` VARCHAR(100) NULL,
-  `status` ENUM('active', 'hidden', 'deleted') NOT NULL DEFAULT 'active',
+  `status` ENUM('active', 'hidden') NOT NULL DEFAULT 'active',
   `tracking_count` INT UNSIGNED NOT NULL DEFAULT 0,
   `checks_count` INT UNSIGNED NOT NULL DEFAULT 0,
   `last_successful_check` TIMESTAMP NULL DEFAULT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE `admin_actions` (
   `admin_user_id` BIGINT UNSIGNED NULL,
   `action_type` ENUM(
     'block_user', 'unblock_user', 'delete_user', 'restore_user',
-    'hide_product', 'delete_product', 'restore_product',
+    'hide_product', 'restore_product',
     'change_user_role', 'promote_user', 'demote_user', 'change_user_limit'
   ) NOT NULL,
   `target_user_id` BIGINT UNSIGNED NULL,

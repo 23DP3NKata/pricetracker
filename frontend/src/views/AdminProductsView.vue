@@ -108,7 +108,7 @@
                 <v-list density="compact">
                   <v-list-item @click="setStatus(p, 'active')"><v-list-item-title>{{ $t('adminProducts.setActive') }}</v-list-item-title></v-list-item>
                   <v-list-item @click="setStatus(p, 'hidden')"><v-list-item-title>{{ $t('adminProducts.setHidden') }}</v-list-item-title></v-list-item>
-                  <v-list-item @click="setStatus(p, 'deleted')"><v-list-item-title>{{ $t('adminProducts.setDeleted') }}</v-list-item-title></v-list-item>
+                  <v-list-item @click="forceRefreshPrice(p)"><v-list-item-title>{{ $t('adminProducts.forceRefreshPrice') }}</v-list-item-title></v-list-item>
                 </v-list>
               </v-menu>
             </td>
@@ -131,7 +131,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { getAdminProducts, updateAdminProductStatus } from '@/api'
+import { getAdminProducts, refreshAdminProductPrice, updateAdminProductStatus } from '@/api'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -155,7 +155,6 @@ const filters = reactive({
 const statusOptions = computed(() => [
   { title: t('adminProducts.active'), value: 'active' },
   { title: t('adminProducts.hidden'), value: 'hidden' },
-  { title: t('adminProducts.deleted'), value: 'deleted' },
 ])
 
 const activeProductId = computed(() => {
@@ -173,14 +172,12 @@ const pagination = reactive({
 function statusColor(status) {
   if (status === 'active') return 'success'
   if (status === 'hidden') return 'warning'
-  if (status === 'deleted') return 'error'
   return 'default'
 }
 
 function statusLabel(status) {
   if (status === 'active') return t('adminProducts.active')
   if (status === 'hidden') return t('adminProducts.hidden')
-  if (status === 'deleted') return t('adminProducts.deleted')
   return status
 }
 
@@ -244,6 +241,16 @@ async function setStatus(product, status) {
   saving.value = true
   try {
     await updateAdminProductStatus(product.id, { status })
+    await loadProducts(pagination.current_page)
+  } finally {
+    saving.value = false
+  }
+}
+
+async function forceRefreshPrice(product) {
+  saving.value = true
+  try {
+    await refreshAdminProductPrice(product.id)
     await loadProducts(pagination.current_page)
   } finally {
     saving.value = false

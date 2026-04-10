@@ -211,4 +211,12 @@ export function updateAdminProductStatus(productId, data) {
   return api.patch(`/api/admin/products/${productId}/status`, data)
 }
 
+export function refreshAdminProductPrice(productId, data = {}) {
+  return api.post(`/api/admin/products/${productId}/refresh-price`, data)
+}
+
+export function refreshAllAdminProductPrices(data = {}) {
+  return api.post('/api/admin/products/refresh-prices', data)
+}
+
 export default api

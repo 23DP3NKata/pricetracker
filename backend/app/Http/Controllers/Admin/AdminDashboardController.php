@@ -24,10 +24,9 @@ class AdminDashboardController extends Controller
         $activeUsers = User::where('status', 'active')->count();
         $blockedUsers = User::where('status', 'blocked')->count();
 
-        $productsTotal = Product::count();
+        $productsTotal = Product::whereIn('status', ['active', 'hidden'])->count();
         $productsActive = Product::where('status', 'active')->count();
         $productsHidden = Product::where('status', 'hidden')->count();
-        $productsDeleted = Product::where('status', 'deleted')->count();
 
         $activeTrackingLinks = UserProduct::where('is_active', true)->count();
 
@@ -48,7 +47,6 @@ class AdminDashboardController extends Controller
             'products_total' => $productsTotal,
             'products_active' => $productsActive,
             'products_hidden' => $productsHidden,
-            'products_deleted' => $productsDeleted,
             'active_tracking_links' => $activeTrackingLinks,
 
             'logs_24h' => $logs24h,

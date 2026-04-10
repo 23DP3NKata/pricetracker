@@ -6,19 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminAction;
 use App\Models\Product;
 use App\Models\SystemLog;
+use App\Services\CoinGeckoPriceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AdminProductController extends Controller
 {
+    public function __construct(
+        protected CoinGeckoPriceService $priceService,
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'product_id' => ['nullable', 'integer', 'min:1'],
             'search' => ['nullable', 'string', 'max:180'],
             'symbol' => ['nullable', 'string', 'max:20'],
-            'status' => ['nullable', Rule::in(['active', 'hidden', 'deleted'])],
+            'status' => ['nullable', Rule::in(['active', 'hidden'])],
             'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
             'sort_by' => ['nullable', Rule::in(['id', 'title', 'symbol', 'status', 'current_price', 'tracking_count', 'created_at'])],
             'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
@@ -40,6 +45,7 @@ class AdminProductController extends Controller
         $sortColumn = $sortMap[$sortBy] ?? 'id';
 
         $products = Product::query()
+            ->whereIn('status', ['active', 'hidden'])
             ->when(isset($validated['product_id']), fn($query) => $query->where('id', $validated['product_id']))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
@@ -60,7 +66,7 @@ class AdminProductController extends Controller
     public function updateStatus(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'status' => ['required', Rule::in(['active', 'hidden', 'deleted'])],
+            'status' => ['required', Rule::in(['active', 'hidden'])],
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -73,7 +79,6 @@ class AdminProductController extends Controller
             $actionType = match ($newStatus) {
                 'active' => 'restore_product',
                 'hidden' => 'hide_product',
-                'deleted' => 'delete_product',
                 default => null,
             };
 
@@ -110,6 +115,82 @@ class AdminProductController extends Controller
         return response()->json([
             'message' => 'Product status updated.',
             'product' => $product->fresh(),
+        ]);
+    }
+
+    public function refreshPrice(Request $request, Product $product): JsonResponse
+    {
+        $result = $this->priceService->refreshProductNow($product);
+        $reason = trim((string) $request->input('reason', ''));
+
+        if (($result['errors'] ?? 0) > 0) {
+            $errorMessage = (string) (($result['error_details'][0]['message'] ?? 'Failed to refresh product price.'));
+
+            SystemLog::create([
+                'level' => 'warning',
+                'category' => 'admin',
+                'message' => sprintf(
+                    'Admin #%d failed to force refresh product #%d (%s): %s',
+                    $request->user()->id,
+                    $product->id,
+                    $product->title,
+                    $errorMessage
+                ),
+                'user_id' => $request->user()->id,
+                'user_name_snapshot' => $request->user()->name,
+                'product_id' => $product->id,
+            ]);
+
+            return response()->json([
+                'message' => $errorMessage,
+                'result' => $result,
+            ], 422);
+        }
+
+        SystemLog::create([
+            'level' => 'info',
+            'category' => 'admin',
+            'message' => sprintf(
+                'Admin #%d force refreshed product #%d (%s)%s',
+                $request->user()->id,
+                $product->id,
+                $product->title,
+                $reason !== '' ? '. Reason: ' . $reason : ''
+            ),
+            'user_id' => $request->user()->id,
+            'user_name_snapshot' => $request->user()->name,
+            'product_id' => $product->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Product price refreshed.',
+            'product' => $product->fresh(),
+            'result' => $result,
+        ]);
+    }
+
+    public function refreshAllPrices(Request $request): JsonResponse
+    {
+        $result = $this->priceService->refreshAllActiveProducts();
+        $reason = trim((string) $request->input('reason', ''));
+
+        SystemLog::create([
+            'level' => ($result['errors'] ?? 0) > 0 ? 'warning' : 'info',
+            'category' => 'admin',
+            'message' => sprintf(
+                'Admin #%d force refreshed all active products. Checked: %d, Errors: %d%s',
+                $request->user()->id,
+                (int) ($result['checked'] ?? 0),
+                (int) ($result['errors'] ?? 0),
+                $reason !== '' ? '. Reason: ' . $reason : ''
+            ),
+            'user_id' => $request->user()->id,
+            'user_name_snapshot' => $request->user()->name,
+        ]);
+
+        return response()->json([
+            'message' => 'Prices refreshed for active products.',
+            'result' => $result,
         ]);
     }
 }

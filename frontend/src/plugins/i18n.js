@@ -347,7 +347,7 @@ const messages = {
       active: 'Active',
       hidden: 'Hidden',
       trackingLinks: 'Tracking links',
-      deletedProducts: 'Deleted products',
+      forceRefreshAllPrices: 'Force refresh prices (all products)',
       logs24h: 'Logs last 24h',
       errorsCritical: 'Errors/Critical',
       actions7d: 'Admin actions last 7d',
@@ -392,11 +392,10 @@ const messages = {
       openPage: 'Open page',
       setActive: 'Set active',
       setHidden: 'Set hidden',
-      setDeleted: 'Set deleted',
+      forceRefreshPrice: 'Force refresh price now',
       noProductsFound: 'No products found',
       active: 'active',
-      hidden: 'hidden',
-      deleted: 'deleted'
+      hidden: 'hidden'
     },
 
     adminLogs: {
@@ -802,7 +801,7 @@ const messages = {
       active: 'Aktīvi',
       hidden: 'Slēpti',
       trackingLinks: 'Izsekošanas saites',
-      deletedProducts: 'Dzēstie produkti',
+      forceRefreshAllPrices: 'Piespiedu cenu atjaunošana (visiem produktiem)',
       logs24h: 'Žurnāli pēdējās 24h',
       errorsCritical: 'Kļūdas/Kritiskās',
       actions7d: 'Admin darbības pēdējās 7d',
@@ -847,11 +846,10 @@ const messages = {
       openPage: 'Atvērt lapu',
       setActive: 'Iestatīt aktīvu',
       setHidden: 'Iestatīt slēptu',
-      setDeleted: 'Iestatīt dzēstu',
+      forceRefreshPrice: 'Piespiedu cenu atjaunošana tagad',
       noProductsFound: 'Produkti nav atrasti',
       active: 'Aktīvs',
-      hidden: 'Slēpts',
-      deleted: 'Dzēsts'
+      hidden: 'slēpts'
     },
 
     adminLogs: {
@@ -1255,7 +1253,7 @@ messages.ru = {
     active: 'Активные',
     hidden: 'Скрытые',
     trackingLinks: 'Отслеживаемые ссылки',
-    deletedProducts: 'Удаленные товары',
+    forceRefreshAllPrices: 'Принудительно обновить цены (все товары)',
     logs24h: 'Логи за 24ч',
     errorsCritical: 'Ошибки/Критические',
     actions7d: 'Действия админов за 7д',
@@ -1298,11 +1296,10 @@ messages.ru = {
     openPage: 'Открыть страницу',
     setActive: 'Сделать активным',
     setHidden: 'Скрыть',
-    setDeleted: 'Удалить',
+    forceRefreshPrice: 'Принудительно обновить цену сейчас',
     noProductsFound: 'Товары не найдены',
     active: 'активен',
     hidden: 'скрыт',
-    deleted: 'удален',
   },
   adminLogs: {
     ...messages.en.adminLogs,

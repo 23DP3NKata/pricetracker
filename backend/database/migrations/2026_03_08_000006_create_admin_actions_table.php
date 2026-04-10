@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('admin_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->enum('action_type', [
                 'block_user', 'unblock_user', 'delete_user', 'restore_user',
-                'hide_product', 'delete_product', 'restore_product',
+                'hide_product', 'restore_product',
                 'change_user_role', 'promote_user', 'demote_user', 'change_user_limit',
             ]);
             $table->foreignId('target_user_id')->nullable()->constrained('users')->nullOnDelete();

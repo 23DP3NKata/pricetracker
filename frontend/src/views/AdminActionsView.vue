@@ -125,7 +125,6 @@ const actionTypes = computed(() => [
   { title: t('adminActions.delete_user'), value: 'delete_user' },
   { title: t('adminActions.restore_user'), value: 'restore_user' },
   { title: t('adminActions.hide_product'), value: 'hide_product' },
-  { title: t('adminActions.delete_product'), value: 'delete_product' },
   { title: t('adminActions.restore_product'), value: 'restore_product' },
   { title: t('adminActions.promote_user'), value: 'promote_user' },
   { title: t('adminActions.demote_user'), value: 'demote_user' },

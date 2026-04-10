@@ -308,6 +308,74 @@ class CoinGeckoPriceService
         return ['checked' => $checked, 'errors' => $errors, 'error_details' => $errorDetails];
     }
 
+    public function refreshProductNow(Product $product): array
+    {
+        if ($product->status !== 'active') {
+            return [
+                'checked' => 0,
+                'errors' => 1,
+                'error_details' => [[
+                    'product_id' => $product->id,
+                    'symbol' => $product->symbol,
+                    'message' => 'Only active products can be refreshed.',
+                ]],
+            ];
+        }
+
+        try {
+            $newPrice = $this->currentPrice($product);
+            if ($newPrice === null || $newPrice <= 0) {
+                throw new \RuntimeException('CoinGecko did not return a valid price.');
+            }
+
+            $coinId = (string) ($product->coingecko_id ?? '');
+            $change24h = null;
+            if ($coinId !== '') {
+                $priceData = $this->fetchSimplePriceData([$coinId])->get($coinId);
+                $change24h = $priceData ? (float) ($priceData['price_change_percentage_24h'] ?? 0) : null;
+            }
+
+            $this->recordPrice($product, $newPrice, $change24h);
+
+            return ['checked' => 1, 'errors' => 0, 'error_details' => []];
+        } catch (\Throwable $e) {
+            $this->recordError($product, $e->getMessage());
+
+            return [
+                'checked' => 0,
+                'errors' => 1,
+                'error_details' => [[
+                    'product_id' => $product->id,
+                    'symbol' => $product->symbol,
+                    'message' => $e->getMessage(),
+                ]],
+            ];
+        }
+    }
+
+    public function refreshAllActiveProducts(): array
+    {
+        $checked = 0;
+        $errors = 0;
+        $errorDetails = [];
+
+        Product::query()
+            ->where('status', 'active')
+            ->chunkById(100, function ($products) use (&$checked, &$errors, &$errorDetails) {
+                foreach ($products as $product) {
+                    $result = $this->refreshProductNow($product);
+                    $checked += (int) ($result['checked'] ?? 0);
+                    $errors += (int) ($result['errors'] ?? 0);
+
+                    if (!empty($result['error_details']) && is_array($result['error_details'])) {
+                        $errorDetails = array_merge($errorDetails, $result['error_details']);
+                    }
+                }
+            });
+
+        return ['checked' => $checked, 'errors' => $errors, 'error_details' => $errorDetails];
+    }
+
     protected function recordPrice(Product $product, float $newPrice, ?float $change24h = null): void
     {
         $oldPrice = $product->current_price !== null ? (float) $product->current_price : null;
