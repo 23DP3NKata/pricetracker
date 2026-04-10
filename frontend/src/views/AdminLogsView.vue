@@ -136,7 +136,7 @@ const filters = reactive({
 })
 
 const levelOptions = ['info', 'warning', 'error', 'critical']
-const categoryOptions = ['price_check', 'auth', 'email', 'database', 'api', 'system']
+const categoryOptions = ['scraper', 'price_check', 'auth', 'email', 'database', 'api', 'system', 'admin']
 
 const pagination = reactive({
   current_page: 1,

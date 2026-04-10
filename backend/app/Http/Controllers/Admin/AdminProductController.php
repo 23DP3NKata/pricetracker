@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminAction;
 use App\Models\Product;
+use App\Models\SystemLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -66,6 +67,7 @@ class AdminProductController extends Controller
         $newStatus = $validated['status'];
 
         if ($product->status !== $newStatus) {
+            $oldStatus = $product->status;
             $product->update(['status' => $newStatus]);
 
             $actionType = match ($newStatus) {
@@ -81,6 +83,26 @@ class AdminProductController extends Controller
                     'action_type' => $actionType,
                     'target_product_id' => $product->id,
                     'reason' => $validated['reason'] ?? null,
+                ]);
+
+                $reason = trim((string) ($validated['reason'] ?? ''));
+                $message = sprintf(
+                    'Admin #%d changed product #%d (%s) status: %s -> %s%s',
+                    $request->user()->id,
+                    $product->id,
+                    $product->title,
+                    $oldStatus,
+                    $newStatus,
+                    $reason !== '' ? '. Reason: ' . $reason : ''
+                );
+
+                SystemLog::create([
+                    'level' => 'info',
+                    'category' => 'admin',
+                    'message' => $message,
+                    'user_id' => $request->user()->id,
+                    'user_name_snapshot' => $request->user()->name,
+                    'product_id' => $product->id,
                 ]);
             }
         }

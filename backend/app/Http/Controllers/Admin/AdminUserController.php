@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminAction;
+use App\Models\SystemLog;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -68,17 +69,36 @@ class AdminUserController extends Controller
         $newStatus = $validated['status'];
 
         if ($user->status !== $newStatus) {
+            $oldStatus = $user->status;
             $user->update([
                 'status' => $newStatus,
                 'status_changed_by' => $request->user()->id,
                 'status_changed_at' => now(),
             ]);
 
+            $reason = trim((string) ($validated['reason'] ?? ''));
+
             AdminAction::create([
                 'admin_user_id' => $request->user()->id,
                 'action_type' => $newStatus === 'blocked' ? 'block_user' : 'unblock_user',
                 'target_user_id' => $user->id,
-                'reason' => $validated['reason'] ?? null,
+                'reason' => $reason !== '' ? $reason : null,
+            ]);
+
+            SystemLog::create([
+                'level' => 'info',
+                'category' => 'admin',
+                'message' => sprintf(
+                    'Admin #%d changed user #%d (%s) status: %s -> %s%s',
+                    $request->user()->id,
+                    $user->id,
+                    $user->email,
+                    $oldStatus,
+                    $newStatus,
+                    $reason !== '' ? '. Reason: ' . $reason : ''
+                ),
+                'user_id' => $request->user()->id,
+                'user_name_snapshot' => $request->user()->name,
             ]);
         }
 
@@ -108,6 +128,22 @@ class AdminUserController extends Controller
                 'action_type' => 'change_user_limit',
                 'target_user_id' => $user->id,
                 'reason' => "Monthly limit changed from {$oldLimit} to {$newLimit}" . ($reason ? '. ' . $reason : ''),
+            ]);
+
+            SystemLog::create([
+                'level' => 'info',
+                'category' => 'admin',
+                'message' => sprintf(
+                    'Admin #%d changed user #%d (%s) monthly limit: %d -> %d%s',
+                    $request->user()->id,
+                    $user->id,
+                    $user->email,
+                    $oldLimit,
+                    $newLimit,
+                    $reason ? '. Reason: ' . $reason : ''
+                ),
+                'user_id' => $request->user()->id,
+                'user_name_snapshot' => $request->user()->name,
             ]);
         }
 
@@ -141,6 +177,22 @@ class AdminUserController extends Controller
                 'action_type' => $newRole === 'admin' ? 'promote_user' : 'demote_user',
                 'target_user_id' => $user->id,
                 'reason' => 'Role changed from ' . $oldRole . ' to ' . $newRole . ($reason ? '. ' . $reason : ''),
+            ]);
+
+            SystemLog::create([
+                'level' => 'info',
+                'category' => 'admin',
+                'message' => sprintf(
+                    'Admin #%d changed user #%d (%s) role: %s -> %s%s',
+                    $request->user()->id,
+                    $user->id,
+                    $user->email,
+                    $oldRole,
+                    $newRole,
+                    $reason ? '. Reason: ' . $reason : ''
+                ),
+                'user_id' => $request->user()->id,
+                'user_name_snapshot' => $request->user()->name,
             ]);
         }
 
