@@ -89,13 +89,29 @@ const form = reactive({
   password: '',
 })
 
+function resolveSafeRedirect() {
+  const rawRedirect = route.query.redirect
+  const redirect = Array.isArray(rawRedirect) ? rawRedirect[0] : rawRedirect
+
+  if (typeof redirect !== 'string' || !redirect.startsWith('/')) {
+    return '/dashboard'
+  }
+
+  const resolved = router.resolve(redirect)
+  if (!resolved?.name || resolved.name === 'not-found') {
+    return '/dashboard'
+  }
+
+  return redirect
+}
+
 async function handleLogin() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
   try {
     await auth.login(form)
-    router.push(route.query.redirect || '/dashboard')
+    router.push(resolveSafeRedirect())
   } catch {
     // error is handled in store
   }
