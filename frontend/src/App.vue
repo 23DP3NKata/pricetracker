@@ -138,7 +138,7 @@
             <v-menu location="bottom end" offset="12" :close-on-content-click="false">
               <template #activator="{ props }">
                 <v-btn icon v-bind="props" variant="text">
-                  <v-icon size="30">mdi-account-circle-outline</v-icon>
+                  <v-icon size="30">mdi-account</v-icon>
                 </v-btn>
               </template>
 
