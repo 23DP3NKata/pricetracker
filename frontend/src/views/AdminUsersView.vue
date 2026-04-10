@@ -285,6 +285,13 @@ function openStatusDialog(user) {
   statusDialog.open = true
 }
 
+function closeStatusDialog() {
+  statusDialog.open = false
+  statusDialog.user = null
+  statusDialog.nextStatus = 'active'
+  statusDialog.reason = ''
+}
+
 async function saveStatus() {
   if (!statusDialog.user) return
 
@@ -294,8 +301,8 @@ async function saveStatus() {
       status: statusDialog.nextStatus,
       reason: statusDialog.reason || undefined,
     })
-    statusDialog.open = false
-    await loadUsers(pagination.current_page)
+    closeStatusDialog()
+    await loadUsers(1)
   } finally {
     saving.value = false
   }
@@ -318,14 +325,20 @@ function openLimitDialog(user) {
   limitDialog.open = true
 }
 
+function closeLimitDialog() {
+  limitDialog.open = false
+  limitDialog.user = null
+  limitDialog.value = 0
+}
+
 async function saveLimit() {
   if (!limitDialog.user) return
 
   saving.value = true
   try {
     await updateAdminUserLimit(limitDialog.user.id, { monthly_limit: Math.max(0, Number(limitDialog.value) || 0) })
-    limitDialog.open = false
-    await loadUsers(pagination.current_page)
+    closeLimitDialog()
+    await loadUsers(1)
   } finally {
     saving.value = false
   }
