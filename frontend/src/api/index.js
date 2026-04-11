@@ -80,6 +80,10 @@ export function updateUserPassword(data) {
   return api.put('/api/user/password', data)
 }
 
+export function deleteUserAccount(data) {
+  return api.delete('/api/user', { data })
+}
+
 // Dashboard
 export function getDashboard() {
   return api.get('/api/dashboard')

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -106,5 +108,30 @@ class UserController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Password changed.']);
+    }
+
+    /* Delete  user account.*/
+    public function destroy(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($validated['password'], $user->password)) {
+            return response()->json(['message' => 'Incorrect password.'], 422);
+        }
+
+        if (Schema::hasTable('personal_access_tokens')) {
+            $user->tokens()->delete();
+        }
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $user->delete();
+
+        return response()->json(['message' => 'Account deleted.']);
     }
 }

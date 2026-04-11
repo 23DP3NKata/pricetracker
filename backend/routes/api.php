@@ -31,6 +31,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/user/name', [UserController::class, 'updateName']);
         Route::put('/user/email', [UserController::class, 'updateEmail']);
         Route::put('/user/password', [UserController::class, 'updatePassword']);
+        Route::delete('/user', [UserController::class, 'destroy']);
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index']);

@@ -307,7 +307,16 @@ const messages = {
       passwordsNoMatch: 'Passwords do not match',
       failedUpdateName: 'Failed to update name',
       failedUpdateEmail: 'Failed to update email',
-      failedChangePassword: 'Failed to change password'
+      failedChangePassword: 'Failed to change password',
+      deleteAccount: 'Delete Account',
+      deleteAccountHint: 'Permanently remove your account and all personal tracking data.',
+      deleteAccountDialogTitle: 'Delete account?',
+      deleteAccountWarning: 'This action cannot be undone. To continue, enter your current password.',
+      deleteAccountIrreversible: 'After deletion, your profile, tracking rules, and notifications will be permanently removed.',
+      deleteAccountPasswordLabel: 'Confirm with password',
+      deleteAccountConfirmBtn: 'Delete Permanently',
+      cancel: 'Cancel',
+      failedDeleteAccount: 'Failed to delete account'
     },
 
     notificationsPage: {
@@ -761,7 +770,16 @@ const messages = {
       passwordsNoMatch: 'Paroles nesakrīt',
       failedUpdateName: 'Neizdevās atjaunināt vārdu',
       failedUpdateEmail: 'Neizdevās atjaunināt e-pastu',
-      failedChangePassword: 'Neizdevās nomainīt paroli'
+      failedChangePassword: 'Neizdevās nomainīt paroli',
+      deleteAccount: 'Dzēst kontu',
+      deleteAccountHint: 'Neatgriezeniski dzēs kontu un visus personīgos izsekošanas datus.',
+      deleteAccountDialogTitle: 'Dzēst kontu?',
+      deleteAccountWarning: 'Šo darbību nevar atsaukt. Lai turpinātu, ievadi pašreizējo paroli.',
+      deleteAccountIrreversible: 'Pēc dzēšanas profils, izsekošanas noteikumi un paziņojumi tiks neatgriezeniski noņemti.',
+      deleteAccountPasswordLabel: 'Apstiprini ar paroli',
+      deleteAccountConfirmBtn: 'Dzēst neatgriezeniski',
+      cancel: 'Atcelt',
+      failedDeleteAccount: 'Neizdevās dzēst kontu'
     },
 
     notificationsPage: {
@@ -1215,6 +1233,15 @@ messages.ru = {
     failedUpdateName: 'Не удалось обновить имя',
     failedUpdateEmail: 'Не удалось обновить email',
     failedChangePassword: 'Не удалось сменить пароль',
+    deleteAccount: 'Удалить аккаунт',
+    deleteAccountHint: 'Безвозвратно удалить аккаунт и все персональные данные отслеживания.',
+    deleteAccountDialogTitle: 'Удалить аккаунт?',
+    deleteAccountWarning: 'Это действие нельзя отменить. Для продолжения введите текущий пароль.',
+    deleteAccountIrreversible: 'После удаления профиль, правила отслеживания и уведомления будут удалены без возможности восстановления.',
+    deleteAccountPasswordLabel: 'Подтвердите паролем',
+    deleteAccountConfirmBtn: 'Удалить навсегда',
+    cancel: 'Отмена',
+    failedDeleteAccount: 'Не удалось удалить аккаунт',
   },
   notificationsPage: {
     ...messages.en.notificationsPage,

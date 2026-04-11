@@ -189,17 +189,94 @@
           <v-btn type="submit" color="primary" rounded="xl" :loading="passwordSaving">{{ $t('settings.changePasswordBtn') }}</v-btn>
         </v-form>
       </v-card>
+
+      <!-- Delete Account -->
+      <v-card rounded="xl" class="pa-6 mt-6 settings-card settings-card-danger">
+        <div class="section-title mb-4">
+          <v-avatar size="36" color="error" variant="tonal">
+            <v-icon size="20">mdi-delete-alert-outline</v-icon>
+          </v-avatar>
+          <h3 class="text-h6 font-weight-bold">{{ $t('settings.deleteAccount') }}</h3>
+        </div>
+
+        <p class="text-medium-emphasis mb-4">{{ $t('settings.deleteAccountHint') }}</p>
+
+        <v-btn
+          color="error"
+          rounded="xl"
+          prepend-icon="mdi-delete-outline"
+          @click="openDeleteDialog"
+        >
+          {{ $t('settings.deleteAccount') }}
+        </v-btn>
+      </v-card>
     </template>
+
+    <v-dialog v-model="deleteDialog" max-width="560" persistent>
+      <v-card rounded="xl">
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="error">mdi-alert-circle-outline</v-icon>
+          {{ $t('settings.deleteAccountDialogTitle') }}
+        </v-card-title>
+
+        <v-card-text>
+          <p class="mb-3">{{ $t('settings.deleteAccountWarning') }}</p>
+
+          <v-alert type="warning" variant="tonal" rounded="lg" class="mb-4">
+            {{ $t('settings.deleteAccountIrreversible') }}
+          </v-alert>
+
+          <v-alert
+            v-if="deleteMsg"
+            type="error"
+            variant="tonal"
+            rounded="lg"
+            class="mb-4"
+          >
+            {{ deleteMsg }}
+          </v-alert>
+
+          <v-text-field
+            v-model="deleteForm.password"
+            :label="$t('settings.deleteAccountPasswordLabel')"
+            type="password"
+            variant="outlined"
+            rounded="lg"
+            prepend-inner-icon="mdi-lock-outline"
+            :error="deletePasswordErrors().length > 0"
+            :error-messages="deletePasswordErrors()"
+            @keyup.enter="handleDeleteAccount"
+          />
+        </v-card-text>
+
+        <v-card-actions class="px-6 pb-6">
+          <v-spacer />
+          <v-btn variant="text" :disabled="deleteSubmitting" @click="closeDeleteDialog">
+            {{ $t('settings.cancel') }}
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="flat"
+            :loading="deleteSubmitting"
+            @click="handleDeleteAccount"
+          >
+            {{ $t('settings.deleteAccountConfirmBtn') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getUserProfile, updateUserName, updateUserEmail, updateUserPassword, resendVerification } from '@/api'
+import { useRouter } from 'vue-router'
+import { getUserProfile, updateUserName, updateUserEmail, updateUserPassword, deleteUserAccount, resendVerification } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const router = useRouter()
 const { t } = useI18n()
 const loading = ref(true)
 const profile = ref(null)
@@ -229,6 +306,13 @@ const passwordSaving = ref(false)
 const passwordMsg = ref(null)
 const passwordForm = reactive({ current_password: '', password: '', password_confirmation: '' })
 const passwordSubmitted = ref(false)
+
+// Delete account
+const deleteDialog = ref(false)
+const deleteSubmitting = ref(false)
+const deleteMsg = ref(null)
+const deleteSubmitted = ref(false)
+const deleteForm = reactive({ password: '' })
 
 function isValidEmail(value) {
   return /.+@.+\..+/.test(value)
@@ -283,6 +367,11 @@ function confirmPasswordErrors() {
   if (!passwordForm.password_confirmation) return [t('settings.required')]
   if (passwordForm.password_confirmation !== passwordForm.password) return [t('settings.passwordsNoMatch')]
   return []
+}
+
+function deletePasswordErrors() {
+  if (!deleteSubmitted.value) return []
+  return deleteForm.password ? [] : [t('settings.required')]
 }
 
 function formatDate(dateStr) {
@@ -384,6 +473,44 @@ async function handleResendVerification() {
     verifySending.value = false
   }
 }
+
+function openDeleteDialog() {
+  deleteSubmitted.value = false
+  deleteMsg.value = null
+  deleteForm.password = ''
+  deleteDialog.value = true
+}
+
+function closeDeleteDialog() {
+  if (deleteSubmitting.value) return
+  deleteDialog.value = false
+  deleteSubmitted.value = false
+  deleteForm.password = ''
+}
+
+async function handleDeleteAccount() {
+  deleteSubmitted.value = true
+  if (deletePasswordErrors().length) return
+
+  deleteSubmitting.value = true
+  deleteMsg.value = null
+
+  try {
+    await deleteUserAccount({ password: deleteForm.password })
+
+    try {
+      await auth.logout()
+    } catch {
+      // Account is already deleted; local auth state will still be cleared.
+    }
+
+    await router.push({ name: 'home' })
+  } catch (e) {
+    deleteMsg.value = e.response?.data?.message || t('settings.failedDeleteAccount')
+  } finally {
+    deleteSubmitting.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -394,6 +521,11 @@ async function handleResendVerification() {
 .settings-card {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   box-shadow: 0 14px 26px rgba(18, 24, 38, 0.06);
+}
+
+.settings-card-danger {
+  border-color: rgba(var(--v-theme-error), 0.25);
+  box-shadow: 0 14px 26px rgba(175, 42, 42, 0.08);
 }
 
 .section-title {
