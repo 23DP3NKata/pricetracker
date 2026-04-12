@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(Verified::class, function (Verified $event) {
             $event->user->update([
-                'monthly_limit' => (int) env('VERIFIED_USER_MONTHLY_LIMIT', 15),
+                'monthly_limit' => (int) env('VERIFIED_USER_MONTHLY_LIMIT', 90),
             ]);
         });
     }

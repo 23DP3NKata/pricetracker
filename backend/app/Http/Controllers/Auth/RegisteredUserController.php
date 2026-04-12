@@ -30,7 +30,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->string('password')),
-            'monthly_limit' => 0,
+            'monthly_limit' => (int) env('UNVERIFIED_USER_MONTHLY_LIMIT', 10),
             'checks_used' => 0,
         ]);
 
