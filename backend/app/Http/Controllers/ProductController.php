@@ -222,6 +222,16 @@ class ProductController extends Controller
             ]);
         }
 
+        $notifyWhen = $validated['notify_when'] ?? 'below';
+        $targetPrice = array_key_exists('target_price', $validated) && $validated['target_price'] !== null
+            ? (float) $validated['target_price']
+            : null;
+
+        $directionError = $this->validateTargetDirection($product, $targetPrice, $notifyWhen);
+        if ($directionError) {
+            return $directionError;
+        }
+
         $checkInterval = self::TRACKING_INTERVAL_MINUTES;
 
         $createResult = DB::transaction(function () use ($authUser, $product, $checkInterval, $validated) {
@@ -329,6 +339,19 @@ class ProductController extends Controller
             'target_price' => ['nullable', 'numeric', 'min:0.00000001'],
             'notify_when' => ['sometimes', Rule::in(['below', 'above'])],
         ]);
+
+        $product = Product::query()->find($tracking->product_id);
+        if ($product) {
+            $notifyWhen = $validated['notify_when'] ?? (string) ($tracking->notify_when ?: 'below');
+            $targetPrice = array_key_exists('target_price', $validated)
+                ? ($validated['target_price'] !== null ? (float) $validated['target_price'] : null)
+                : ($tracking->target_price !== null ? (float) $tracking->target_price : null);
+
+            $directionError = $this->validateTargetDirection($product, $targetPrice, $notifyWhen);
+            if ($directionError) {
+                return $directionError;
+            }
+        }
 
         $updates = $validated;
         $hasActiveUpdate = array_key_exists('is_active', $validated);
@@ -444,6 +467,16 @@ class ProductController extends Controller
             return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
         }
 
+        $notifyWhen = $validated['notify_when'] ?? (string) ($pivot->notify_when ?: 'below');
+        $targetPrice = array_key_exists('target_price', $validated)
+            ? ($validated['target_price'] !== null ? (float) $validated['target_price'] : null)
+            : ($pivot->target_price !== null ? (float) $pivot->target_price : null);
+
+        $directionError = $this->validateTargetDirection($product, $targetPrice, $notifyWhen);
+        if ($directionError) {
+            return $directionError;
+        }
+
         $updates = $validated;
 
         $hasActiveUpdate = array_key_exists('is_active', $validated);
@@ -493,5 +526,28 @@ class ProductController extends Controller
         $product->decrement('tracking_count');
 
         return response()->json(null, 204);
+    }
+
+    private function validateTargetDirection(Product $product, ?float $targetPrice, string $notifyWhen): ?JsonResponse
+    {
+        if ($targetPrice === null || $product->current_price === null) {
+            return null;
+        }
+
+        $currentPrice = (float) $product->current_price;
+
+        if ($notifyWhen === 'below' && $targetPrice >= $currentPrice) {
+            return response()->json([
+                'message' => 'For "below" condition, target price must be lower than current price.',
+            ], 422);
+        }
+
+        if ($notifyWhen === 'above' && $targetPrice <= $currentPrice) {
+            return response()->json([
+                'message' => 'For "above" condition, target price must be higher than current price.',
+            ], 422);
+        }
+
+        return null;
     }
 }
