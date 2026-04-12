@@ -201,24 +201,32 @@ class CoinGeckoPriceService
         $errors = 0;
         $errorDetails = [];
 
-        $query = UserProduct::query()
-            ->where('is_active', true)
-            ->whereHas('product', function ($q) {
-                $q->where('status', 'active');
-            });
+        if ($force) {
+            $productsQuery = Product::query()->where('status', 'active');
 
-        if (!empty($skipProductIds)) {
-            $query->whereNotIn('product_id', $skipProductIds);
+            if (!empty($skipProductIds)) {
+                $productsQuery->whereNotIn('id', $skipProductIds);
+            }
+
+            $products = $productsQuery->get()->keyBy('id');
+        } else {
+            $query = UserProduct::query()
+                ->where('is_active', true)
+                ->whereHas('product', function ($q) {
+                    $q->where('status', 'active');
+                });
+
+            if (!empty($skipProductIds)) {
+                $query->whereNotIn('product_id', $skipProductIds);
+            }
+
+            // Scheduler runs every 5 minutes, so all active trackers are checked each cycle.
+            $dueItems = $query->with('product')->get()->unique('product_id');
+            $products = $dueItems
+                ->pluck('product')
+                ->filter(fn($product) => $product && $product->status === 'active')
+                ->keyBy('id');
         }
-
-        // Scheduler runs every 5 minutes, so all active trackers are checked each cycle.
-        // Force mode is preserved for command compatibility.
-
-        $dueItems = $query->with('product')->get()->unique('product_id');
-        $products = $dueItems
-            ->pluck('product')
-            ->filter(fn($product) => $product && $product->status === 'active')
-            ->keyBy('id');
 
         $coinIdByProductId = [];
 

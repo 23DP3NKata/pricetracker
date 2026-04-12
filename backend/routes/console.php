@@ -8,7 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('prices:check')->everyFiveMinutes();
-Schedule::command('prices:check --sync-top --skip-check')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('prices:check --sync-top --force')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('prices:cleanup')->dailyAt('03:30');
 Schedule::command('users:reset-monthly-usage')->monthlyOn(1, '00:05');
