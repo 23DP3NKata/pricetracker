@@ -5,7 +5,7 @@
         <h1 class="text-h4 font-weight-bold mb-1">{{ $t('tracking.title') }}</h1>
         <p class="text-medium-emphasis ma-0">{{ $t('tracking.subtitle') }}</p>
       </div>
-      <v-btn color="primary" variant="tonal" rounded="xl" prepend-icon="mdi-refresh" :loading="loading" @click="reloadAll">
+      <v-btn color="primary" variant="text" rounded="xl" prepend-icon="mdi-refresh" :loading="loading" @click="reloadAll">
         {{ $t('tracking.refresh') }}
       </v-btn>
     </div>
@@ -26,8 +26,8 @@
       />
 
       <div class="d-flex flex-wrap ga-2 mt-3 text-caption text-medium-emphasis">
-        <v-chip size="small" variant="tonal" color="info">{{ $t('tracking.pending') }}: {{ pendingCount }}</v-chip>
-        <v-chip size="small" variant="tonal" color="success">{{ $t('tracking.completed') }}: {{ completedCount }}</v-chip>
+        <v-chip size="small" variant="text" color="primary" class="flat-chip">{{ $t('tracking.activeSection') }}: {{ pendingCount }}</v-chip>
+        <v-chip size="small" variant="text" color="success" class="flat-chip">{{ $t('tracking.completed') }}: {{ completedCount }}</v-chip>
       </div>
     </v-card>
 
@@ -35,10 +35,14 @@
       {{ error }}
     </v-alert>
 
+    <v-alert v-if="successMsg" type="success" variant="tonal" rounded="lg" class="mb-4" closable @click:close="successMsg = null">
+      {{ successMsg }}
+    </v-alert>
+
     <div v-if="activeRows.length" class="mb-5">
       <div class="section-header">
-        <h2 class="text-subtitle-1 font-weight-bold mb-0">{{ $t('tracking.activeSection') }}</h2>
-        <v-chip size="small" color="info" variant="tonal">{{ activeRows.length }}</v-chip>
+        <h2 class="text-subtitle-1 font-weight-bold mb-0 section-title section-title--active">{{ $t('tracking.activeSection') }}</h2>
+        <v-chip size="small" color="primary" variant="text" class="flat-chip">{{ activeRows.length }}</v-chip>
       </div>
 
       <v-card rounded="xl" class="list-shell">
@@ -59,8 +63,8 @@
               <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
             </v-avatar>
             <div>
-              <div class="font-weight-bold">{{ item.symbol }}</div>
-              <div class="text-caption text-medium-emphasis">{{ item.title }}</div>
+              <div class="asset-symbol">{{ item.symbol }}</div>
+              <div class="asset-title text-medium-emphasis">{{ item.title }}</div>
             </div>
           </div>
         </router-link>
@@ -82,9 +86,9 @@
             min="0"
             step="0.01"
             density="comfortable"
-            variant="solo-filled"
+            variant="outlined"
             hide-details
-            class="target-input modern-input"
+            class="target-input modern-input modern-input--clean"
             rounded="lg"
           />
         </div>
@@ -97,15 +101,15 @@
             item-title="text"
             item-value="value"
             density="comfortable"
-            variant="solo-filled"
+            variant="outlined"
             hide-details
-            class="condition-select modern-input"
+            class="condition-select modern-input modern-input--clean"
             rounded="lg"
           />
         </div>
 
-        <div>
-          <v-chip size="small" variant="tonal" :color="statusColor(item)">
+        <div class="status-cell">
+          <v-chip size="small" variant="text" :color="statusColor(item)" class="status-chip flat-chip" rounded="lg">
             {{ statusLabel(item) }}
           </v-chip>
           <div class="text-caption text-medium-emphasis mt-1" v-if="item.last_notified_at">
@@ -114,12 +118,39 @@
         </div>
 
         <div class="d-flex ga-2 justify-end actions-col">
-          <v-btn size="small" color="primary" variant="elevated" rounded="lg" class="save-btn" :loading="item._saving" @click="saveItem(item)">
-            {{ $t('tracking.save') }}
-          </v-btn>
-          <v-btn size="small" color="error" variant="outlined" rounded="lg" class="remove-btn" :loading="item._deleting" @click="removeItem(item)">
-            {{ $t('tracking.remove') }}
-          </v-btn>
+          <v-tooltip :text="$t('tracking.save')" location="top">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                size="small"
+                color="primary"
+                variant="text"
+                rounded="lg"
+                class="save-btn"
+                :loading="item._saving"
+                icon="mdi-content-save-outline"
+                :aria-label="$t('tracking.save')"
+                @click="saveItem(item)"
+              />
+            </template>
+          </v-tooltip>
+
+          <v-tooltip :text="$t('tracking.remove')" location="top">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                size="small"
+                color="error"
+                variant="text"
+                rounded="lg"
+                class="remove-btn"
+                :loading="item._deleting"
+                icon="mdi-trash-can-outline"
+                :aria-label="$t('tracking.remove')"
+                @click="removeItem(item)"
+              />
+            </template>
+          </v-tooltip>
         </div>
       </div>
       </v-card>
@@ -128,7 +159,7 @@
     <div v-if="completedRows.length" class="mb-5">
       <div class="section-header">
         <h2 class="text-subtitle-1 font-weight-bold mb-0">{{ $t('tracking.completedSection') }}</h2>
-        <v-chip size="small" color="success" variant="tonal">{{ completedRows.length }}</v-chip>
+        <v-chip size="small" color="success" variant="text" class="flat-chip">{{ completedRows.length }}</v-chip>
       </div>
 
       <v-card rounded="xl" class="list-shell completed-shell">
@@ -147,8 +178,8 @@
                 <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
               </v-avatar>
               <div>
-                <div class="font-weight-bold">{{ item.symbol }}</div>
-                <div class="text-caption text-medium-emphasis">{{ item.title }}</div>
+                <div class="asset-symbol">{{ item.symbol }}</div>
+                <div class="asset-title text-medium-emphasis">{{ item.title }}</div>
               </div>
             </div>
           </router-link>
@@ -159,13 +190,13 @@
           </div>
 
           <div>
-            <v-chip size="small" variant="tonal" color="primary">
+            <v-chip size="small" variant="text" color="primary" class="flat-chip">
               {{ item.notify_when === 'above' ? $t('tracking.conditionAbove') : $t('tracking.conditionBelow') }}
             </v-chip>
           </div>
 
-          <div>
-            <v-chip size="small" variant="tonal" :color="statusColor(item)">
+          <div class="status-cell">
+            <v-chip size="small" variant="text" :color="statusColor(item)" class="status-chip flat-chip" rounded="lg">
               {{ statusLabel(item) }}
             </v-chip>
             <div class="text-caption text-medium-emphasis mt-1" v-if="item.last_notified_at">
@@ -195,6 +226,7 @@ const { t } = useI18n()
 
 const loading = ref(false)
 const error = ref(null)
+const successMsg = ref(null)
 const rows = ref([])
 const checksUsed = ref(0)
 const monthlyLimit = ref(0)
@@ -217,12 +249,12 @@ const pendingCount = computed(() => rows.value.filter((r) => r.is_active && !r.l
 
 function statusLabel(item) {
   if (item.last_notified_at) return t('tracking.completed')
-  return t('tracking.pending')
+  return t('tracking.active')
 }
 
 function statusColor(item) {
   if (item.last_notified_at) return 'success'
-  return 'info'
+  return 'primary'
 }
 
 function formatPrice(price, currency = 'USD') {
@@ -295,6 +327,7 @@ async function reloadAll() {
 }
 
 async function saveItem(item) {
+  successMsg.value = null
   const currentPrice = Number(item.current_price)
   const targetPrice = roundToTwo(item.target_price)
 
@@ -318,6 +351,7 @@ async function saveItem(item) {
       is_active: !!item.is_active,
     })
     await reloadAll()
+    successMsg.value = t('tracking.saved')
   } catch (e) {
     error.value = e.response?.data?.message || t('tracking.failedSave')
   } finally {
@@ -361,7 +395,7 @@ onMounted(() => {
 }
 
 .completed-shell {
-  border-color: rgba(var(--v-theme-success), 0.25);
+  border-color: rgba(var(--v-theme-on-surface), 0.1);
 }
 
 .list-head {
@@ -406,15 +440,30 @@ onMounted(() => {
   text-decoration: none;
   display: inline-flex;
   width: fit-content;
+  border-radius: 14px;
+  padding: 6px 10px;
+  margin: -6px -10px;
 }
 
-.asset-link:hover .font-weight-bold,
-.asset-link:hover .text-caption {
+.asset-link:hover .asset-symbol,
+.asset-link:hover .asset-title {
   color: rgb(var(--v-theme-primary));
 }
 
+.asset-symbol {
+  font-size: 1.12rem;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.asset-title {
+  font-size: 0.88rem;
+  margin-top: 2px;
+}
+
 .list-row--completed {
-  background: rgba(var(--v-theme-success), 0.035);
+  background: transparent;
 }
 
 .price-main {
@@ -426,6 +475,22 @@ onMounted(() => {
 .price-sub {
   font-size: 0.74rem;
   margin-top: 2px;
+}
+
+.status-cell {
+  justify-self: center;
+  text-align: center;
+}
+
+.flat-chip {
+  padding-inline: 0;
+}
+
+.status-chip {
+  min-width: 84px;
+  height: 36px;
+  justify-content: center;
+  font-weight: 700;
 }
 
 .field-stack {
@@ -448,22 +513,46 @@ onMounted(() => {
   box-shadow: inset 0 0 0 1px rgba(var(--v-theme-on-surface), 0.08);
 }
 
+.modern-input--clean :deep(.v-field) {
+  background: rgba(var(--v-theme-surface), 1);
+  box-shadow: none;
+}
+
+.modern-input--clean :deep(.v-field__outline) {
+  display: none;
+}
+
 .modern-input :deep(.v-field__input) {
   font-weight: 600;
 }
 
+.section-title {
+  letter-spacing: 0.01em;
+}
+
+.section-title--active {
+  color: rgb(var(--v-theme-primary));
+}
+
 .save-btn {
-  min-width: 78px;
+  width: 36px;
+  min-width: 36px;
 }
 
 .remove-btn {
-  min-width: 84px;
+  width: 36px;
+  min-width: 36px;
 }
 
 @media (max-width: 959px) {
   .list-row {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .status-cell {
+    justify-self: start;
+    text-align: left;
   }
 }
 </style>
