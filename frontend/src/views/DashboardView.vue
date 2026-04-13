@@ -148,11 +148,15 @@
 
         <v-form @submit.prevent="submitTracking">
           <v-text-field
-            v-model.number="trackForm.targetPrice"
+            v-model="trackForm.targetPrice"
+            @update:model-value="normalizeTrackTargetInput"
             :label="$t('dashboard.targetPrice')"
-            type="number"
+            type="text"
+            inputmode="decimal"
+            maxlength="18"
+            counter="18"
             min="0"
-            step="0.00000001"
+            step="0.01"
             rounded="lg"
             variant="outlined"
             prepend-inner-icon="mdi-target"
@@ -185,6 +189,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from 'vuetify'
 import { getTopAssets, trackAsset } from '@/api'
+import { formatCurrencyPrice, formatDecimalPrice, roundToTwo, sanitizePriceInput, toPriceInput } from '@/utils/price'
 
 const { t } = useI18n()
 const theme = useTheme()
@@ -200,7 +205,7 @@ const trackLoading = ref(false)
 const trackError = ref(null)
 
 const trackForm = ref({
-  targetPrice: null,
+  targetPrice: '',
   notifyWhen: 'below',
 })
 
@@ -224,31 +229,16 @@ const lastUpdatedLabel = computed(() => {
 })
 
 function formatPrice(price, currency = 'USD') {
-  if (price === null || price === undefined || Number.isNaN(Number(price))) {
-    return 'N/A'
-  }
-
-  const numeric = Number(price)
-  const code = String(currency).toUpperCase()
-  const fractionDigits = numeric >= 1000 ? 2 : numeric >= 1 ? 4 : 8
-
-  return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: code,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: fractionDigits,
-  }).format(numeric)
+  return formatCurrencyPrice(price, currency)
 }
 
 function formatPriceUsdHint(price) {
-  if (price === null || price === undefined || Number.isNaN(Number(price))) {
-    return ' '
-  }
+  if (roundToTwo(price) === null) return ' '
+  return `≈ ${formatDecimalPrice(price)} USD`
+}
 
-  return `≈ ${new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 8,
-  }).format(Number(price))} USD`
+function normalizeTrackTargetInput(value) {
+  trackForm.value.targetPrice = sanitizePriceInput(value, { maxLength: 18, decimals: 2 })
 }
 
 function formatPercent(value) {
@@ -325,7 +315,7 @@ async function loadTopAssets() {
 function openTrackDialog(asset) {
   selectedAsset.value = asset
   trackForm.value = {
-    targetPrice: asset.current_price ? Number(asset.current_price) : null,
+    targetPrice: toPriceInput(asset.current_price),
     notifyWhen: 'below',
   }
   trackError.value = null
@@ -335,7 +325,9 @@ function openTrackDialog(asset) {
 async function submitTracking() {
   if (!selectedAsset.value || trackLoading.value) return
 
-  if (trackForm.value.targetPrice === null || Number(trackForm.value.targetPrice) <= 0) {
+  const targetPrice = roundToTwo(trackForm.value.targetPrice)
+
+  if (targetPrice === null || targetPrice <= 0) {
     trackError.value = t('dashboard.invalidTargetPrice')
     return
   }
@@ -346,7 +338,7 @@ async function submitTracking() {
   try {
     await trackAsset({
       symbol: selectedAsset.value.symbol,
-      target_price: Number(trackForm.value.targetPrice),
+      target_price: targetPrice,
       notify_when: trackForm.value.notifyWhen,
     })
 

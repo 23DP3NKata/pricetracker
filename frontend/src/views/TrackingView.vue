@@ -74,10 +74,14 @@
         <div class="target-col field-stack">
           <div class="field-label">{{ $t('tracking.target') }}</div>
           <v-text-field
-            v-model.number="item.target_price"
-            type="number"
+            v-model="item.target_price"
+            @update:model-value="(value) => normalizeItemTargetInput(item, value)"
+            type="text"
+            inputmode="decimal"
+            maxlength="18"
+            counter="18"
             min="0"
-            step="0.00000001"
+            step="0.01"
             density="comfortable"
             variant="solo-filled"
             hide-details
@@ -186,6 +190,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getDashboard, getTrackingRules, updateTrackingRule, deleteTrackingRule } from '@/api'
+import { formatCurrencyPrice, formatDecimalPrice, roundToTwo, sanitizePriceInput, toPriceInput } from '@/utils/price'
 
 const { t } = useI18n()
 
@@ -225,32 +230,20 @@ function statusColor(item) {
 }
 
 function formatPrice(price, currency = 'USD') {
-  if (price === null || price === undefined || Number.isNaN(Number(price))) return 'N/A'
-
-  const numeric = Number(price)
-  const code = String(currency).toUpperCase()
-  const fractionDigits = numeric >= 1000 ? 2 : numeric >= 1 ? 4 : 8
-
-  return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: code,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: fractionDigits,
-  }).format(numeric)
+  return formatCurrencyPrice(price, currency)
 }
 
 function formatPriceHint(price) {
-  if (price === null || price === undefined || Number.isNaN(Number(price))) return ' '
-  return `≈ ${new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 8,
-  }).format(Number(price))} USD`
+  if (roundToTwo(price) === null) return ' '
+  return `≈ ${formatDecimalPrice(price)} USD`
 }
 
 function normalizeEditablePrice(value) {
-  if (value === null || value === undefined || value === '') return null
-  const numeric = Number(value)
-  return Number.isNaN(numeric) ? null : numeric
+  return toPriceInput(value)
+}
+
+function normalizeItemTargetInput(item, value) {
+  item.target_price = sanitizePriceInput(value, { maxLength: 18, decimals: 2 })
 }
 
 function formatDate(value) {
@@ -307,11 +300,11 @@ async function reloadAll() {
 
 async function saveItem(item) {
   const currentPrice = Number(item.current_price)
-  const targetPrice = Number(item.target_price)
+  const targetPrice = roundToTwo(item.target_price)
 
   if (
     item.notify_when === 'below'
-    && !Number.isNaN(targetPrice)
+    && targetPrice !== null
     && !Number.isNaN(currentPrice)
     && targetPrice > currentPrice
   ) {
@@ -321,8 +314,10 @@ async function saveItem(item) {
 
   item._saving = true
   try {
+    const normalizedTargetPrice = roundToTwo(item.target_price)
+
     await updateTrackingRule(item.id, {
-      target_price: item.target_price === '' || item.target_price === null ? null : Number(item.target_price),
+      target_price: normalizedTargetPrice,
       notify_when: item.notify_when,
       is_active: !!item.is_active,
     })

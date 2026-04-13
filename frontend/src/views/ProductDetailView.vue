@@ -60,12 +60,16 @@
           <v-col cols="12" sm="4">
             <v-text-field
               v-model="trackingForm.target_price"
+              @update:model-value="normalizeDetailTargetInput"
               label="Target price"
               variant="outlined"
               rounded="lg"
-              type="number"
+              type="text"
+              inputmode="decimal"
+              maxlength="18"
+              counter="18"
               min="0"
-              step="0.00000001"
+              step="0.01"
             />
           </v-col>
           <v-col cols="12" sm="4">
@@ -192,6 +196,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useProductsStore } from '@/stores/products'
 import { getPriceHistory } from '@/api'
+import { formatCurrencyPrice, roundToTwo, sanitizePriceInput, toPriceInput } from '@/utils/price'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -279,20 +284,8 @@ const productPageUrl = computed(() => {
 })
 
 function formatPrice(price) {
-  if (price === null || price === undefined || Number.isNaN(Number(price))) {
-    return t('productDetail.noData')
-  }
-
-  const currency = (product.value?.currency || 'USD').toUpperCase()
-  const numeric = Number(price)
-  const fractionDigits = numeric >= 1000 ? 2 : numeric >= 1 ? 4 : 8
-
-  const formatted = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: fractionDigits,
-  }).format(numeric)
-
-  return `${formatted} ${currency}`
+  if (price === null || price === undefined || Number.isNaN(Number(price))) return t('productDetail.noData')
+  return formatCurrencyPrice(price, product.value?.currency || 'USD')
 }
 
 function formatPriceDiff(current, previous) {
@@ -301,11 +294,15 @@ function formatPriceDiff(current, previous) {
 
   const sign = diff > 0 ? '+' : ''
   const formatted = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 8,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(diff)
 
   return `${sign}${formatted}`
+}
+
+function normalizeDetailTargetInput(value) {
+  trackingForm.target_price = sanitizePriceInput(value, { maxLength: 18, decimals: 2 })
 }
 
 function formatDate(dateStr) {
@@ -397,11 +394,10 @@ const chartOptions = computed(() => ({
         label(context) {
           const currency = (product.value?.currency || 'USD').toUpperCase()
           const y = Number(context.parsed.y)
-          const fractionDigits = y >= 1000 ? 2 : y >= 1 ? 4 : 8
 
           return `${new Intl.NumberFormat(undefined, {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: fractionDigits,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
           }).format(y)} ${currency}`
         },
       },
@@ -419,8 +415,8 @@ const chartOptions = computed(() => ({
       ticks: {
         callback(value) {
           return new Intl.NumberFormat(undefined, {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 8,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
           }).format(Number(value))
         },
       },
@@ -452,7 +448,7 @@ async function loadProduct() {
   product.value = store.currentProduct
   if (product.value?.tracking) {
     trackingForm.is_active = product.value.tracking.is_active ?? true
-    trackingForm.target_price = product.value.tracking.target_price ?? ''
+    trackingForm.target_price = toPriceInput(product.value.tracking.target_price)
     trackingForm.notify_when = product.value.tracking.notify_when || 'below'
   }
 }
@@ -472,9 +468,11 @@ async function saveSettings() {
   saving.value = true
   saveMsg.value = null
   try {
+    const targetPrice = roundToTwo(trackingForm.target_price)
+
     await store.updateProduct(product.value.id, {
       is_active: trackingForm.is_active,
-      target_price: trackingForm.target_price === '' ? null : Number(trackingForm.target_price),
+      target_price: targetPrice,
       notify_when: trackingForm.notify_when,
     })
     await loadProduct()
