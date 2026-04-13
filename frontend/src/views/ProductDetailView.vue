@@ -89,8 +89,7 @@
           </v-col>
         </v-row>
         <div class="text-caption text-medium-emphasis mt-2">
-          <v-icon size="14">mdi-timer-sand</v-icon>
-          {{ $t('productsPage.sortNextCheck') }}: {{ formatDateOrFallback(product.tracking?.next_check_at) }}
+          {{ $t('productDetail.nextCheck') }}: {{ formatDateOrFallback(product.tracking?.next_check_at) }}
         </div>
         <v-alert v-if="saveMsg" :type="saveMsg.type" variant="tonal" rounded="lg" class="mt-3" closable @click:close="saveMsg = null">
           {{ saveMsg.text }}
@@ -152,23 +151,29 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(entry, i) in sortedHistoryData" :key="`${entry.checked_at}-${entry.price}-${i}`">
+            <tr v-for="(entry, i) in displayedHistoryData" :key="`${entry.checked_at}-${entry.price}-${i}`">
               <td>{{ formatDate(entry.checked_at) }}</td>
               <td class="text-right font-weight-medium">{{ formatPrice(entry.price) }}</td>
               <td class="text-right">
-                <template v-if="i < sortedHistoryData.length - 1">
+                <template v-if="i < displayedHistoryData.length - 1">
                   <v-chip
-                    :color="priceDiff(entry.price, sortedHistoryData[i + 1].price) > 0 ? 'error' : priceDiff(entry.price, sortedHistoryData[i + 1].price) < 0 ? 'success' : 'grey'"
+                    :color="priceDiff(entry.price, displayedHistoryData[i + 1].price) > 0 ? 'error' : priceDiff(entry.price, displayedHistoryData[i + 1].price) < 0 ? 'success' : 'grey'"
                     size="x-small"
                     variant="tonal"
                   >
-                    {{ formatPriceDiff(entry.price, sortedHistoryData[i + 1].price) }} {{ (product?.currency || 'USD').toUpperCase() }}
+                    {{ formatPriceDiff(entry.price, displayedHistoryData[i + 1].price) }} {{ (product?.currency || 'USD').toUpperCase() }}
                   </v-chip>
                 </template>
               </td>
             </tr>
           </tbody>
         </v-table>
+
+        <div v-if="hasMoreHistory" class="d-flex justify-center mt-3">
+          <v-btn variant="text" rounded="xl" @click="showAllHistory = !showAllHistory">
+            {{ showAllHistory ? $t('productDetail.showLessHistory') : $t('productDetail.showMoreHistory') }}
+          </v-btn>
+        </div>
 
         <div v-else class="text-center text-medium-emphasis pa-4">
           {{ $t('productDetail.noPriceDataYet') }}
@@ -222,10 +227,12 @@ const historyData = ref([])
 const historyStats = ref(null)
 const historySortKey = ref('date')
 const historySortDir = ref('desc')
+const showAllHistory = ref(false)
 const saving = ref(false)
 const saveMsg = ref(null)
 const confirmDelete = ref(false)
 const deleting = ref(false)
+const HISTORY_INITIAL_LIMIT = 10
 
 const trackingForm = reactive({
   is_active: true,
@@ -362,6 +369,13 @@ const sortedHistoryData = computed(() => {
   return rows
 })
 
+const hasMoreHistory = computed(() => sortedHistoryData.value.length > HISTORY_INITIAL_LIMIT)
+
+const displayedHistoryData = computed(() => {
+  if (showAllHistory.value) return sortedHistoryData.value
+  return sortedHistoryData.value.slice(0, HISTORY_INITIAL_LIMIT)
+})
+
 const chartData = computed(() => {
   const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
 
@@ -496,10 +510,15 @@ async function handleDelete() {
 
 watch(historyDays, () => loadHistory())
 
+watch(historyDays, () => {
+  showAllHistory.value = false
+})
+
 watch(
   () => route.params.id,
   async () => {
     saveMsg.value = null
+    showAllHistory.value = false
     await loadProduct()
     await loadHistory()
   },

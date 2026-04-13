@@ -270,7 +270,10 @@ const messages = {
       trendDown: 'Falling',
       trendFlat: 'Stable',
       settingsSaved: 'Settings saved',
-      failedToSave: 'Failed to save'
+      failedToSave: 'Failed to save',
+      nextCheck: 'Next check',
+      showMoreHistory: 'Show more',
+      showLessHistory: 'Show less'
     },
 
     settings: {
@@ -737,7 +740,10 @@ const messages = {
       trendDown: 'Krīt',
       trendFlat: 'Stabils',
       settingsSaved: 'Iestatījumi saglabāti',
-      failedToSave: 'Neizdevās saglabāt'
+      failedToSave: 'Neizdevās saglabāt',
+      nextCheck: 'Nākamā pārbaude',
+      showMoreHistory: 'Rādīt vairāk',
+      showLessHistory: 'Rādīt mazāk'
     },
 
     settings: {
@@ -1204,6 +1210,9 @@ messages.ru = {
     trendFlat: 'Стабильно',
     settingsSaved: 'Настройки сохранены',
     failedToSave: 'Не удалось сохранить',
+    nextCheck: 'Следующая проверка',
+    showMoreHistory: 'Показать больше',
+    showLessHistory: 'Показать меньше',
   },
   settings: {
     ...messages.en.settings,
