@@ -28,7 +28,6 @@
       <div class="d-flex flex-wrap ga-2 mt-3 text-caption text-medium-emphasis">
         <v-chip size="small" variant="tonal" color="info">{{ $t('tracking.pending') }}: {{ pendingCount }}</v-chip>
         <v-chip size="small" variant="tonal" color="success">{{ $t('tracking.completed') }}: {{ completedCount }}</v-chip>
-        <v-chip size="small" variant="tonal" color="grey">{{ $t('tracking.inactive') }}: {{ inactiveCount }}</v-chip>
       </div>
     </v-card>
 
@@ -211,21 +210,18 @@ const usagePercent = computed(() => {
 })
 
 const completedRows = computed(() => rows.value.filter((r) => !!r.last_notified_at))
-const activeRows = computed(() => rows.value.filter((r) => !r.last_notified_at))
+const activeRows = computed(() => rows.value.filter((r) => r.is_active && !r.last_notified_at))
 
 const completedCount = computed(() => rows.value.filter((r) => !!r.last_notified_at).length)
-const inactiveCount = computed(() => rows.value.filter((r) => !r.is_active && !r.last_notified_at).length)
 const pendingCount = computed(() => rows.value.filter((r) => r.is_active && !r.last_notified_at).length)
 
 function statusLabel(item) {
   if (item.last_notified_at) return t('tracking.completed')
-  if (!item.is_active) return t('tracking.inactive')
   return t('tracking.pending')
 }
 
 function statusColor(item) {
   if (item.last_notified_at) return 'success'
-  if (!item.is_active) return 'grey'
   return 'info'
 }
 
