@@ -4,26 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\PriceHistory;
 use App\Models\Product;
-use App\Models\UserProduct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PriceHistoryController extends Controller
 {
     /**
-     * Get price history for a product the user is tracking.
+     * Get price history for a product.
      */
     public function index(Request $request, Product $product): JsonResponse
     {
-        // Ensure the user is tracking this product
-        $tracking = UserProduct::where('user_id', $request->user()->id)
-            ->where('product_id', $product->id)
-            ->exists();
-
-        if (!$tracking) {
-            return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
-        }
-
         $validated = $request->validate([
             'days' => ['sometimes', 'integer', 'min:1', 'max:365'],
         ]);

@@ -397,7 +397,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Show single tracked asset with pivot data.
+     * Show asset details for any authenticated user.
      */
     public function show(Request $request, Product $product): JsonResponse
     {
@@ -406,14 +406,28 @@ class ProductController extends Controller
             ->orderByDesc('created_at')
             ->first();
 
-        if (!$pivot) {
-            return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
-        }
-
-        $product->load('priceHistory');
-        $product->setAttribute('tracking', $pivot);
-
-        return response()->json($product);
+        return response()->json([
+            'id' => $product->id,
+            'title' => $product->title,
+            'symbol' => $product->symbol,
+            'image_url' => $product->image_url,
+            'current_price' => $product->current_price,
+            'price_change_24h' => $product->price_change_24h,
+            'trend' => $product->trend,
+            'currency' => $product->currency,
+            'status' => $product->status,
+            'product_page_url' => $product->product_page_url,
+            'tracking' => $pivot ? [
+                'id' => $pivot->id,
+                'is_active' => (bool) $pivot->is_active,
+                'target_price' => $pivot->target_price,
+                'notify_when' => $pivot->notify_when,
+                'last_checked_at' => optional($pivot->last_checked_at)->toDateTimeString(),
+                'next_check_at' => optional($pivot->next_check_at)->toDateTimeString(),
+                'last_notified_at' => optional($pivot->last_notified_at)->toDateTimeString(),
+                'created_at' => optional($pivot->created_at)->toDateTimeString(),
+            ] : null,
+        ]);
     }
 
     /**

@@ -45,57 +45,6 @@
         </div>
       </v-card>
 
-      <!-- Tracking settings -->
-      <v-card rounded="xl" class="pa-6 mb-6">
-        <h3 class="text-h6 font-weight-bold mb-4">{{ $t('productDetail.trackingSettings') }}</h3>
-        <v-row align="center">
-          <v-col cols="12" sm="4">
-            <v-switch
-              v-model="trackingForm.is_active"
-              :label="$t('productDetail.active')"
-              color="primary"
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" sm="4">
-            <v-text-field
-              v-model="trackingForm.target_price"
-              @update:model-value="normalizeDetailTargetInput"
-              label="Target price"
-              variant="outlined"
-              rounded="lg"
-              type="text"
-              inputmode="decimal"
-              maxlength="18"
-              counter="18"
-              min="0"
-              step="0.01"
-            />
-          </v-col>
-          <v-col cols="12" sm="4">
-            <v-select
-              v-model="trackingForm.notify_when"
-              :items="alertDirectionOptions"
-              label="Notify when"
-              variant="outlined"
-              rounded="lg"
-              item-title="text"
-              item-value="value"
-            />
-          </v-col>
-          <v-col cols="12" sm="4" class="d-flex ga-2">
-            <v-btn color="primary" rounded="xl" :loading="saving" @click="saveSettings">{{ $t('productDetail.save') }}</v-btn>
-            <v-btn color="error" variant="tonal" rounded="xl" @click="confirmDelete = true">{{ $t('productDetail.delete') }}</v-btn>
-          </v-col>
-        </v-row>
-        <div class="text-caption text-medium-emphasis mt-2">
-          {{ $t('productDetail.nextCheck') }}: {{ formatDateOrFallback(product.tracking?.next_check_at) }}
-        </div>
-        <v-alert v-if="saveMsg" :type="saveMsg.type" variant="tonal" rounded="lg" class="mt-3" closable @click:close="saveMsg = null">
-          {{ saveMsg.text }}
-        </v-alert>
-      </v-card>
-
       <!-- Price History -->
       <v-card rounded="xl" class="pa-6">
         <div class="d-flex justify-space-between align-center mb-4">
@@ -181,27 +130,16 @@
       </v-card>
     </template>
 
-    <!-- Delete confirm -->
-    <v-dialog v-model="confirmDelete" max-width="400">
-      <v-card rounded="xl" class="pa-6">
-        <h3 class="text-h6 font-weight-bold mb-2">{{ $t('productDetail.stopTrackingTitle') }}</h3>
-        <p class="text-medium-emphasis mb-4">{{ $t('productDetail.stopTrackingText') }}</p>
-        <div class="d-flex ga-2 justify-end">
-          <v-btn variant="text" rounded="xl" @click="confirmDelete = false">{{ $t('productDetail.cancel') }}</v-btn>
-          <v-btn color="error" rounded="xl" :loading="deleting" @click="handleDelete">{{ $t('productDetail.delete') }}</v-btn>
-        </div>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, watch, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useProductsStore } from '@/stores/products'
 import { getPriceHistory } from '@/api'
-import { formatCurrencyPrice, roundToTwo, sanitizePriceInput, toPriceInput } from '@/utils/price'
+import { formatCurrencyPrice } from '@/utils/price'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -217,7 +155,6 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const route = useRoute()
-const router = useRouter()
 const { t } = useI18n()
 const store = useProductsStore()
 
@@ -228,22 +165,7 @@ const historyStats = ref(null)
 const historySortKey = ref('date')
 const historySortDir = ref('desc')
 const showAllHistory = ref(false)
-const saving = ref(false)
-const saveMsg = ref(null)
-const confirmDelete = ref(false)
-const deleting = ref(false)
 const HISTORY_INITIAL_LIMIT = 10
-
-const trackingForm = reactive({
-  is_active: true,
-  target_price: '',
-  notify_when: 'below',
-})
-
-const alertDirectionOptions = [
-  { text: 'At or below target', value: 'below' },
-  { text: 'At or above target', value: 'above' },
-]
 
 function statusLabel(status) {
   return status === 'active' ? t('productDetail.active') : t('productDetail.paused')
@@ -306,10 +228,6 @@ function formatPriceDiff(current, previous) {
   }).format(diff)
 
   return `${sign}${formatted}`
-}
-
-function normalizeDetailTargetInput(value) {
-  trackingForm.target_price = sanitizePriceInput(value, { maxLength: 18, decimals: 2 })
 }
 
 function formatDate(dateStr) {
@@ -448,11 +366,6 @@ function setHistorySort(key) {
   historySortDir.value = 'desc'
 }
 
-function formatDateOrFallback(dateStr) {
-  if (!dateStr) return t('productDetail.noData')
-  return formatDate(dateStr)
-}
-
 function priceDiff(current, previous) {
   return Number(current) - Number(previous)
 }
@@ -460,11 +373,6 @@ function priceDiff(current, previous) {
 async function loadProduct() {
   await store.fetchProduct(route.params.id)
   product.value = store.currentProduct
-  if (product.value?.tracking) {
-    trackingForm.is_active = product.value.tracking.is_active ?? true
-    trackingForm.target_price = toPriceInput(product.value.tracking.target_price)
-    trackingForm.notify_when = product.value.tracking.notify_when || 'below'
-  }
 }
 
 async function loadHistory() {
@@ -478,36 +386,6 @@ async function loadHistory() {
   }
 }
 
-async function saveSettings() {
-  saving.value = true
-  saveMsg.value = null
-  try {
-    const targetPrice = roundToTwo(trackingForm.target_price)
-
-    await store.updateProduct(product.value.id, {
-      is_active: trackingForm.is_active,
-      target_price: targetPrice,
-      notify_when: trackingForm.notify_when,
-    })
-    await loadProduct()
-    saveMsg.value = { type: 'success', text: t('productDetail.settingsSaved') }
-  } catch {
-    saveMsg.value = { type: 'error', text: t('productDetail.failedToSave') }
-  } finally {
-    saving.value = false
-  }
-}
-
-async function handleDelete() {
-  deleting.value = true
-  try {
-    await store.removeProduct(product.value.id)
-    router.push('/products')
-  } finally {
-    deleting.value = false
-  }
-}
-
 watch(historyDays, () => loadHistory())
 
 watch(historyDays, () => {
@@ -517,7 +395,6 @@ watch(historyDays, () => {
 watch(
   () => route.params.id,
   async () => {
-    saveMsg.value = null
     showAllHistory.value = false
     await loadProduct()
     await loadHistory()
