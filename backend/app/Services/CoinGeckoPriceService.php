@@ -97,16 +97,6 @@ class CoinGeckoPriceService
             }
 
             $product = Product::firstOrNew(['coingecko_id' => $coinId]);
-            $oldPrice = $product->exists && $product->current_price !== null ? (float) $product->current_price : null;
-
-            $trend = 'flat';
-            if ($oldPrice !== null) {
-                if ($price > $oldPrice) {
-                    $trend = 'up';
-                } elseif ($price < $oldPrice) {
-                    $trend = 'down';
-                }
-            }
 
             $product->fill([
                 'title' => (string) ($market['name'] ?? $symbol),
@@ -116,29 +106,16 @@ class CoinGeckoPriceService
                 'image_url' => $market['image'] ?? null,
                 'currency' => strtoupper($this->vsCurrency),
                 'status' => 'active',
-                'current_price' => $price,
-                'price_change_24h' => isset($market['price_change_percentage_24h'])
-                    ? (float) $market['price_change_percentage_24h']
-                    : null,
-                'trend' => $trend,
-                'checks_count' => ((int) ($product->checks_count ?? 0)) + 1,
-                'last_successful_check' => now(),
-                'consecutive_errors' => 0,
             ]);
             $product->save();
 
-            $lastHistory = PriceHistory::query()
-                ->where('product_id', $product->id)
-                ->orderByDesc('checked_at')
-                ->first();
-
-            if (!$lastHistory || (float) $lastHistory->price !== $price) {
-                PriceHistory::create([
-                    'product_id' => $product->id,
-                    'price' => $price,
-                    'checked_at' => now(),
-                ]);
-            }
+            $this->recordPrice(
+                $product,
+                $price,
+                isset($market['price_change_percentage_24h'])
+                    ? (float) $market['price_change_percentage_24h']
+                    : null
+            );
 
             $syncedProductIds[] = $product->id;
             $synced++;
