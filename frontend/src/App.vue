@@ -1,9 +1,11 @@
 <template>
   <v-app>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
     <!-- nav -->
     <v-app-bar :elevation="scrolled ? 2 : 0" :class="{ scrolled }" height="70" flat>
       <v-container class="d-flex align-center">
-        <div class="logo" @click="handleLogoClick">
+        <div class="logo" role="button" tabindex="0" @click="handleLogoClick" @keydown.enter.prevent="handleLogoClick" @keydown.space.prevent="handleLogoClick">
           <img :src="siteLogoSrc" alt="PriceTracker logo" class="logo-mark" />
           <span>PriceTracker</span>
         </div>
@@ -187,7 +189,7 @@
           </template>
         </div>
 
-        <v-btn icon="mdi-menu" variant="text" class="d-md-none ml-2" @click="drawer = true" />
+        <v-btn icon="mdi-menu" variant="text" class="d-md-none ml-2" aria-label="Open navigation menu" @click="drawer = true" />
       </v-container>
     </v-app-bar>
 
@@ -265,7 +267,7 @@
     </v-navigation-drawer>
 
     <!-- main content -->
-    <v-main>
+    <v-main id="main-content" tabindex="-1">
       <router-view />
     </v-main>
 
@@ -420,7 +422,9 @@ onMounted(() => {
     if (auth.isAuthenticated) notificationsStore.fetchUnreadCount()
   }, 30000)
 })
-onUnmounted(() => clearInterval(pollInterval))
+onUnmounted(() => {
+  clearInterval(pollInterval)
+})
 
 watch(
   () => auth.isAuthenticated,
@@ -458,6 +462,28 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+}
+
+.logo:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.3);
+  border-radius: 10px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 9999;
+  background: rgb(var(--v-theme-primary));
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 12px;
 }
 
 .logo-mark {

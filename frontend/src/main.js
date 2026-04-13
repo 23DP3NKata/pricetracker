@@ -2,6 +2,7 @@ import './assets/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { registerSW } from 'virtual:pwa-register'
 import vuetify from './plugins/vuetify'
 import i18n from './plugins/i18n'
 
@@ -16,3 +17,7 @@ app.use(vuetify)
 app.use(i18n)
 
 app.mount('#app')
+
+if (import.meta.env.PROD) {
+	registerSW({ immediate: true })
+}
