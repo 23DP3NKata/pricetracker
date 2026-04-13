@@ -1,7 +1,7 @@
 <template>
-  <v-container class="py-8">
+  <v-container class="py-8 admin-dashboard-view">
     <div class="d-flex align-center justify-space-between mb-6 ga-3 flex-wrap">
-      <h1 class="text-h4 font-weight-bold">{{ $t('adminDashboard.title') }}</h1>
+      <h1 class="text-h4 font-weight-bold page-title">{{ $t('adminDashboard.title') }}</h1>
       <div class="d-flex ga-2 flex-wrap">
         <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">{{ $t('adminCommon.dashboard') }}</v-btn>
         <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">{{ $t('adminCommon.users') }}</v-btn>
@@ -13,69 +13,115 @@
 
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
-    <v-row v-if="stats">
-      <v-col cols="12" class="d-flex justify-end">
-        <v-btn
-          color="primary"
-          rounded="xl"
-          prepend-icon="mdi-refresh"
-          :loading="refreshingAll"
-          @click="refreshAllPrices"
-        >
-          {{ $t('adminDashboard.forceRefreshAllPrices') }}
-        </v-btn>
-      </v-col>
+    <template v-if="stats">
+      <v-card rounded="xl" class="hero-card pa-4 mb-5">
+        <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-3">
+          <div>
+            <div class="text-subtitle-1 font-weight-bold">{{ $t('adminDashboard.requestsAllTime') }}</div>
+            <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.forceRefreshAllPrices') }}</div>
+          </div>
+          <v-btn
+            color="primary"
+            rounded="xl"
+            prepend-icon="mdi-refresh"
+            variant="flat"
+            :loading="refreshingAll"
+            @click="refreshAllPrices"
+          >
+            {{ $t('adminDashboard.forceRefreshAllPrices') }}
+          </v-btn>
+        </div>
 
-      <v-col cols="12" md="3" sm="6">
-        <v-card rounded="xl" class="pa-4">
-          <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.usersTotal') }}</div>
-          <div class="text-h5 font-weight-bold">{{ stats.users_total }}</div>
-          <div class="text-caption">{{ $t('adminDashboard.admins') }}: {{ stats.admins_total }}</div>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3" sm="6">
-        <v-card rounded="xl" class="pa-4">
-          <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.usersStatus') }}</div>
-          <div class="text-h5 font-weight-bold">{{ stats.active_users }}</div>
-          <div class="text-caption">{{ $t('adminDashboard.blocked') }}: {{ stats.blocked_users }}</div>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3" sm="6">
-        <v-card rounded="xl" class="pa-4">
-          <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.products') }}</div>
-          <div class="text-h5 font-weight-bold">{{ stats.products_total }}</div>
-          <div class="text-caption">{{ $t('adminDashboard.active') }}: {{ stats.products_active }} | {{ $t('adminDashboard.hidden') }}: {{ stats.products_hidden }}</div>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3" sm="6">
-        <v-card rounded="xl" class="pa-4">
-          <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.trackingLinks') }}</div>
-          <div class="text-h5 font-weight-bold">{{ stats.active_tracking_links }}</div>
-          <div class="text-caption">{{ $t('adminDashboard.hidden') }}: {{ stats.products_hidden }}</div>
-        </v-card>
-      </v-col>
+        <div class="d-flex flex-wrap ga-2">
+          <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
+            {{ $t('adminDashboard.requestsDay') }}: <span class="request-value">{{ formatCount(stats.requests_day) }}</span>
+          </v-chip>
+          <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
+            {{ $t('adminDashboard.requestsMonth') }}: <span class="request-value">{{ formatCount(stats.requests_month) }}</span>
+          </v-chip>
+          <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
+            {{ $t('adminDashboard.requestsAllTime') }}: <span class="request-value">{{ formatCount(stats.requests_all_time) }}</span>
+          </v-chip>
+        </div>
+      </v-card>
 
-      <v-col cols="12" md="4">
-        <v-card rounded="xl" class="pa-4">
-          <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.logs24h') }}</div>
-          <div class="text-h5 font-weight-bold">{{ stats.logs_24h }}</div>
-          <div class="text-caption text-error">{{ $t('adminDashboard.errorsCritical') }}: {{ stats.errors_24h }}</div>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="4">
-        <v-card rounded="xl" class="pa-4">
-          <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.actions7d') }}</div>
-          <div class="text-h5 font-weight-bold">{{ stats.actions_7d }}</div>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="4">
-        <v-card rounded="xl" class="pa-4">
-          <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.notifications24h') }}</div>
-          <div class="text-h5 font-weight-bold">{{ stats.notifications_24h }}</div>
-        </v-card>
-      </v-col>
+      <div class="section-label mb-2">{{ $t('adminCommon.users') }}</div>
+      <v-row class="mb-2">
+        <v-col cols="12" md="4" sm="6">
+          <v-card rounded="xl" class="metric-card pa-4 h-100">
+            <div class="card-top">
+              <span class="metric-label">{{ $t('adminDashboard.usersTotal') }}</span>
+            </div>
+            <div class="metric-value">{{ formatCount(stats.users_total) }}</div>
+            <div class="metric-sub">{{ $t('adminDashboard.admins') }}: {{ formatCount(stats.admins_total) }}</div>
+          </v-card>
+        </v-col>
 
-    </v-row>
+        <v-col cols="12" md="4" sm="6">
+          <v-card rounded="xl" class="metric-card pa-4 h-100">
+            <div class="card-top">
+              <span class="metric-label">{{ $t('adminDashboard.usersStatus') }}</span>
+            </div>
+            <div class="metric-value">{{ formatCount(stats.active_users) }}</div>
+            <div class="metric-sub">{{ $t('adminDashboard.blocked') }}: {{ formatCount(stats.blocked_users) }}</div>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12" md="4" sm="6">
+          <v-card rounded="xl" class="metric-card pa-4 h-100">
+            <div class="card-top">
+              <span class="metric-label">{{ $t('adminDashboard.trackingLinks') }}</span>
+            </div>
+            <div class="metric-value">{{ formatCount(stats.active_tracking_links) }}</div>
+            <div class="metric-sub">{{ $t('adminDashboard.products') }}: {{ formatCount(stats.products_total) }}</div>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <div class="section-label mb-2">{{ $t('adminCommon.products') }}</div>
+      <v-row class="mb-2">
+        <v-col cols="12" md="6" sm="6">
+          <v-card rounded="xl" class="metric-card pa-4 h-100">
+            <div class="card-top">
+              <span class="metric-label">{{ $t('adminDashboard.products') }}</span>
+            </div>
+            <div class="metric-value">{{ formatCount(stats.products_total) }}</div>
+            <div class="metric-sub">{{ $t('adminDashboard.active') }}: {{ formatCount(stats.products_active) }}</div>
+            <div class="metric-sub">{{ $t('adminDashboard.hidden') }}: {{ formatCount(stats.products_hidden) }}</div>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12" md="6" sm="6">
+          <v-card rounded="xl" class="metric-card pa-4 h-100">
+            <div class="card-top">
+              <span class="metric-label">{{ $t('adminDashboard.logs24h') }}</span>
+            </div>
+            <div class="metric-value">{{ formatCount(stats.logs_24h) }}</div>
+            <div class="metric-sub text-error">{{ $t('adminDashboard.errorsCritical') }}: {{ formatCount(stats.errors_24h) }}</div>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <div class="section-label mb-2">{{ $t('adminCommon.actions') }}</div>
+      <v-row>
+        <v-col cols="12" md="6" sm="6">
+          <v-card rounded="xl" class="metric-card pa-4 h-100">
+            <div class="card-top">
+              <span class="metric-label">{{ $t('adminDashboard.actions7d') }}</span>
+            </div>
+            <div class="metric-value">{{ formatCount(stats.actions_7d) }}</div>
+          </v-card>
+        </v-col>
+        <v-col cols="12" md="6" sm="6">
+          <v-card rounded="xl" class="metric-card pa-4 h-100">
+            <div class="card-top">
+              <span class="metric-label">{{ $t('adminDashboard.notifications24h') }}</span>
+            </div>
+            <div class="metric-value">{{ formatCount(stats.notifications_24h) }}</div>
+          </v-card>
+        </v-col>
+      </v-row>
+    </template>
   </v-container>
 </template>
 
@@ -88,6 +134,10 @@ const loading = ref(false)
 const refreshingAll = ref(false)
 const stats = ref(null)
 const route = useRoute()
+
+function formatCount(value) {
+  return new Intl.NumberFormat().format(Number(value || 0))
+}
 
 function isTabActive(name) {
   return route.name === name
@@ -115,3 +165,73 @@ async function refreshAllPrices() {
 
 onMounted(loadStats)
 </script>
+
+<style scoped>
+.admin-dashboard-view {
+  max-width: 1280px;
+}
+
+.page-title {
+  letter-spacing: -0.015em;
+}
+
+.hero-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.request-chip {
+  color: rgba(var(--v-theme-on-surface), 0.8);
+  font-weight: 400;
+}
+
+.request-chip--soft {
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.request-value {
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+.section-label {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(var(--v-theme-on-surface), 0.56);
+  font-weight: 700;
+}
+
+.metric-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.metric-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(var(--v-theme-on-surface), 0.56);
+  font-weight: 700;
+}
+
+.metric-value {
+  font-size: 1.9rem;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.metric-sub {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+</style>

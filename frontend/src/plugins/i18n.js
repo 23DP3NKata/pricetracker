@@ -361,7 +361,10 @@ const messages = {
       logs24h: 'Logs last 24h',
       errorsCritical: 'Errors/Critical',
       actions7d: 'Admin actions last 7d',
-      notifications24h: 'Notifications last 24h'
+      notifications24h: 'Notifications last 24h',
+      requestsDay: 'Requests today',
+      requestsMonth: 'Requests this month',
+      requestsAllTime: 'Requests all time'
     },
 
     adminUsers: {
@@ -825,7 +828,10 @@ const messages = {
       logs24h: 'Žurnāli pēdējās 24h',
       errorsCritical: 'Kļūdas/Kritiskās',
       actions7d: 'Admin darbības pēdējās 7d',
-      notifications24h: 'Paziņojumi pēdējās 24h'
+      notifications24h: 'Paziņojumi pēdējās 24h',
+      requestsDay: 'Pieprasījumi šodien',
+      requestsMonth: 'Pieprasījumi šomēnes',
+      requestsAllTime: 'Pieprasījumi kopā'
     },
 
     adminUsers: {
@@ -1288,6 +1294,9 @@ messages.ru = {
     errorsCritical: 'Ошибки/Критические',
     actions7d: 'Действия админов за 7д',
     notifications24h: 'Уведомления за 24ч',
+    requestsDay: 'Запросы за день',
+    requestsMonth: 'Запросы за месяц',
+    requestsAllTime: 'Запросы за все время',
   },
   adminUsers: {
     ...messages.en.adminUsers,

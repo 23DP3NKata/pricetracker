@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminAction;
 use App\Models\Notification;
+use App\Models\PriceHistory;
 use App\Models\Product;
 use App\Models\SystemLog;
 use App\Models\User;
@@ -16,6 +17,8 @@ class AdminDashboardController extends Controller
     public function index(): JsonResponse
     {
         $now = now();
+        $startOfDay = $now->copy()->startOfDay();
+        $startOfMonth = $now->copy()->startOfMonth();
         $last24h = $now->copy()->subDay();
         $last7d = $now->copy()->subDays(7);
 
@@ -38,6 +41,10 @@ class AdminDashboardController extends Controller
         $actions7d = AdminAction::where('created_at', '>=', $last7d)->count();
         $notifications24h = Notification::where('created_at', '>=', $last24h)->count();
 
+        $requestsDay = PriceHistory::where('checked_at', '>=', $startOfDay)->count();
+        $requestsMonth = PriceHistory::where('checked_at', '>=', $startOfMonth)->count();
+        $requestsAllTime = PriceHistory::count();
+
         return response()->json([
             'users_total' => $usersTotal,
             'admins_total' => $adminsTotal,
@@ -53,6 +60,9 @@ class AdminDashboardController extends Controller
             'errors_24h' => $errors24h,
             'actions_7d' => $actions7d,
             'notifications_24h' => $notifications24h,
+            'requests_day' => $requestsDay,
+            'requests_month' => $requestsMonth,
+            'requests_all_time' => $requestsAllTime,
         ]);
     }
 }
