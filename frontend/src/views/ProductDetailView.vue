@@ -53,6 +53,7 @@
             <v-btn :value="7" size="small">7d</v-btn>
             <v-btn :value="30" size="small">30d</v-btn>
             <v-btn :value="90" size="small">90d</v-btn>
+            <v-btn :value="-1" size="small">{{ $t('productDetail.allTime') }}</v-btn>
           </v-btn-toggle>
         </div>
 
@@ -377,7 +378,8 @@ async function loadProduct() {
 
 async function loadHistory() {
   try {
-    const { data } = await getPriceHistory(route.params.id, historyDays.value)
+    const days = historyDays.value === -1 ? null : historyDays.value
+    const { data } = await getPriceHistory(route.params.id, days)
     historyData.value = data.history || []
     historyStats.value = data.stats || null
   } catch {

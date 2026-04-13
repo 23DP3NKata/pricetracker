@@ -15,15 +15,19 @@ class PriceHistoryController extends Controller
     public function index(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'days' => ['sometimes', 'integer', 'min:1', 'max:365'],
+            'days' => ['nullable', 'integer', 'min:1', 'max:3650'],
         ]);
 
-        $days = $validated['days'] ?? 30;
+        $days = $validated['days'] ?? null;
 
-        $history = PriceHistory::where('product_id', $product->id)
-            ->where('checked_at', '>=', now()->subDays($days))
-            ->orderBy('checked_at')
-            ->get(['id', 'price', 'checked_at']);
+        $historyQuery = PriceHistory::where('product_id', $product->id)
+            ->orderBy('checked_at');
+
+        if ($days !== null) {
+            $historyQuery->where('checked_at', '>=', now()->subDays($days));
+        }
+
+        $history = $historyQuery->get(['id', 'price', 'checked_at']);
 
         if ($history->isEmpty() && $product->current_price !== null) {
             $history = collect([[
