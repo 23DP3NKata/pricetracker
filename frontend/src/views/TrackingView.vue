@@ -31,12 +31,87 @@
       </div>
     </v-card>
 
+    <v-card rounded="xl" class="pa-4 mb-5">
+      <div class="text-subtitle-1 font-weight-medium mb-3">{{ $t('tracking.filterSortTitle') }}</div>
+      <v-row dense>
+        <v-col cols="12" md="4">
+          <v-text-field
+            v-model="searchQuery"
+            :label="$t('tracking.search')"
+            :placeholder="$t('tracking.searchPlaceholder')"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            rounded="lg"
+            density="comfortable"
+            hide-details
+          />
+        </v-col>
+
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="statusFilter"
+            :items="statusFilterOptions"
+            item-title="text"
+            item-value="value"
+            :label="$t('tracking.filterStatus')"
+            variant="outlined"
+            rounded="lg"
+            density="comfortable"
+            hide-details
+          />
+        </v-col>
+
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="conditionFilter"
+            :items="conditionFilterOptions"
+            item-title="text"
+            item-value="value"
+            :label="$t('tracking.filterCondition')"
+            variant="outlined"
+            rounded="lg"
+            density="comfortable"
+            hide-details
+          />
+        </v-col>
+
+        <v-col cols="12" sm="8" md="2">
+          <v-select
+            v-model="sortBy"
+            :items="sortOptions"
+            item-title="text"
+            item-value="value"
+            :label="$t('tracking.sortBy')"
+            variant="outlined"
+            rounded="lg"
+            density="comfortable"
+            hide-details
+          />
+        </v-col>
+      </v-row>
+
+      <div class="d-flex justify-end mt-3">
+        <v-btn
+          variant="text"
+          rounded="xl"
+          prepend-icon="mdi-filter-remove-outline"
+          @click="resetFilters"
+        >
+          {{ $t('tracking.resetFilters') }}
+        </v-btn>
+      </div>
+    </v-card>
+
     <v-alert v-if="error" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="error = null">
       {{ error }}
     </v-alert>
 
     <v-alert v-if="successMsg" type="success" variant="tonal" rounded="lg" class="mb-4" closable @click:close="successMsg = null">
       {{ successMsg }}
+    </v-alert>
+
+    <v-alert v-if="!loading && rows.length && !filteredRows.length" type="info" variant="tonal" rounded="lg" class="mb-4">
+      {{ $t('tracking.noMatches') }}
     </v-alert>
 
     <div v-if="activeRows.length" class="mb-5">
@@ -230,10 +305,35 @@ const successMsg = ref(null)
 const rows = ref([])
 const checksUsed = ref(0)
 const monthlyLimit = ref(0)
+const searchQuery = ref('')
+const conditionFilter = ref('all')
+const statusFilter = ref('all')
+const sortBy = ref('symbolAsc')
 
 const notifyWhenOptions = computed(() => [
   { text: t('tracking.conditionBelow'), value: 'below' },
   { text: t('tracking.conditionAbove'), value: 'above' },
+])
+
+const conditionFilterOptions = computed(() => [
+  { text: t('tracking.conditionAll'), value: 'all' },
+  { text: t('tracking.conditionBelow'), value: 'below' },
+  { text: t('tracking.conditionAbove'), value: 'above' },
+])
+
+const statusFilterOptions = computed(() => [
+  { text: t('tracking.statusAll'), value: 'all' },
+  { text: t('tracking.activeSection'), value: 'active' },
+  { text: t('tracking.completedSection'), value: 'completed' },
+])
+
+const sortOptions = computed(() => [
+  { text: t('tracking.sortSymbolAsc'), value: 'symbolAsc' },
+  { text: t('tracking.sortSymbolDesc'), value: 'symbolDesc' },
+  { text: t('tracking.sortCurrentPriceDesc'), value: 'currentPriceDesc' },
+  { text: t('tracking.sortCurrentPriceAsc'), value: 'currentPriceAsc' },
+  { text: t('tracking.sortTargetPriceDesc'), value: 'targetPriceDesc' },
+  { text: t('tracking.sortTargetPriceAsc'), value: 'targetPriceAsc' },
 ])
 
 const usagePercent = computed(() => {
@@ -241,8 +341,67 @@ const usagePercent = computed(() => {
   return Math.min(100, Math.round((checksUsed.value / monthlyLimit.value) * 100))
 })
 
-const completedRows = computed(() => rows.value.filter((r) => !!r.last_notified_at))
-const activeRows = computed(() => rows.value.filter((r) => r.is_active && !r.last_notified_at))
+const filteredRows = computed(() => {
+  let list = [...rows.value]
+
+  const query = searchQuery.value.trim().toLowerCase()
+  if (query) {
+    list = list.filter((item) => {
+      const symbol = String(item.symbol || '').toLowerCase()
+      const title = String(item.title || '').toLowerCase()
+      return symbol.includes(query) || title.includes(query)
+    })
+  }
+
+  if (conditionFilter.value !== 'all') {
+    list = list.filter((item) => item.notify_when === conditionFilter.value)
+  }
+
+  if (statusFilter.value === 'active') {
+    list = list.filter((item) => item.is_active && !item.last_notified_at)
+  } else if (statusFilter.value === 'completed') {
+    list = list.filter((item) => !!item.last_notified_at)
+  }
+
+  const numberValue = (value) => {
+    const n = Number(value)
+    return Number.isNaN(n) ? 0 : n
+  }
+
+  const compareSymbolAsc = (a, b) => String(a.symbol || '').localeCompare(String(b.symbol || ''))
+  const compareSymbolDesc = (a, b) => String(b.symbol || '').localeCompare(String(a.symbol || ''))
+  const compareCurrentDesc = (a, b) => numberValue(b.current_price) - numberValue(a.current_price)
+  const compareCurrentAsc = (a, b) => numberValue(a.current_price) - numberValue(b.current_price)
+  const compareTargetDesc = (a, b) => numberValue(b.target_price) - numberValue(a.target_price)
+  const compareTargetAsc = (a, b) => numberValue(a.target_price) - numberValue(b.target_price)
+
+  switch (sortBy.value) {
+    case 'symbolDesc':
+      list.sort(compareSymbolDesc)
+      break
+    case 'currentPriceDesc':
+      list.sort(compareCurrentDesc)
+      break
+    case 'currentPriceAsc':
+      list.sort(compareCurrentAsc)
+      break
+    case 'targetPriceDesc':
+      list.sort(compareTargetDesc)
+      break
+    case 'targetPriceAsc':
+      list.sort(compareTargetAsc)
+      break
+    case 'symbolAsc':
+    default:
+      list.sort(compareSymbolAsc)
+      break
+  }
+
+  return list
+})
+
+const completedRows = computed(() => filteredRows.value.filter((r) => !!r.last_notified_at))
+const activeRows = computed(() => filteredRows.value.filter((r) => r.is_active && !r.last_notified_at))
 
 const completedCount = computed(() => rows.value.filter((r) => !!r.last_notified_at).length)
 const pendingCount = computed(() => rows.value.filter((r) => r.is_active && !r.last_notified_at).length)
@@ -279,6 +438,13 @@ function formatDate(value) {
   const date = new Date(String(value).replace(' ', 'T') + 'Z')
   if (Number.isNaN(date.getTime())) return '-'
   return date.toLocaleString()
+}
+
+function resetFilters() {
+  searchQuery.value = ''
+  conditionFilter.value = 'all'
+  statusFilter.value = 'all'
+  sortBy.value = 'symbolAsc'
 }
 
 async function loadUsage() {
