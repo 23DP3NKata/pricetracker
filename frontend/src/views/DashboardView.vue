@@ -10,7 +10,14 @@
           {{ $t('dashboard.lastUpdated') }}: {{ lastUpdatedLabel }}
         </p>
       </div>
-      <v-btn variant="outlined" rounded="xl" prepend-icon="mdi-refresh" :loading="loading" @click="loadTopAssets">
+      <v-btn
+        variant="text"
+        rounded
+        prepend-icon="mdi-refresh"
+        :loading="loading"
+        class="dashboard-nav-btn"
+        @click="loadTopAssets"
+      >
         {{ $t('dashboard.refresh') }}
       </v-btn>
     </div>
@@ -101,10 +108,9 @@
             <div class="action-col text-md-right">
               <v-btn
                 size="small"
-                rounded="xl"
-                :variant="asset.is_tracked ? 'outlined' : 'tonal'"
-                color="primary"
-                :prepend-icon="asset.is_tracked ? 'mdi-check-circle-outline' : 'mdi-crosshairs-gps'"
+                rounded
+                variant="text"
+                :class="['dashboard-nav-btn', 'track-btn', { 'track-btn--tracked': asset.is_tracked }]"
                 @click="openTrackDialog(asset)"
               >
                 {{ asset.is_tracked ? $t('dashboard.tracked') : $t('dashboard.track') }}
@@ -466,6 +472,30 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.dashboard-nav-btn {
+  text-transform: none;
+  font-weight: 500;
+}
+
+.track-btn {
+  min-width: 104px;
+  height: 34px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.track-btn:hover {
+  background: rgba(var(--v-theme-on-surface), 0.05) !important;
+}
+
+.track-btn--tracked {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 600;
+}
+
+.track-btn--tracked:hover {
+  background: rgba(var(--v-theme-primary), 0.1) !important;
 }
 
 @media (max-width: 959px) {

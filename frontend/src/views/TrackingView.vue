@@ -93,7 +93,7 @@
       <div class="d-flex justify-end mt-3">
         <v-btn
           variant="text"
-          rounded="xl"
+          rounded
           prepend-icon="mdi-filter-remove-outline"
           @click="resetFilters"
         >
@@ -163,7 +163,7 @@
             density="comfortable"
             variant="outlined"
             hide-details
-            class="target-input modern-input modern-input--clean"
+            class="target-input modern-input"
             rounded="lg"
           />
         </div>
@@ -178,7 +178,7 @@
             density="comfortable"
             variant="outlined"
             hide-details
-            class="condition-select modern-input modern-input--clean"
+            class="condition-select modern-input"
             rounded="lg"
           />
         </div>
@@ -200,7 +200,7 @@
                 size="small"
                 color="primary"
                 variant="text"
-                rounded="lg"
+                rounded
                 class="save-btn"
                 :loading="item._saving"
                 icon="mdi-content-save-outline"
@@ -217,7 +217,7 @@
                 size="small"
                 color="error"
                 variant="text"
-                rounded="lg"
+                rounded
                 class="remove-btn"
                 :loading="item._deleting"
                 icon="mdi-trash-can-outline"
@@ -675,21 +675,21 @@ onMounted(() => {
 
 .modern-input :deep(.v-field) {
   border-radius: 14px;
-  background: rgba(var(--v-theme-primary), 0.04);
-  box-shadow: inset 0 0 0 1px rgba(var(--v-theme-on-surface), 0.08);
-}
-
-.modern-input--clean :deep(.v-field) {
-  background: rgba(var(--v-theme-surface), 1);
+  background: rgba(var(--v-theme-on-surface), 0.05);
   box-shadow: none;
 }
 
-.modern-input--clean :deep(.v-field__outline) {
+.modern-input :deep(.v-field__outline) {
   display: none;
 }
 
 .modern-input :deep(.v-field__input) {
   font-weight: 600;
+}
+
+.modern-input :deep(.v-field--focused) {
+  background: rgba(var(--v-theme-on-surface), 0.06);
+  box-shadow: none;
 }
 
 .section-title {
