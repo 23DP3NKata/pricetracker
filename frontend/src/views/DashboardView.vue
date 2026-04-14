@@ -138,7 +138,7 @@
           closable
           @click:close="trackError = null"
         >
-          {{ trackError }}
+          {{ $t(trackError) }}
         </v-alert>
 
         <div v-if="selectedAsset" class="text-body-2 mb-4">

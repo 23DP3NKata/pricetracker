@@ -469,7 +469,10 @@ const messages = {
       languageLatvian: 'Latvian',
       languageRussian: 'Russian',
       notificationFallback: 'Notification'
-    }
+    },
+
+    'For "below" condition, target price must be lower than current price.': 'For "below" condition, target price must be lower than current price.',
+    'For "above" condition, target price must be higher than current price.': 'For "above" condition, target price must be higher than current price.'
   },
   
   lv: {
@@ -940,12 +943,17 @@ const messages = {
       languageLatvian: 'Latviešu',
       languageRussian: 'Krievu',
       notificationFallback: 'Paziņojums'
-    }
+    },
+
+    'For "below" condition, target price must be lower than current price.': 'Nosacījumam "zem mērķa" mērķa cenai jābūt zemākai par pašreizējo cenu.',
+    'For "above" condition, target price must be higher than current price.': 'Nosacījumam "virs mērķa" mērķa cenai jābūt augstākai par pašreizējo cenu.'
   }
 }
 
 messages.ru = {
   ...messages.en,
+  'For "below" condition, target price must be lower than current price.': 'Для условия "ниже" целевая цена должна быть ниже текущей.',
+  'For "above" condition, target price must be higher than current price.': 'Для условия "выше" целевая цена должна быть выше текущей.',
   nav: {
     ...messages.en.nav,
     home: 'Главная',
