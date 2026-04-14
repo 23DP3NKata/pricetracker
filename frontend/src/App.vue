@@ -189,7 +189,13 @@
           </template>
         </div>
 
-        <v-btn icon="mdi-menu" variant="text" class="d-md-none ml-2" aria-label="Open navigation menu" @click="drawer = true" />
+        <v-btn
+          :icon="drawer ? 'mdi-close' : 'mdi-menu'"
+          variant="text"
+          class="d-md-none ml-2"
+          :aria-label="drawer ? 'Close navigation menu' : 'Open navigation menu'"
+          @click="drawer = !drawer"
+        />
       </v-container>
     </v-app-bar>
 
