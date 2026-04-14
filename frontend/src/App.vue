@@ -21,7 +21,6 @@
           <template v-else>
             <v-btn to="/dashboard" variant="text" rounded>{{ $t('nav.dashboard') }}</v-btn>
             <v-btn to="/tracking" variant="text" rounded>{{ $t('nav.tracking') }}</v-btn>
-            <v-btn to="/markets" variant="text" rounded>{{ $t('nav.markets') }}</v-btn>
             <v-btn v-if="auth.isAdmin" to="/admin/dashboard" variant="text" rounded>{{ $t('nav.admin') }}</v-btn>
           </template>
         </div>
@@ -216,7 +215,6 @@
         <v-list class="pa-2">
           <v-list-item to="/dashboard" rounded prepend-icon="mdi-view-dashboard-outline" :title="$t('nav.dashboard')" />
           <v-list-item to="/tracking" rounded prepend-icon="mdi-clipboard-check-outline" :title="$t('nav.tracking')" />
-          <v-list-item to="/markets" rounded prepend-icon="mdi-finance" :title="$t('nav.markets')" />
           <v-list-item to="/notifications" rounded prepend-icon="mdi-bell-outline" :title="$t('notificationsPage.title')">
             <template v-if="notificationsStore.unreadCount > 0" #append>
               <v-chip size="x-small" color="error">{{ notificationsStore.unreadCount }}</v-chip>
