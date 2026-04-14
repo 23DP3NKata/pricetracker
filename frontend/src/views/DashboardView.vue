@@ -131,9 +131,17 @@
       </a>
     </div>
 
-    <v-dialog v-model="showTrackDialog" max-width="520">
+    <v-dialog v-model="showTrackDialog" max-width="560">
       <v-card rounded="xl" class="pa-6">
-        <h2 class="text-h6 font-weight-bold mb-4">{{ $t('dashboard.trackingSetupTitle') }}</h2>
+        <div class="tracking-setup-head mb-4">
+          <v-avatar color="primary" variant="tonal" size="42">
+            <v-icon>mdi-tune-variant</v-icon>
+          </v-avatar>
+          <div>
+            <h2 class="text-h5 font-weight-bold mb-1">{{ $t('dashboard.trackingSetupTitle') }}</h2>
+            <p class="text-body-2 text-medium-emphasis ma-0">{{ $t('dashboard.trackingSetupSubtitle') }}</p>
+          </div>
+        </div>
 
         <v-alert
           v-if="trackError"
@@ -147,15 +155,23 @@
           {{ $t(trackError) }}
         </v-alert>
 
-        <div v-if="selectedAsset" class="text-body-2 mb-4">
-          <span class="font-weight-bold">{{ selectedAsset.title }}</span>
-          <span class="text-medium-emphasis"> ({{ selectedAsset.symbol }})</span>
+        <div v-if="selectedAsset" class="tracking-asset-meta mb-4">
+          <div class="text-body-1 font-weight-bold">
+            {{ selectedAsset.title }}
+            <span class="text-medium-emphasis">({{ selectedAsset.symbol }})</span>
+          </div>
+          <div class="text-body-2 text-medium-emphasis">
+            {{ $t('dashboard.currentMarketPrice') }}:
+            <span class="font-weight-bold text-high-emphasis">{{ formatPrice(selectedAsset.current_price, selectedAsset.currency) }}</span>
+          </div>
         </div>
 
         <v-form @submit.prevent="submitTracking">
           <v-text-field
             v-model="trackForm.targetPrice"
             @update:model-value="normalizeTrackTargetInput"
+            @keydown="preventPriceInputKeydown"
+            @paste="handlePricePaste"
             :label="$t('dashboard.targetPrice')"
             type="text"
             inputmode="decimal"
@@ -167,6 +183,33 @@
             variant="outlined"
             prepend-inner-icon="mdi-target"
           />
+
+          <div class="quick-adjust mb-4">
+            <div class="text-caption text-medium-emphasis mb-2">{{ $t('dashboard.quickAdjust') }}</div>
+            <div class="d-flex flex-wrap ga-2">
+              <v-btn
+                v-for="percent in quickAdjustPercents"
+                :key="percent"
+                size="small"
+                variant="tonal"
+                rounded
+                class="quick-adjust-btn"
+                @click="applyTargetPercent(percent)"
+              >
+                {{ percentLabel(percent) }}
+              </v-btn>
+              <v-btn
+                size="small"
+                variant="text"
+                rounded
+                class="quick-adjust-btn"
+                @click="setTargetToCurrent"
+              >
+                {{ $t('dashboard.useCurrentPrice') }}
+              </v-btn>
+            </div>
+            <div class="text-caption text-medium-emphasis mt-2">{{ $t('dashboard.onlyNumbersHint') }}</div>
+          </div>
 
           <v-select
             v-model="trackForm.notifyWhen"
@@ -216,9 +259,13 @@ const trackForm = ref({
 })
 
 const notifyWhenOptions = computed(() => [
-  { text: t('dashboard.conditionBelow'), value: 'below' },
-  { text: t('dashboard.conditionAbove'), value: 'above' },
+  { text: t('dashboard.conditionDropToTarget'), value: 'below' },
+  { text: t('dashboard.conditionRiseToTarget'), value: 'above' },
 ])
+
+const quickAdjustPercents = computed(() => (
+  trackForm.value.notifyWhen === 'below' ? [-1, -2, -5, -10, -15] : [1, 2, 5, 10, 15]
+))
 
 const coingeckoLogoSrc = computed(() => (
   theme.global.current.value.dark
@@ -245,6 +292,56 @@ function formatPriceUsdHint(price) {
 
 function normalizeTrackTargetInput(value) {
   trackForm.value.targetPrice = sanitizePriceInput(value, { maxLength: 18, decimals: 2 })
+}
+
+function preventPriceInputKeydown(event) {
+  const { key, ctrlKey, metaKey } = event
+
+  if (ctrlKey || metaKey) return
+
+  const allowedControlKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End']
+  if (allowedControlKeys.includes(key)) return
+
+  const isDigit = /^\d$/.test(key)
+  const isDecimalSeparator = key === '.' || key === ','
+
+  if (isDigit) return
+
+  if (isDecimalSeparator) {
+    const current = String(trackForm.value.targetPrice || '')
+    if (!current.includes('.') && !current.includes(',')) return
+  }
+
+  event.preventDefault()
+}
+
+function handlePricePaste(event) {
+  const pasted = event.clipboardData?.getData('text') || ''
+  const sanitized = sanitizePriceInput(pasted, { maxLength: 18, decimals: 2 })
+
+  event.preventDefault()
+  trackForm.value.targetPrice = sanitized
+}
+
+function percentLabel(percent) {
+  return `${percent > 0 ? '+' : ''}${percent}%`
+}
+
+function applyTargetPercent(percent) {
+  if (!selectedAsset.value) return
+
+  const current = Number(selectedAsset.value.current_price)
+  if (Number.isNaN(current) || current <= 0) return
+
+  const adjusted = roundToTwo(current * (1 + percent / 100))
+  if (adjusted === null || adjusted <= 0) return
+
+  trackForm.value.targetPrice = toPriceInput(adjusted)
+}
+
+function setTargetToCurrent() {
+  if (!selectedAsset.value) return
+  trackForm.value.targetPrice = toPriceInput(selectedAsset.value.current_price)
 }
 
 function formatPercent(value) {
@@ -477,6 +574,22 @@ onMounted(() => {
 .dashboard-nav-btn {
   text-transform: none;
   font-weight: 500;
+}
+
+.tracking-setup-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tracking-asset-meta {
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(var(--v-theme-on-surface), 0.035);
+}
+
+.quick-adjust-btn {
+  text-transform: none;
 }
 
 .track-btn {
