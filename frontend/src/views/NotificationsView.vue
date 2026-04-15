@@ -1,11 +1,12 @@
 <template>
   <v-container class="py-8">
-    <div class="d-flex align-center justify-space-between mb-6">
-      <h1 class="text-h4 font-weight-bold">{{ $t('notificationsPage.title') }}</h1>
+    <div class="d-flex align-center justify-space-between flex-wrap ga-3 mb-6 notifications-head">
+      <h1 class="text-h4 font-weight-bold notifications-title">{{ $t('notificationsPage.title') }}</h1>
       <v-btn
         v-if="store.notifications.length"
+        class="mark-all-btn"
         variant="tonal"
-        color="primary"
+        color="tertiary"
         rounded="xl"
         size="small"
         @click="store.markAllRead()"
@@ -14,11 +15,11 @@
       </v-btn>
     </div>
 
-    <v-progress-linear v-if="store.loading" indeterminate color="primary" class="mb-4" />
+    <v-progress-linear v-if="store.loading" indeterminate color="tertiary" class="mb-4" />
 
     <!-- Empty state -->
     <v-card v-if="!store.loading && store.notifications.length === 0" rounded="xl" class="pa-8 text-center">
-      <v-icon size="64" color="primary" class="mb-4">mdi-bell-check-outline</v-icon>
+      <v-icon size="64" color="tertiary" class="mb-4">mdi-bell-check-outline</v-icon>
       <h3 class="text-h6 mb-2">{{ $t('notificationsPage.noNotifications') }}</h3>
       <p class="text-medium-emphasis">{{ $t('notificationsPage.alertsHere') }}</p>
     </v-card>
@@ -179,5 +180,23 @@ onMounted(() => store.fetchNotifications(1))
 .notification-unread {
   border-left: 3px solid rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-primary), 0.03);
+}
+
+.notifications-head {
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .notifications-head {
+    align-items: stretch;
+  }
+
+  .notifications-title {
+    width: 100%;
+  }
+
+  .mark-all-btn {
+    width: 100%;
+  }
 }
 </style>
