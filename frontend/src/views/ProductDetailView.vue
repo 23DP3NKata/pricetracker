@@ -212,8 +212,8 @@ function changeColor(value) {
 
 function historyChangeColor(current, previous) {
   const diff = priceDiff(current, previous)
-  if (diff > 0) return 'error'
-  if (diff < 0) return 'success'
+  if (diff > 0) return 'success'
+  if (diff < 0) return 'error'
   return 'grey'
 }
 

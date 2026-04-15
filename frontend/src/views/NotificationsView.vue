@@ -115,10 +115,10 @@ function notificationColor(notification) {
   if (isTrackingStopped(notification)) return 'warning'
 
   if (Number(notification.new_price) < Number(notification.old_price)) {
-    return 'success'
+    return 'error'
   }
 
-  return 'error'
+  return 'success'
 }
 
 function notificationTitle(notification) {
