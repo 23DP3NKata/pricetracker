@@ -47,27 +47,21 @@
 
       <div class="section-label mb-2">{{ $t('adminCommon.users') }}</div>
       <v-row class="mb-2">
-        <v-col cols="12" md="4" sm="6">
+        <v-col cols="12" md="6" sm="6">
           <v-card rounded="xl" class="metric-card pa-4 h-100">
             <div class="card-top">
               <span class="metric-label">{{ $t('adminDashboard.usersTotal') }}</span>
             </div>
             <div class="metric-value">{{ formatCount(stats.users_total) }}</div>
-            <div class="metric-sub">{{ $t('adminDashboard.admins') }}: {{ formatCount(stats.admins_total) }}</div>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" md="4" sm="6">
-          <v-card rounded="xl" class="metric-card pa-4 h-100">
-            <div class="card-top">
-              <span class="metric-label">{{ $t('adminDashboard.usersStatus') }}</span>
+            <div class="metric-sub">
+              {{ $t('adminDashboard.admins') }}: {{ formatCount(stats.admins_total) }}
+              | {{ $t('adminDashboard.active') }}: {{ formatCount(stats.active_users) }}
+              | {{ $t('adminDashboard.blocked') }}: {{ formatCount(stats.blocked_users) }}
             </div>
-            <div class="metric-value">{{ formatCount(stats.active_users) }}</div>
-            <div class="metric-sub">{{ $t('adminDashboard.blocked') }}: {{ formatCount(stats.blocked_users) }}</div>
           </v-card>
         </v-col>
 
-        <v-col cols="12" md="4" sm="6">
+        <v-col cols="12" md="6" sm="6">
           <v-card rounded="xl" class="metric-card pa-4 h-100">
             <div class="card-top">
               <span class="metric-label">{{ $t('adminDashboard.trackingLinks') }}</span>
@@ -86,8 +80,10 @@
               <span class="metric-label">{{ $t('adminDashboard.products') }}</span>
             </div>
             <div class="metric-value">{{ formatCount(stats.products_total) }}</div>
-            <div class="metric-sub">{{ $t('adminDashboard.active') }}: {{ formatCount(stats.products_active) }}</div>
-            <div class="metric-sub">{{ $t('adminDashboard.hidden') }}: {{ formatCount(stats.products_hidden) }}</div>
+            <div class="metric-sub">
+              {{ $t('adminDashboard.active') }}: {{ formatCount(stats.products_active) }}
+              | {{ $t('adminDashboard.hidden') }}: {{ formatCount(stats.products_hidden) }}
+            </div>
           </v-card>
         </v-col>
 
