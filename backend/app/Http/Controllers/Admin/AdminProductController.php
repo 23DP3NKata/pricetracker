@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminAction;
 use App\Models\Product;
 use App\Models\SystemLog;
+use App\Models\UserProduct;
 use App\Services\CoinGeckoPriceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -210,6 +211,70 @@ class AdminProductController extends Controller
         return response()->json([
             'message' => 'Prices refreshed for active products.',
             'result' => $result,
+        ]);
+    }
+
+    public function stopAllProducts(Request $request): JsonResponse
+    {
+        $updated = Product::query()
+            ->where('status', 'active')
+            ->update(['status' => 'hidden']);
+
+        SystemLog::create([
+            'level' => 'warning',
+            'category' => 'admin',
+            'message' => sprintf(
+                'Admin #%d stopped API price updates for all products. Moved to hidden: %d',
+                $request->user()->id,
+                (int) $updated,
+            ),
+            'user_id' => $request->user()->id,
+            'user_name_snapshot' => $request->user()->name,
+        ]);
+
+        return response()->json([
+            'message' => 'Price updates stopped for all products.',
+            'updated' => (int) $updated,
+        ]);
+    }
+
+    public function startAllProducts(Request $request): JsonResponse
+    {
+        $productIds = Product::query()
+            ->where('status', 'hidden')
+            ->pluck('id');
+
+        $updated = 0;
+        $trackersScheduled = 0;
+
+        if ($productIds->isNotEmpty()) {
+            $updated = Product::query()
+                ->whereIn('id', $productIds)
+                ->update(['status' => 'active']);
+
+            $trackersScheduled = UserProduct::query()
+                ->whereIn('product_id', $productIds)
+                ->where('is_active', true)
+                ->update(['next_check_at' => now()]);
+        }
+
+        SystemLog::create([
+            'level' => 'info',
+            'category' => 'admin',
+            'message' => sprintf(
+                'Admin #%d resumed API price updates for all products. Moved to active: %d, trackers scheduled: %d',
+                $request->user()->id,
+                (int) $updated,
+                (int) $trackersScheduled,
+            ),
+            'user_id' => $request->user()->id,
+            'user_name_snapshot' => $request->user()->name,
+        ]);
+
+        return response()->json([
+            'message' => 'Price updates resumed for all products.',
+            'updated' => (int) $updated,
+            'trackers_scheduled' => (int) $trackersScheduled,
         ]);
     }
 }

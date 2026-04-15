@@ -228,4 +228,12 @@ export function refreshAllAdminProductPrices(data = {}) {
   return api.post('/api/admin/products/refresh-prices', data)
 }
 
+export function stopAllAdminProductUpdates(data = {}) {
+  return api.post('/api/admin/products/stop-all', data)
+}
+
+export function startAllAdminProductUpdates(data = {}) {
+  return api.post('/api/admin/products/start-all', data)
+}
+
 export default api

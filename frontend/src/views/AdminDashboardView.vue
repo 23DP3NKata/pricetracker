@@ -20,16 +20,32 @@
             <div class="text-subtitle-1 font-weight-bold">{{ $t('adminDashboard.requestsAllTime') }}</div>
             <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.forceRefreshAllPrices') }}</div>
           </div>
-          <v-btn
-            color="primary"
-            rounded="xl"
-            prepend-icon="mdi-refresh"
-            variant="flat"
-            :loading="refreshingAll"
-            @click="refreshAllPrices"
-          >
-            {{ $t('adminDashboard.forceRefreshAllPrices') }}
-          </v-btn>
+          <div class="d-flex flex-column ga-2 admin-actions-wrap">
+            <v-btn
+              class="admin-action-btn"
+              color="primary"
+              rounded="xl"
+              prepend-icon="mdi-refresh"
+              variant="flat"
+              :loading="refreshingAll"
+              :disabled="switchingAll"
+              @click="refreshAllPrices"
+            >
+              {{ $t('adminDashboard.forceRefreshAllPrices') }}
+            </v-btn>
+            <v-btn
+              class="admin-action-btn"
+              :color="stopStartButtonColor"
+              rounded="xl"
+              :prepend-icon="stopStartButtonIcon"
+              variant="tonal"
+              :loading="switchingAll"
+              :disabled="refreshingAll"
+              @click="toggleAllProducts"
+            >
+              {{ $t(stopStartButtonLabel) }}
+            </v-btn>
+          </div>
         </div>
 
         <div class="d-flex flex-wrap ga-2">
@@ -122,14 +138,34 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { getAdminDashboard, refreshAllAdminProductPrices } from '@/api'
+import {
+  getAdminDashboard,
+  refreshAllAdminProductPrices,
+  startAllAdminProductUpdates,
+  stopAllAdminProductUpdates,
+} from '@/api'
 
 const loading = ref(false)
 const refreshingAll = ref(false)
+const switchingAll = ref(false)
 const stats = ref(null)
 const route = useRoute()
+
+const canStopAllProducts = computed(() => Number(stats.value?.products_active || 0) > 0)
+const stopStartButtonLabel = computed(() => {
+  if (canStopAllProducts.value) return 'adminDashboard.stopAllProductUpdates'
+  return 'adminDashboard.startAllProductUpdates'
+})
+const stopStartButtonIcon = computed(() => {
+  if (canStopAllProducts.value) return 'mdi-stop-circle-outline'
+  return 'mdi-play-circle-outline'
+})
+const stopStartButtonColor = computed(() => {
+  if (canStopAllProducts.value) return 'warning'
+  return 'success'
+})
 
 function formatCount(value) {
   return new Intl.NumberFormat().format(Number(value || 0))
@@ -166,6 +202,20 @@ async function refreshAllPrices() {
     await loadStats()
   } finally {
     refreshingAll.value = false
+  }
+}
+
+async function toggleAllProducts() {
+  switchingAll.value = true
+  try {
+    if (canStopAllProducts.value) {
+      await stopAllAdminProductUpdates()
+    } else {
+      await startAllAdminProductUpdates()
+    }
+    await loadStats()
+  } finally {
+    switchingAll.value = false
   }
 }
 
@@ -239,5 +289,15 @@ onMounted(loadStats)
   margin-top: 4px;
   font-size: 0.82rem;
   color: rgba(var(--v-theme-on-surface), 0.72);
+}
+
+.admin-actions-wrap {
+  width: min(100%, 360px);
+  margin-left: auto;
+  align-items: flex-end;
+}
+
+.admin-action-btn {
+  width: 80%;
 }
 </style>

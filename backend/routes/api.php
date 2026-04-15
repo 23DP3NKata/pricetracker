@@ -70,6 +70,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             Route::get('/products', [AdminProductController::class, 'index']);
             Route::post('/products/refresh-prices', [AdminProductController::class, 'refreshAllPrices']);
+            Route::post('/products/stop-all', [AdminProductController::class, 'stopAllProducts']);
+            Route::post('/products/start-all', [AdminProductController::class, 'startAllProducts']);
             Route::patch('/products/{product}/status', [AdminProductController::class, 'updateStatus']);
             Route::post('/products/{product}/refresh-price', [AdminProductController::class, 'refreshPrice']);
 
