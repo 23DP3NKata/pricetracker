@@ -55,12 +55,19 @@ class CoinGeckoPriceService
         $errorDetails = [];
         $syncedProductIds = [];
 
-        $defaults = collect($this->supportedAssets())
-            ->map(fn(array $asset) => strtoupper((string) ($asset['symbol'] ?? '')))
-            ->filter()
-            ->values();
+        $defaults = [];
+        foreach ($this->supportedAssets() as $asset) {
+            $symbol = '';
+            if (isset($asset['symbol'])) {
+                $symbol = strtoupper((string) $asset['symbol']);
+            }
 
-        if ($defaults->isEmpty()) {
+            if ($symbol !== '') {
+                $defaults[] = $symbol;
+            }
+        }
+
+        if (empty($defaults)) {
             return ['synced' => 0, 'errors' => 0, 'error_details' => [], 'product_ids' => []];
         }
 
@@ -89,7 +96,11 @@ class CoinGeckoPriceService
                 continue;
             }
 
-            $price = isset($market['current_price']) ? (float) $market['current_price'] : null;
+            $price = null;
+            if (isset($market['current_price'])) {
+                $price = (float) $market['current_price'];
+            }
+
             if ($price === null || $price <= 0) {
                 $errors++;
                 $errorDetails[] = ['symbol' => $symbol, 'message' => 'Invalid price in market response.'];
@@ -109,12 +120,15 @@ class CoinGeckoPriceService
             ]);
             $product->save();
 
+            $change24h = null;
+            if (isset($market['price_change_percentage_24h'])) {
+                $change24h = (float) $market['price_change_percentage_24h'];
+            }
+
             $this->recordPrice(
                 $product,
                 $price,
-                isset($market['price_change_percentage_24h'])
-                    ? (float) $market['price_change_percentage_24h']
-                    : null
+                $change24h
             );
 
             $syncedProductIds[] = $product->id;
@@ -199,10 +213,19 @@ class CoinGeckoPriceService
 
             // Scheduler runs every 5 minutes, so all active trackers are checked each cycle.
             $dueItems = $query->with('product')->get()->unique('product_id');
-            $products = $dueItems
-                ->pluck('product')
-                ->filter(fn($product) => $product && $product->status === 'active')
-                ->keyBy('id');
+            $products = new Collection();
+            foreach ($dueItems as $item) {
+                $product = $item->product;
+                if (!$product) {
+                    continue;
+                }
+
+                if ($product->status !== 'active') {
+                    continue;
+                }
+
+                $products->put($product->id, $product);
+            }
         }
 
         $coinIdByProductId = [];
@@ -232,7 +255,7 @@ class CoinGeckoPriceService
             }
         }
 
-        $priceById = collect();
+        $priceById = new Collection();
         if (!empty($coinIdByProductId)) {
             try {
                 $priceById = $this->fetchSimplePriceData(array_values($coinIdByProductId));
@@ -259,8 +282,12 @@ class CoinGeckoPriceService
 
             try {
                 $priceData = $priceById->get($coinId);
-                $newPrice = $priceData ? (float) ($priceData['current_price'] ?? 0) : null;
-                $change24h = $priceData ? (float) ($priceData['price_change_percentage_24h'] ?? 0) : null;
+                $newPrice = null;
+                $change24h = null;
+                if ($priceData) {
+                    $newPrice = (float) ($priceData['current_price'] ?? 0);
+                    $change24h = (float) ($priceData['price_change_percentage_24h'] ?? 0);
+                }
 
                 if ($newPrice === null || $newPrice <= 0) {
                     throw new \RuntimeException('CoinGecko did not return a valid price.');
@@ -317,7 +344,9 @@ class CoinGeckoPriceService
             $change24h = null;
             if ($coinId !== '') {
                 $priceData = $this->fetchSimplePriceData([$coinId])->get($coinId);
-                $change24h = $priceData ? (float) ($priceData['price_change_percentage_24h'] ?? 0) : null;
+                if ($priceData) {
+                    $change24h = (float) ($priceData['price_change_percentage_24h'] ?? 0);
+                }
             }
 
             $this->recordPrice($product, $newPrice, $change24h);
@@ -363,7 +392,11 @@ class CoinGeckoPriceService
 
     protected function recordPrice(Product $product, float $newPrice, ?float $change24h = null): void
     {
-        $oldPrice = $product->current_price !== null ? (float) $product->current_price : null;
+        $oldPrice = null;
+        if ($product->current_price !== null) {
+            $oldPrice = (float) $product->current_price;
+        }
+
         $trend = 'flat';
 
         if ($oldPrice !== null) {
@@ -408,10 +441,18 @@ class CoinGeckoPriceService
             ->get()
             ->each(function (UserProduct $tracker) use ($product, $oldPrice, $newPrice) {
                 $target = (float) $tracker->target_price;
-                $condition = $tracker->notify_when ?? 'below';
+                $condition = 'below';
+                if ($tracker->notify_when !== null) {
+                    $condition = $tracker->notify_when;
+                }
 
-                $triggered = ($condition === 'above' && $newPrice >= $target)
-                    || ($condition === 'below' && $newPrice <= $target);
+                $triggered = false;
+                if ($condition === 'above' && $newPrice >= $target) {
+                    $triggered = true;
+                }
+                if ($condition === 'below' && $newPrice <= $target) {
+                    $triggered = true;
+                }
 
                 if (!$triggered) {
                     return;
@@ -421,8 +462,18 @@ class CoinGeckoPriceService
                     return;
                 }
 
-                $symbol = strtoupper((string) ($product->symbol ?: $product->title));
-                $currency = strtoupper((string) ($product->currency ?: $this->vsCurrency));
+                $symbolSource = $product->title;
+                if ($product->symbol) {
+                    $symbolSource = $product->symbol;
+                }
+
+                $currencySource = $this->vsCurrency;
+                if ($product->currency) {
+                    $currencySource = $product->currency;
+                }
+
+                $symbol = strtoupper((string) $symbolSource);
+                $currency = strtoupper((string) $currencySource);
 
                 Notification::create([
                     'user_id' => $tracker->user_id,
@@ -464,18 +515,36 @@ class CoinGeckoPriceService
 
         return Cache::remember($cacheKey, now()->addHours(6), function () use ($symbol) {
             $response = $this->httpGet('/search', ['query' => $symbol]);
-            $coins = collect($response->json('coins', []));
+            $coins = $response->json('coins', []);
+            if (!is_array($coins)) {
+                $coins = [];
+            }
 
-            if ($coins->isEmpty()) {
+            if (empty($coins)) {
                 throw new \RuntimeException("Asset {$symbol} not found in CoinGecko.");
             }
 
-            $exact = $coins
-                ->filter(fn(array $coin) => strtoupper((string) ($coin['symbol'] ?? '')) === $symbol)
-                ->sortBy(fn(array $coin) => $coin['market_cap_rank'] ?? PHP_INT_MAX)
-                ->first();
+            $exact = null;
+            $bestRank = PHP_INT_MAX;
 
-            $picked = $exact ?: $coins->first();
+            foreach ($coins as $coin) {
+                $coinSymbol = strtoupper((string) ($coin['symbol'] ?? ''));
+                if ($coinSymbol !== $symbol) {
+                    continue;
+                }
+
+                $rank = $coin['market_cap_rank'] ?? PHP_INT_MAX;
+                if ($rank < $bestRank) {
+                    $bestRank = $rank;
+                    $exact = $coin;
+                }
+            }
+
+            $picked = $exact;
+            if (!$picked) {
+                $picked = $coins[0] ?? [];
+            }
+
             $coinId = (string) ($picked['id'] ?? '');
 
             if ($coinId === '') {
@@ -488,10 +557,17 @@ class CoinGeckoPriceService
 
     protected function fetchMarketData(array $coinIds): Collection
     {
-        $ids = array_values(array_unique(array_filter(array_map(fn($id) => trim((string) $id), $coinIds))));
+        $ids = [];
+        foreach ($coinIds as $id) {
+            $value = trim((string) $id);
+            if ($value !== '') {
+                $ids[] = $value;
+            }
+        }
+        $ids = array_values(array_unique($ids));
 
         if (empty($ids)) {
-            return collect();
+            return new Collection();
         }
 
         sort($ids);
@@ -501,7 +577,7 @@ class CoinGeckoPriceService
 
         $cachedPayload = Cache::get($cacheKey);
         if (is_array($cachedPayload)) {
-            return collect($cachedPayload);
+            return new Collection($cachedPayload);
         }
 
         $lock = Cache::lock($lockKey, self::MARKETS_LOCK_SECONDS);
@@ -549,15 +625,26 @@ class CoinGeckoPriceService
             }
         }
 
-        return collect(is_array($cachedPayload) ? $cachedPayload : []);
+        if (!is_array($cachedPayload)) {
+            $cachedPayload = [];
+        }
+
+        return new Collection($cachedPayload);
     }
 
     protected function fetchSimplePriceData(array $coinIds): Collection
     {
-        $ids = array_values(array_unique(array_filter(array_map(fn($id) => trim((string) $id), $coinIds))));
+        $ids = [];
+        foreach ($coinIds as $id) {
+            $value = trim((string) $id);
+            if ($value !== '') {
+                $ids[] = $value;
+            }
+        }
+        $ids = array_values(array_unique($ids));
 
         if (empty($ids)) {
-            return collect();
+            return new Collection();
         }
 
         sort($ids);
@@ -567,7 +654,7 @@ class CoinGeckoPriceService
 
         $cachedPayload = Cache::get($cacheKey);
         if (is_array($cachedPayload)) {
-            return collect($cachedPayload);
+            return new Collection($cachedPayload);
         }
 
         $lock = Cache::lock($lockKey, self::MARKETS_LOCK_SECONDS);
@@ -607,23 +694,42 @@ class CoinGeckoPriceService
             }
         }
 
-        return collect(is_array($cachedPayload) ? $cachedPayload : []);
+        if (!is_array($cachedPayload)) {
+            $cachedPayload = [];
+        }
+
+        return new Collection($cachedPayload);
     }
 
     protected function normalizeSimplePricePayload(array $ids, mixed $raw): array
     {
-        $source = is_array($raw) ? $raw : [];
+        $source = [];
+        if (is_array($raw)) {
+            $source = $raw;
+        }
+
         $payload = [];
 
         foreach ($ids as $id) {
-            $entry = is_array($source[$id] ?? null) ? $source[$id] : [];
+            $entry = [];
+            if (is_array($source[$id] ?? null)) {
+                $entry = $source[$id];
+            }
+
+            $currentPrice = null;
+            if (isset($entry[$this->vsCurrency])) {
+                $currentPrice = (float) $entry[$this->vsCurrency];
+            }
+
+            $change24h = null;
+            if (isset($entry[$this->vsCurrency . '_24h_change'])) {
+                $change24h = (float) $entry[$this->vsCurrency . '_24h_change'];
+            }
 
             $payload[$id] = [
                 'id' => $id,
-                'current_price' => isset($entry[$this->vsCurrency]) ? (float) $entry[$this->vsCurrency] : null,
-                'price_change_percentage_24h' => isset($entry[$this->vsCurrency . '_24h_change'])
-                    ? (float) $entry[$this->vsCurrency . '_24h_change']
-                    : null,
+                'current_price' => $currentPrice,
+                'price_change_percentage_24h' => $change24h,
             ];
         }
 
@@ -650,7 +756,11 @@ class CoinGeckoPriceService
 
         if (!$response->successful()) {
             $status = $response->status();
-            $message = $response->json('error') ?: $response->body();
+            $message = $response->json('error');
+            if (!$message) {
+                $message = $response->body();
+            }
+
             throw new \RuntimeException("CoinGecko request failed ({$status}): {$message}");
         }
 

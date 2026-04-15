@@ -338,7 +338,12 @@ function emailErrors() {
 
 function emailPasswordErrors() {
   if (!emailSubmitted.value) return []
-  return emailForm.password ? [] : [t('settings.required')]
+
+  if (emailForm.password) {
+    return []
+  }
+
+  return [t('settings.required')]
 }
 
 function emailConfirmErrors() {
@@ -352,7 +357,12 @@ function emailConfirmErrors() {
 
 function currentPasswordErrors() {
   if (!passwordSubmitted.value) return []
-  return passwordForm.current_password ? [] : [t('settings.required')]
+
+  if (passwordForm.current_password) {
+    return []
+  }
+
+  return [t('settings.required')]
 }
 
 function newPasswordErrors() {
@@ -371,7 +381,12 @@ function confirmPasswordErrors() {
 
 function deletePasswordErrors() {
   if (!deleteSubmitted.value) return []
-  return deleteForm.password ? [] : [t('settings.required')]
+
+  if (deleteForm.password) {
+    return []
+  }
+
+  return [t('settings.required')]
 }
 
 function formatDate(dateStr) {

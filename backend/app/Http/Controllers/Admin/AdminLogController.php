@@ -99,8 +99,15 @@ class AdminLogController extends Controller
 
     protected function baseQuery(array $validated, string $search)
     {
-        $from = isset($validated['from']) ? Carbon::parse($validated['from'])->startOfDay() : null;
-        $to = isset($validated['to']) ? Carbon::parse($validated['to'])->endOfDay() : null;
+        $from = null;
+        if (isset($validated['from'])) {
+            $from = Carbon::parse($validated['from'])->startOfDay();
+        }
+
+        $to = null;
+        if (isset($validated['to'])) {
+            $to = Carbon::parse($validated['to'])->endOfDay();
+        }
 
         return SystemLog::query()
             ->when(isset($validated['level']), fn($query) => $query->where('level', $validated['level']))

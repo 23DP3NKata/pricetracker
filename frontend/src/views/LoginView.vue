@@ -91,7 +91,10 @@ const form = reactive({
 
 function resolveSafeRedirect() {
   const rawRedirect = route.query.redirect
-  const redirect = Array.isArray(rawRedirect) ? rawRedirect[0] : rawRedirect
+  let redirect = rawRedirect
+  if (Array.isArray(rawRedirect)) {
+    redirect = rawRedirect[0]
+  }
 
   if (typeof redirect !== 'string' || !redirect.startsWith('/')) {
     return '/dashboard'

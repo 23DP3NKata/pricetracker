@@ -91,6 +91,11 @@ class AdminProductController extends Controller
                 ]);
 
                 $reason = trim((string) ($validated['reason'] ?? ''));
+                $reasonSuffix = '';
+                if ($reason !== '') {
+                    $reasonSuffix = '. Reason: ' . $reason;
+                }
+
                 $message = sprintf(
                     'Admin #%d changed product #%d (%s) status: %s -> %s%s',
                     $request->user()->id,
@@ -98,7 +103,7 @@ class AdminProductController extends Controller
                     $product->title,
                     $oldStatus,
                     $newStatus,
-                    $reason !== '' ? '. Reason: ' . $reason : ''
+                    $reasonSuffix
                 );
 
                 SystemLog::create([
@@ -122,6 +127,10 @@ class AdminProductController extends Controller
     {
         $result = $this->priceService->refreshProductNow($product);
         $reason = trim((string) $request->input('reason', ''));
+        $reasonSuffix = '';
+        if ($reason !== '') {
+            $reasonSuffix = '. Reason: ' . $reason;
+        }
 
         if (($result['errors'] ?? 0) > 0) {
             $errorMessage = (string) (($result['error_details'][0]['message'] ?? 'Failed to refresh product price.'));
@@ -155,7 +164,7 @@ class AdminProductController extends Controller
                 $request->user()->id,
                 $product->id,
                 $product->title,
-                $reason !== '' ? '. Reason: ' . $reason : ''
+                $reasonSuffix
             ),
             'user_id' => $request->user()->id,
             'user_name_snapshot' => $request->user()->name,
@@ -174,15 +183,25 @@ class AdminProductController extends Controller
         $result = $this->priceService->refreshAllActiveProducts();
         $reason = trim((string) $request->input('reason', ''));
 
+        $level = 'info';
+        if (($result['errors'] ?? 0) > 0) {
+            $level = 'warning';
+        }
+
+        $reasonSuffix = '';
+        if ($reason !== '') {
+            $reasonSuffix = '. Reason: ' . $reason;
+        }
+
         SystemLog::create([
-            'level' => ($result['errors'] ?? 0) > 0 ? 'warning' : 'info',
+            'level' => $level,
             'category' => 'admin',
             'message' => sprintf(
                 'Admin #%d force refreshed all active products. Checked: %d, Errors: %d%s',
                 $request->user()->id,
                 (int) ($result['checked'] ?? 0),
                 (int) ($result['errors'] ?? 0),
-                $reason !== '' ? '. Reason: ' . $reason : ''
+                $reasonSuffix
             ),
             'user_id' => $request->user()->id,
             'user_name_snapshot' => $request->user()->name,

@@ -263,15 +263,21 @@ const notifyWhenOptions = computed(() => [
   { text: t('dashboard.conditionRiseToTarget'), value: 'above' },
 ])
 
-const quickAdjustPercents = computed(() => (
-  trackForm.value.notifyWhen === 'below' ? [-1, -2, -5, -10, -15] : [1, 2, 5, 10, 15]
-))
+const quickAdjustPercents = computed(() => {
+  if (trackForm.value.notifyWhen === 'below') {
+    return [-1, -2, -5, -10, -15]
+  }
 
-const coingeckoLogoSrc = computed(() => (
-  theme.global.current.value.dark
-    ? '/branding/CGAPI-Lockup-1.svg'
-    : '/branding/CGAPI-Lockup.svg'
-))
+  return [1, 2, 5, 10, 15]
+})
+
+const coingeckoLogoSrc = computed(() => {
+  if (theme.global.current.value.dark) {
+    return '/branding/CGAPI-Lockup-1.svg'
+  }
+
+  return '/branding/CGAPI-Lockup.svg'
+})
 
 const lastUpdatedLabel = computed(() => {
   if (!lastUpdatedAt.value) return ''
@@ -371,7 +377,14 @@ function sparklinePoints(history) {
     return '0,32 220,32'
   }
 
-  const values = rows.map((entry) => Number(entry.price)).filter((n) => !Number.isNaN(n))
+  const values = []
+  for (const row of rows) {
+    const price = Number(row?.price)
+    if (!Number.isNaN(price)) {
+      values.push(price)
+    }
+  }
+
   if (!values.length) {
     return '0,32 220,32'
   }
@@ -379,14 +392,16 @@ function sparklinePoints(history) {
   const min = Math.min(...values)
   const max = Math.max(...values)
   const span = max - min || 1
+  const points = []
 
-  return values
-    .map((price, index) => {
-      const x = (index / Math.max(values.length - 1, 1)) * 220
-      const y = 56 - ((price - min) / span) * 48
-      return `${x.toFixed(2)},${y.toFixed(2)}`
-    })
-    .join(' ')
+  for (let i = 0; i < values.length; i += 1) {
+    const price = values[i]
+    const x = (i / Math.max(values.length - 1, 1)) * 220
+    const y = 56 - ((price - min) / span) * 48
+    points.push(`${x.toFixed(2)},${y.toFixed(2)}`)
+  }
+
+  return points.join(' ')
 }
 
 async function loadTopAssets() {
@@ -402,12 +417,23 @@ async function loadTopAssets() {
       return
     }
 
-    const perAssetTimes = assets.value
-      .map((asset) => asset?.last_updated_at || null)
-      .filter(Boolean)
-      .sort()
+    let latest = null
+    let latestTime = 0
 
-    lastUpdatedAt.value = perAssetTimes.length ? perAssetTimes[perAssetTimes.length - 1] : null
+    for (const asset of assets.value) {
+      const raw = asset?.last_updated_at
+      if (!raw) continue
+
+      const time = new Date(raw).getTime()
+      if (Number.isNaN(time)) continue
+
+      if (!latest || time > latestTime) {
+        latest = raw
+        latestTime = time
+      }
+    }
+
+    lastUpdatedAt.value = latest
   } catch (e) {
     error.value = e.response?.data?.message || t('dashboard.failedLoadAssets')
   } finally {

@@ -107,8 +107,15 @@ class AdminActionController extends Controller
     protected function baseQuery(array $validated)
     {
         $search = trim((string) ($validated['search'] ?? ''));
-        $from = isset($validated['from']) ? Carbon::parse($validated['from'])->startOfDay() : null;
-        $to = isset($validated['to']) ? Carbon::parse($validated['to'])->endOfDay() : null;
+        $from = null;
+        if (isset($validated['from'])) {
+            $from = Carbon::parse($validated['from'])->startOfDay();
+        }
+
+        $to = null;
+        if (isset($validated['to'])) {
+            $to = Carbon::parse($validated['to'])->endOfDay();
+        }
 
         return AdminAction::query()
             ->when(isset($validated['action_type']), fn($query) => $query->where('action_type', $validated['action_type']))

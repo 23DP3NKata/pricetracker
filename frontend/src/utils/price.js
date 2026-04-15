@@ -33,7 +33,11 @@ export function formatDecimalPrice(price, locale) {
 
 export function toPriceInput(value) {
   const numeric = roundToTwo(value)
-  return numeric === null ? '' : numeric.toFixed(2)
+  if (numeric === null) {
+    return ''
+  }
+
+  return numeric.toFixed(2)
 }
 
 export function sanitizePriceInput(value, options = {}) {

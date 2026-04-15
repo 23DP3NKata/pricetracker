@@ -77,12 +77,26 @@ class AdminUserController extends Controller
             ]);
 
             $reason = trim((string) ($validated['reason'] ?? ''));
+            $actionType = 'unblock_user';
+            if ($newStatus === 'blocked') {
+                $actionType = 'block_user';
+            }
+
+            $actionReason = null;
+            if ($reason !== '') {
+                $actionReason = $reason;
+            }
+
+            $reasonSuffix = '';
+            if ($reason !== '') {
+                $reasonSuffix = '. Reason: ' . $reason;
+            }
 
             AdminAction::create([
                 'admin_user_id' => $request->user()->id,
-                'action_type' => $newStatus === 'blocked' ? 'block_user' : 'unblock_user',
+                'action_type' => $actionType,
                 'target_user_id' => $user->id,
-                'reason' => $reason !== '' ? $reason : null,
+                'reason' => $actionReason,
             ]);
 
             SystemLog::create([
@@ -95,7 +109,7 @@ class AdminUserController extends Controller
                     $user->email,
                     $oldStatus,
                     $newStatus,
-                    $reason !== '' ? '. Reason: ' . $reason : ''
+                    $reasonSuffix
                 ),
                 'user_id' => $request->user()->id,
                 'user_name_snapshot' => $request->user()->name,
@@ -116,6 +130,10 @@ class AdminUserController extends Controller
         ]);
 
         $reason = $validated['reason'] ?? null;
+        $reasonText = null;
+        if ($reason) {
+            $reasonText = (string) $reason;
+        }
 
         $oldLimit = (int) $user->monthly_limit;
         $newLimit = (int) $validated['monthly_limit'];
@@ -123,11 +141,21 @@ class AdminUserController extends Controller
         if ($oldLimit !== $newLimit) {
             $user->update(['monthly_limit' => $newLimit]);
 
+            $actionReason = "Monthly limit changed from {$oldLimit} to {$newLimit}";
+            if ($reasonText) {
+                $actionReason .= '. ' . $reasonText;
+            }
+
+            $logReasonSuffix = '';
+            if ($reasonText) {
+                $logReasonSuffix = '. Reason: ' . $reasonText;
+            }
+
             AdminAction::create([
                 'admin_user_id' => $request->user()->id,
                 'action_type' => 'change_user_limit',
                 'target_user_id' => $user->id,
-                'reason' => "Monthly limit changed from {$oldLimit} to {$newLimit}" . ($reason ? '. ' . $reason : ''),
+                'reason' => $actionReason,
             ]);
 
             SystemLog::create([
@@ -140,7 +168,7 @@ class AdminUserController extends Controller
                     $user->email,
                     $oldLimit,
                     $newLimit,
-                    $reason ? '. Reason: ' . $reason : ''
+                    $logReasonSuffix
                 ),
                 'user_id' => $request->user()->id,
                 'user_name_snapshot' => $request->user()->name,

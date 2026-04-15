@@ -110,8 +110,8 @@
 
                   <v-list-item
                     rounded="lg"
-                    :prepend-icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-                    :title="isDark ? $t('ux.themeLight') : $t('ux.themeDark')"
+                    :prepend-icon="themeToggleIcon()"
+                    :title="themeToggleTitle()"
                     @click="toggleTheme"
                   />
                 </v-list>
@@ -167,8 +167,8 @@
 
                   <v-list-item
                     rounded="lg"
-                    :prepend-icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-                    :title="isDark ? $t('ux.themeLight') : $t('ux.themeDark')"
+                    :prepend-icon="themeToggleIcon()"
+                    :title="themeToggleTitle()"
                     @click="toggleTheme"
                   />
                 </v-list>
@@ -189,10 +189,10 @@
         </div>
 
         <v-btn
-          :icon="drawer ? 'mdi-close' : 'mdi-menu'"
+          :icon="mobileMenuIcon()"
           variant="text"
           class="d-md-none ml-2"
-          :aria-label="drawer ? 'Close navigation menu' : 'Open navigation menu'"
+          :aria-label="mobileMenuAriaLabel()"
           @click="drawer = !drawer"
         />
       </v-container>
@@ -230,8 +230,8 @@
           <v-divider class="my-2" />
           <v-list-item
             rounded
-            :prepend-icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-            :title="isDark ? $t('ux.themeLight') : $t('ux.themeDark')"
+            :prepend-icon="themeToggleIcon()"
+            :title="themeToggleTitle()"
             @click="toggleTheme"
           />
           <v-menu v-model="languageMenuMobile" location="bottom" offset="8">
@@ -329,11 +329,19 @@ const currentLanguageLabel = computed(() => {
   if (i18n.locale.value === 'ru') return i18n.t('ux.languageRussian')
   return i18n.t('ux.languageEnglish')
 })
-const siteLogoSrc = computed(() => (isDark.value ? '/wombat.png' : '/wombat-blue.png'))
+const siteLogoSrc = computed(() => {
+  if (isDark.value) return '/wombat.png'
+  return '/wombat-blue.png'
+})
 const recentNotifications = computed(() => notificationsStore.notifications.slice(0, 5))
 
 function handleLogoClick() {
-  router.push(auth.isAuthenticated ? '/dashboard' : '/')
+  if (auth.isAuthenticated) {
+    router.push('/dashboard')
+    return
+  }
+
+  router.push('/')
 }
 
 function notificationText(notification) {
@@ -380,9 +388,33 @@ async function openNotification(notification) {
 }
 
 function toggleTheme() {
-  const nextTheme = isDark.value ? 'light' : 'dark'
+  let nextTheme = 'dark'
+  if (isDark.value) {
+    nextTheme = 'light'
+  }
+
   theme.change(nextTheme)
   localStorage.setItem('pt-theme', nextTheme)
+}
+
+function themeToggleIcon() {
+  if (isDark.value) return 'mdi-weather-sunny'
+  return 'mdi-weather-night'
+}
+
+function themeToggleTitle() {
+  if (isDark.value) return i18n.t('ux.themeLight')
+  return i18n.t('ux.themeDark')
+}
+
+function mobileMenuIcon() {
+  if (drawer.value) return 'mdi-close'
+  return 'mdi-menu'
+}
+
+function mobileMenuAriaLabel() {
+  if (drawer.value) return 'Close navigation menu'
+  return 'Open navigation menu'
 }
 
 function setLanguage(lang) {

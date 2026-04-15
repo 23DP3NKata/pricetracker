@@ -123,9 +123,11 @@ async function handleRegister() {
     await auth.register(form)
     router.push('/verify-email')
   } catch (e) {
-    if (e.response?.status === 422) {
-      errors.value = e.response.data.errors
+    if (e.response?.status !== 422) {
+      return
     }
+
+    errors.value = e.response.data.errors
   }
 }
 </script>

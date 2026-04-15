@@ -6,6 +6,7 @@ use App\Models\PriceHistory;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class PriceHistoryController extends Controller
 {
@@ -30,7 +31,7 @@ class PriceHistoryController extends Controller
         $history = $historyQuery->get(['id', 'price', 'checked_at']);
 
         if ($history->isEmpty() && $product->current_price !== null) {
-            $history = collect([[
+            $history = new Collection([[
                 'id' => null,
                 'price' => $product->current_price,
                 'checked_at' => $product->last_successful_check ?? $product->created_at,

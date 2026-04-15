@@ -105,7 +105,12 @@ const form = reactive({
 
 onMounted(() => {
   form.token = route.params.token || ''
-  form.email = route.query.email || ''
+  const rawEmail = route.query.email
+  if (Array.isArray(rawEmail)) {
+    form.email = rawEmail[0] || ''
+  } else {
+    form.email = rawEmail || ''
+  }
 })
 
 async function handleSubmit() {
@@ -118,10 +123,18 @@ async function handleSubmit() {
     const { data } = await resetPassword(form)
     successMsg.value = data.status || t('authRecovery.resetSuccessFallback')
   } catch (e) {
-    errorMsg.value = e.response?.data?.message
-      || e.response?.data?.errors?.email?.[0]
-      || e.response?.data?.errors?.password?.[0]
-      || t('authRecovery.failedReset')
+    let message = e.response?.data?.message
+    if (!message) {
+      message = e.response?.data?.errors?.email?.[0]
+    }
+    if (!message) {
+      message = e.response?.data?.errors?.password?.[0]
+    }
+    if (!message) {
+      message = t('authRecovery.failedReset')
+    }
+
+    errorMsg.value = message
   } finally {
     loading.value = false
   }

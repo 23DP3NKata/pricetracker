@@ -9,6 +9,7 @@ use App\Models\UserProduct;
 use App\Services\CoinGeckoPriceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -64,26 +65,42 @@ class ProductController extends Controller
 
         $trackedMap = [];
         if ($request->user()) {
-            $trackedMap = UserProduct::query()
+            $trackedIds = UserProduct::query()
                 ->where('user_id', $request->user()->id)
                 ->whereIn('product_id', $assetIds)
                 ->where('is_active', true)
                 ->whereNull('last_notified_at')
                 ->pluck('id', 'product_id')
-                ->map(fn() => true)
                 ->all();
+
+            foreach ($trackedIds as $productId => $unusedId) {
+                $trackedMap[$productId] = true;
+            }
         }
 
-        $data = $assets->map(function (Product $asset) use ($historyByAsset, $trackedMap) {
-            $points = collect($historyByAsset->get($asset->id, []))
-                ->take(-48)
-                ->map(fn($row) => [
+        $data = [];
+        foreach ($assets as $asset) {
+            $rows = $historyByAsset->get($asset->id, []);
+            if ($rows instanceof Collection) {
+                $rows = $rows->all();
+            }
+
+            $rows = array_slice($rows, -48);
+
+            $points = [];
+            foreach ($rows as $row) {
+                $points[] = [
                     'price' => (float) $row->price,
                     'checked_at' => optional($row->checked_at)->toDateTimeString(),
-                ])
-                ->values();
+                ];
+            }
 
-            return [
+            $lastUpdated = $asset->updated_at;
+            if ($asset->last_successful_check) {
+                $lastUpdated = $asset->last_successful_check;
+            }
+
+            $data[] = [
                 'id' => $asset->id,
                 'title' => $asset->title,
                 'symbol' => $asset->symbol,
@@ -94,17 +111,30 @@ class ProductController extends Controller
                 'currency' => $asset->currency,
                 'tracking_count' => $asset->tracking_count,
                 'product_page_url' => $asset->product_page_url,
-                'last_updated_at' => optional($asset->last_successful_check ?? $asset->updated_at)?->toIso8601String(),
+                'last_updated_at' => optional($lastUpdated)?->toIso8601String(),
                 'is_tracked' => (bool) ($trackedMap[$asset->id] ?? false),
                 'history' => $points,
             ];
-        })->values();
+        }
 
-        $lastUpdatedAt = $assets
-            ->map(fn(Product $asset) => $asset->last_successful_check ?? $asset->updated_at)
-            ->filter()
-            ->sortDesc()
-            ->first();
+        $lastUpdatedAt = null;
+        $lastUpdatedTs = null;
+        foreach ($assets as $asset) {
+            $candidate = $asset->updated_at;
+            if ($asset->last_successful_check) {
+                $candidate = $asset->last_successful_check;
+            }
+
+            if (!$candidate) {
+                continue;
+            }
+
+            $candidateTs = $candidate->getTimestamp();
+            if ($lastUpdatedTs === null || $candidateTs > $lastUpdatedTs) {
+                $lastUpdatedTs = $candidateTs;
+                $lastUpdatedAt = $candidate;
+            }
+        }
 
         return response()->json([
             'data' => $data,
@@ -155,7 +185,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Add an asset to tracking by ticker symbol (e.g., BTC, ETH, LTC).
+     * Add an asset to tracking by ticker symbol (BTC, ETH, LTC).
      */
     public function store(Request $request): JsonResponse
     {
@@ -223,9 +253,10 @@ class ProductController extends Controller
         }
 
         $notifyWhen = $validated['notify_when'] ?? 'below';
-        $targetPrice = array_key_exists('target_price', $validated) && $validated['target_price'] !== null
-            ? (float) $validated['target_price']
-            : null;
+        $targetPrice = null;
+        if (array_key_exists('target_price', $validated) && $validated['target_price'] !== null) {
+            $targetPrice = (float) $validated['target_price'];
+        }
 
         $directionError = $this->validateTargetDirection($product, $targetPrice, $notifyWhen);
         if ($directionError) {
@@ -292,12 +323,13 @@ class ProductController extends Controller
             ->orderByDesc('created_at')
             ->paginate($perPage);
 
-        $rules->getCollection()->transform(function (UserProduct $rule) {
+        $normalizedRules = [];
+        foreach ($rules->getCollection() as $rule) {
             if (!$rule->product) {
-                return null;
+                continue;
             }
 
-            return [
+            $normalizedRules[] = [
                 'id' => $rule->id,
                 'user_id' => $rule->user_id,
                 'product_id' => $rule->product_id,
@@ -318,9 +350,9 @@ class ProductController extends Controller
                     'currency' => $rule->product->currency,
                 ],
             ];
-        });
+        }
 
-        $rules->setCollection($rules->getCollection()->filter()->values());
+        $rules->setCollection(new Collection($normalizedRules));
 
         return response()->json($rules);
     }
@@ -342,10 +374,23 @@ class ProductController extends Controller
 
         $product = Product::query()->find($tracking->product_id);
         if ($product) {
-            $notifyWhen = $validated['notify_when'] ?? (string) ($tracking->notify_when ?: 'below');
-            $targetPrice = array_key_exists('target_price', $validated)
-                ? ($validated['target_price'] !== null ? (float) $validated['target_price'] : null)
-                : ($tracking->target_price !== null ? (float) $tracking->target_price : null);
+            $notifyWhen = 'below';
+            if ($tracking->notify_when) {
+                $notifyWhen = (string) $tracking->notify_when;
+            }
+
+            if (array_key_exists('notify_when', $validated)) {
+                $notifyWhen = $validated['notify_when'];
+            }
+
+            $targetPrice = null;
+            if (array_key_exists('target_price', $validated)) {
+                if ($validated['target_price'] !== null) {
+                    $targetPrice = (float) $validated['target_price'];
+                }
+            } elseif ($tracking->target_price !== null) {
+                $targetPrice = (float) $tracking->target_price;
+            }
 
             $directionError = $this->validateTargetDirection($product, $targetPrice, $notifyWhen);
             if ($directionError) {
@@ -355,13 +400,17 @@ class ProductController extends Controller
 
         $updates = $validated;
         $hasActiveUpdate = array_key_exists('is_active', $validated);
-        $effectiveActive = $hasActiveUpdate ? (bool) $validated['is_active'] : (bool) $tracking->is_active;
+        $effectiveActive = (bool) $tracking->is_active;
+        if ($hasActiveUpdate) {
+            $effectiveActive = (bool) $validated['is_active'];
+        }
 
         if ($hasActiveUpdate) {
             $updates['check_interval'] = self::TRACKING_INTERVAL_MINUTES;
-            $updates['next_check_at'] = $effectiveActive
-                ? now()->addMinutes(self::TRACKING_INTERVAL_MINUTES)
-                : null;
+            $updates['next_check_at'] = null;
+            if ($effectiveActive) {
+                $updates['next_check_at'] = now()->addMinutes(self::TRACKING_INTERVAL_MINUTES);
+            }
         }
 
         if (array_key_exists('target_price', $validated) && $validated['target_price'] === null) {
@@ -449,6 +498,11 @@ class ProductController extends Controller
             ->orderByDesc('checked_at')
             ->first();
 
+        $checkedAt = optional($product->last_successful_check)->toDateTimeString();
+        if ($latestHistory?->checked_at) {
+            $checkedAt = optional($latestHistory->checked_at)->toDateTimeString();
+        }
+
         return response()->json([
             'product_id' => $product->id,
             'symbol' => $product->symbol,
@@ -456,7 +510,7 @@ class ProductController extends Controller
             'currency' => $product->currency,
             'price_change_24h' => $product->price_change_24h,
             'trend' => $product->trend,
-            'checked_at' => optional($latestHistory?->checked_at)->toDateTimeString() ?: optional($product->last_successful_check)->toDateTimeString(),
+            'checked_at' => $checkedAt,
             'next_check_at' => optional($tracking->next_check_at)->toDateTimeString(),
         ]);
     }
@@ -481,10 +535,23 @@ class ProductController extends Controller
             return response()->json(['message' => 'Asset not found in your tracking list.'], 404);
         }
 
-        $notifyWhen = $validated['notify_when'] ?? (string) ($pivot->notify_when ?: 'below');
-        $targetPrice = array_key_exists('target_price', $validated)
-            ? ($validated['target_price'] !== null ? (float) $validated['target_price'] : null)
-            : ($pivot->target_price !== null ? (float) $pivot->target_price : null);
+        $notifyWhen = 'below';
+        if ($pivot->notify_when) {
+            $notifyWhen = (string) $pivot->notify_when;
+        }
+
+        if (array_key_exists('notify_when', $validated)) {
+            $notifyWhen = $validated['notify_when'];
+        }
+
+        $targetPrice = null;
+        if (array_key_exists('target_price', $validated)) {
+            if ($validated['target_price'] !== null) {
+                $targetPrice = (float) $validated['target_price'];
+            }
+        } elseif ($pivot->target_price !== null) {
+            $targetPrice = (float) $pivot->target_price;
+        }
 
         $directionError = $this->validateTargetDirection($product, $targetPrice, $notifyWhen);
         if ($directionError) {
@@ -494,13 +561,17 @@ class ProductController extends Controller
         $updates = $validated;
 
         $hasActiveUpdate = array_key_exists('is_active', $validated);
-        $effectiveActive = $hasActiveUpdate ? (bool) $validated['is_active'] : (bool) $pivot->is_active;
+        $effectiveActive = (bool) $pivot->is_active;
+        if ($hasActiveUpdate) {
+            $effectiveActive = (bool) $validated['is_active'];
+        }
 
         if ($hasActiveUpdate) {
             $updates['check_interval'] = self::TRACKING_INTERVAL_MINUTES;
-            $updates['next_check_at'] = $effectiveActive
-                ? now()->addMinutes(self::TRACKING_INTERVAL_MINUTES)
-                : null;
+            $updates['next_check_at'] = null;
+            if ($effectiveActive) {
+                $updates['next_check_at'] = now()->addMinutes(self::TRACKING_INTERVAL_MINUTES);
+            }
         }
 
         if (array_key_exists('target_price', $validated) && $validated['target_price'] === null) {

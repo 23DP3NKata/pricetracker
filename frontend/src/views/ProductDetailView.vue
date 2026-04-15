@@ -88,14 +88,14 @@
               <th>
                 <button type="button" class="table-sort-btn" @click="setHistorySort('date')">
                   {{ $t('productDetail.date') }}
-                  <v-icon v-if="historySortKey === 'date'" size="14">{{ historySortDir === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+                  <v-icon v-if="historySortKey === 'date'" size="14">{{ sortArrowIcon() }}</v-icon>
                 </button>
               </th>
               <th class="text-right">{{ $t('productDetail.price') }}</th>
               <th class="text-right">
                 <button type="button" class="table-sort-btn table-sort-btn-right" @click="setHistorySort('change')">
                   {{ $t('productDetail.change') }}
-                  <v-icon v-if="historySortKey === 'change'" size="14">{{ historySortDir === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+                  <v-icon v-if="historySortKey === 'change'" size="14">{{ sortArrowIcon() }}</v-icon>
                 </button>
               </th>
             </tr>
@@ -107,7 +107,7 @@
               <td class="text-right">
                 <template v-if="i < displayedHistoryData.length - 1">
                   <v-chip
-                    :color="priceDiff(entry.price, displayedHistoryData[i + 1].price) > 0 ? 'error' : priceDiff(entry.price, displayedHistoryData[i + 1].price) < 0 ? 'success' : 'grey'"
+                    :color="historyChangeColor(entry.price, displayedHistoryData[i + 1].price)"
                     size="x-small"
                     variant="tonal"
                   >
@@ -169,7 +169,13 @@ const showAllHistory = ref(false)
 const HISTORY_INITIAL_LIMIT = 10
 
 function statusLabel(status) {
-  return status === 'active' ? t('productDetail.active') : t('productDetail.paused')
+  if (status === 'active') return t('productDetail.active')
+  return t('productDetail.paused')
+}
+
+function sortArrowIcon() {
+  if (historySortDir.value === 'desc') return 'mdi-arrow-down'
+  return 'mdi-arrow-up'
 }
 
 function trendLabel(trend) {
@@ -204,6 +210,13 @@ function changeColor(value) {
   return 'grey'
 }
 
+function historyChangeColor(current, previous) {
+  const diff = priceDiff(current, previous)
+  if (diff > 0) return 'error'
+  if (diff < 0) return 'success'
+  return 'grey'
+}
+
 const productPageUrl = computed(() => {
   const url = (product.value?.product_page_url || '').trim()
 
@@ -232,12 +245,11 @@ function formatPriceDiff(current, previous) {
 }
 
 function formatDate(dateStr) {
-  // Backend may return UTC without timezone suffix ("YYYY-MM-DD HH:mm:ss").
-  // Normalize to ISO UTC and then render in user local time.
   const hasTimezone = /[zZ]$|[+-]\d{2}:\d{2}$/.test(dateStr)
-  const normalized = hasTimezone
-    ? dateStr
-    : `${dateStr.replace(' ', 'T')}Z`
+  let normalized = dateStr
+  if (!hasTimezone) {
+    normalized = `${dateStr.replace(' ', 'T')}Z`
+  }
 
   const date = new Date(normalized)
   if (Number.isNaN(date.getTime())) return t('productDetail.noData')
@@ -249,12 +261,17 @@ function parseHistoryDate(dateStr) {
   if (!dateStr) return Number.NEGATIVE_INFINITY
 
   const hasTimezone = /[zZ]$|[+-]\d{2}:\d{2}$/.test(dateStr)
-  const normalized = hasTimezone
-    ? dateStr
-    : `${dateStr.replace(' ', 'T')}Z`
+  let normalized = dateStr
+  if (!hasTimezone) {
+    normalized = `${dateStr.replace(' ', 'T')}Z`
+  }
 
   const date = new Date(normalized)
-  return Number.isNaN(date.getTime()) ? Number.NEGATIVE_INFINITY : date.getTime()
+  if (Number.isNaN(date.getTime())) {
+    return Number.NEGATIVE_INFINITY
+  }
+
+  return date.getTime()
 }
 
 const sortedHistoryData = computed(() => {
@@ -265,12 +282,18 @@ const sortedHistoryData = computed(() => {
   }
 
   if (historySortKey.value === 'change') {
-    // Compute change on chronological order first, then sort by absolute change.
     const byDateAsc = [...rows].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
-    const withChange = byDateAsc.map((entry, index) => ({
-      entry,
-      change: index < byDateAsc.length - 1 ? priceDiff(entry.price, byDateAsc[index + 1].price) : null,
-    }))
+    const withChange = []
+
+    for (let i = 0; i < byDateAsc.length; i += 1) {
+      const entry = byDateAsc[i]
+      let change = null
+      if (i < byDateAsc.length - 1) {
+        change = priceDiff(entry.price, byDateAsc[i + 1].price)
+      }
+
+      withChange.push({ entry, change })
+    }
 
     withChange.sort((a, b) => {
       const aVal = a.change === null ? Number.NEGATIVE_INFINITY : Math.abs(a.change)
@@ -278,7 +301,11 @@ const sortedHistoryData = computed(() => {
       return aVal - bVal
     })
 
-    rows.splice(0, rows.length, ...withChange.map((row) => row.entry))
+    const reordered = []
+    for (const row of withChange) {
+      reordered.push(row.entry)
+    }
+    rows.splice(0, rows.length, ...reordered)
   }
 
   if (historySortDir.value === 'desc') {
@@ -297,13 +324,20 @@ const displayedHistoryData = computed(() => {
 
 const chartData = computed(() => {
   const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
+  const labels = []
+  const points = []
+
+  for (const entry of asc) {
+    labels.push(formatDate(entry.checked_at))
+    points.push(Number(entry.price))
+  }
 
   return {
-    labels: asc.map((entry) => formatDate(entry.checked_at)),
+    labels,
     datasets: [
       {
         label: 'Price',
-        data: asc.map((entry) => Number(entry.price)),
+        data: points,
         borderColor: '#1976d2',
         backgroundColor: 'rgba(25, 118, 210, 0.15)',
         borderWidth: 2,
@@ -359,7 +393,11 @@ const chartOptions = computed(() => ({
 
 function setHistorySort(key) {
   if (historySortKey.value === key) {
-    historySortDir.value = historySortDir.value === 'desc' ? 'asc' : 'desc'
+    if (historySortDir.value === 'desc') {
+      historySortDir.value = 'asc'
+    } else {
+      historySortDir.value = 'desc'
+    }
     return
   }
 
@@ -378,7 +416,11 @@ async function loadProduct() {
 
 async function loadHistory() {
   try {
-    const days = historyDays.value === -1 ? null : historyDays.value
+    let days = historyDays.value
+    if (historyDays.value === -1) {
+      days = null
+    }
+
     const { data } = await getPriceHistory(route.params.id, days)
     historyData.value = data.history || []
     historyStats.value = data.stats || null

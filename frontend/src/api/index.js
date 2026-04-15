@@ -129,7 +129,11 @@ export function deleteTrackingRule(id) {
 
 // Price History
 export function getPriceHistory(productId, days = 30) {
-  const params = days === null ? {} : { days }
+  let params = {}
+  if (days !== null) {
+    params = { days }
+  }
+
   return api.get(`/api/products/${productId}/prices`, { params })
 }
 

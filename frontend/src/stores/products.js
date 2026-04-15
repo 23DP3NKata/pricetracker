@@ -24,7 +24,10 @@ export const useProductsStore = defineStore('products', () => {
   }
 
   async function fetchProducts(params = {}) {
-    const query = typeof params === 'number' ? { page: params } : params
+    let query = params
+    if (typeof params === 'number') {
+      query = { page: params }
+    }
 
     loading.value = true
     try {
@@ -64,7 +67,15 @@ export const useProductsStore = defineStore('products', () => {
 
   async function removeProduct(id) {
     await apiDeleteProduct(id)
-    products.value = products.value.filter(p => p.id !== id)
+
+    const next = []
+    for (const item of products.value) {
+      if (item.id !== id) {
+        next.push(item)
+      }
+    }
+
+    products.value = next
   }
 
   async function fetchPriceHistory(productId, days = 30) {

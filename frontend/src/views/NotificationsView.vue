@@ -40,7 +40,7 @@
         >
           <v-card-text class="pa-4 d-flex align-center ga-4">
             <v-avatar
-              :color="isTrackingStopped(n) ? 'warning' : (Number(n.new_price) < Number(n.old_price) ? 'success' : 'error')"
+              :color="notificationColor(n)"
               variant="tonal"
               size="48"
             >
@@ -48,11 +48,11 @@
             </v-avatar>
 
             <div class="flex-grow-1">
-              <div class="font-weight-bold">{{ n.product?.title || $t('notificationsPage.productFallback', { id: n.product_id }) }}</div>
+              <div class="font-weight-bold">{{ notificationTitle(n) }}</div>
               <div class="text-body-2">
                 {{ formatPrice(n.old_price) }} → {{ formatPrice(n.new_price) }}
                 <v-chip
-                  :color="isTrackingStopped(n) ? 'warning' : (Number(n.new_price) < Number(n.old_price) ? 'success' : 'error')"
+                  :color="notificationColor(n)"
                   size="x-small"
                   variant="tonal"
                   class="ml-1"
@@ -103,14 +103,36 @@ function isTrackingStopped(notification) {
 
 function notificationIcon(notification) {
   if (isTrackingStopped(notification)) return 'mdi-alert-circle-outline'
-  return Number(notification.new_price) < Number(notification.old_price)
-    ? 'mdi-arrow-down-bold'
-    : 'mdi-arrow-up-bold'
+
+  if (Number(notification.new_price) < Number(notification.old_price)) {
+    return 'mdi-arrow-down-bold'
+  }
+
+  return 'mdi-arrow-up-bold'
+}
+
+function notificationColor(notification) {
+  if (isTrackingStopped(notification)) return 'warning'
+
+  if (Number(notification.new_price) < Number(notification.old_price)) {
+    return 'success'
+  }
+
+  return 'error'
+}
+
+function notificationTitle(notification) {
+  const title = notification?.product?.title
+  if (title) return title
+  return t('notificationsPage.productFallback', { id: notification.product_id })
 }
 
 function notificationChipText(notification) {
   if (isTrackingStopped(notification)) return t('notificationsPage.trackingStopped')
-  return `${Number(notification.new_price) < Number(notification.old_price) ? '' : '+'}${(Number(notification.new_price) - Number(notification.old_price)).toFixed(2)} €`
+
+  const diff = Number(notification.new_price) - Number(notification.old_price)
+  const sign = diff >= 0 ? '+' : ''
+  return `${sign}${diff.toFixed(2)} €`
 }
 
 function formatPrice(price) {

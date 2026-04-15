@@ -20,7 +20,7 @@
 
       <v-progress-linear
         :model-value="usagePercent"
-        :color="usagePercent >= 90 ? 'error' : usagePercent >= 70 ? 'warning' : 'primary'"
+        :color="usageColor()"
         rounded
         height="10"
       />
@@ -266,7 +266,7 @@
 
           <div>
             <v-chip size="small" variant="text" color="primary" class="flat-chip">
-              {{ item.notify_when === 'above' ? $t('tracking.conditionAbove') : $t('tracking.conditionBelow') }}
+              {{ conditionLabel(item.notify_when) }}
             </v-chip>
           </div>
 
@@ -341,26 +341,43 @@ const usagePercent = computed(() => {
   return Math.min(100, Math.round((checksUsed.value / monthlyLimit.value) * 100))
 })
 
-const filteredRows = computed(() => {
-  let list = [...rows.value]
+function usageColor() {
+  if (usagePercent.value >= 90) return 'error'
+  if (usagePercent.value >= 70) return 'warning'
+  return 'primary'
+}
 
+function conditionLabel(value) {
+  if (value === 'above') return t('tracking.conditionAbove')
+  return t('tracking.conditionBelow')
+}
+
+const filteredRows = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
-  if (query) {
-    list = list.filter((item) => {
+  const list = []
+
+  for (const item of rows.value) {
+    if (query) {
       const symbol = String(item.symbol || '').toLowerCase()
       const title = String(item.title || '').toLowerCase()
-      return symbol.includes(query) || title.includes(query)
-    })
-  }
+      if (!symbol.includes(query) && !title.includes(query)) {
+        continue
+      }
+    }
 
-  if (conditionFilter.value !== 'all') {
-    list = list.filter((item) => item.notify_when === conditionFilter.value)
-  }
+    if (conditionFilter.value !== 'all' && item.notify_when !== conditionFilter.value) {
+      continue
+    }
 
-  if (statusFilter.value === 'active') {
-    list = list.filter((item) => item.is_active && !item.last_notified_at)
-  } else if (statusFilter.value === 'completed') {
-    list = list.filter((item) => !!item.last_notified_at)
+    if (statusFilter.value === 'active' && (!item.is_active || item.last_notified_at)) {
+      continue
+    }
+
+    if (statusFilter.value === 'completed' && !item.last_notified_at) {
+      continue
+    }
+
+    list.push(item)
   }
 
   const numberValue = (value) => {
@@ -368,43 +385,62 @@ const filteredRows = computed(() => {
     return Number.isNaN(n) ? 0 : n
   }
 
-  const compareSymbolAsc = (a, b) => String(a.symbol || '').localeCompare(String(b.symbol || ''))
-  const compareSymbolDesc = (a, b) => String(b.symbol || '').localeCompare(String(a.symbol || ''))
-  const compareCurrentDesc = (a, b) => numberValue(b.current_price) - numberValue(a.current_price)
-  const compareCurrentAsc = (a, b) => numberValue(a.current_price) - numberValue(b.current_price)
-  const compareTargetDesc = (a, b) => numberValue(b.target_price) - numberValue(a.target_price)
-  const compareTargetAsc = (a, b) => numberValue(a.target_price) - numberValue(b.target_price)
-
-  switch (sortBy.value) {
-    case 'symbolDesc':
-      list.sort(compareSymbolDesc)
-      break
-    case 'currentPriceDesc':
-      list.sort(compareCurrentDesc)
-      break
-    case 'currentPriceAsc':
-      list.sort(compareCurrentAsc)
-      break
-    case 'targetPriceDesc':
-      list.sort(compareTargetDesc)
-      break
-    case 'targetPriceAsc':
-      list.sort(compareTargetAsc)
-      break
-    case 'symbolAsc':
-    default:
-      list.sort(compareSymbolAsc)
-      break
+  if (sortBy.value === 'symbolDesc') {
+    list.sort((a, b) => String(b.symbol || '').localeCompare(String(a.symbol || '')))
+  } else if (sortBy.value === 'currentPriceDesc') {
+    list.sort((a, b) => numberValue(b.current_price) - numberValue(a.current_price))
+  } else if (sortBy.value === 'currentPriceAsc') {
+    list.sort((a, b) => numberValue(a.current_price) - numberValue(b.current_price))
+  } else if (sortBy.value === 'targetPriceDesc') {
+    list.sort((a, b) => numberValue(b.target_price) - numberValue(a.target_price))
+  } else if (sortBy.value === 'targetPriceAsc') {
+    list.sort((a, b) => numberValue(a.target_price) - numberValue(b.target_price))
+  } else {
+    list.sort((a, b) => String(a.symbol || '').localeCompare(String(b.symbol || '')))
   }
 
   return list
 })
 
-const completedRows = computed(() => filteredRows.value.filter((r) => !!r.last_notified_at))
-const activeRows = computed(() => filteredRows.value.filter((r) => r.is_active && !r.last_notified_at))
+const completedRows = computed(() => {
+  const list = []
+  for (const row of filteredRows.value) {
+    if (row.last_notified_at) {
+      list.push(row)
+    }
+  }
+  return list
+})
 
-const completedCount = computed(() => rows.value.filter((r) => !!r.last_notified_at).length)
-const pendingCount = computed(() => rows.value.filter((r) => r.is_active && !r.last_notified_at).length)
+const activeRows = computed(() => {
+  const list = []
+  for (const row of filteredRows.value) {
+    if (row.is_active && !row.last_notified_at) {
+      list.push(row)
+    }
+  }
+  return list
+})
+
+const completedCount = computed(() => {
+  let count = 0
+  for (const row of rows.value) {
+    if (row.last_notified_at) {
+      count += 1
+    }
+  }
+  return count
+})
+
+const pendingCount = computed(() => {
+  let count = 0
+  for (const row of rows.value) {
+    if (row.is_active && !row.last_notified_at) {
+      count += 1
+    }
+  }
+  return count
+})
 
 function statusLabel(item) {
   if (item.last_notified_at) return t('tracking.completed')
@@ -423,10 +459,6 @@ function formatPrice(price, currency = 'USD') {
 function formatPriceHint(price) {
   if (roundToTwo(price) === null) return ' '
   return `≈ ${formatDecimalPrice(price)} USD`
-}
-
-function normalizeEditablePrice(value) {
-  return toPriceInput(value)
 }
 
 function normalizeItemTargetInput(item, value) {
@@ -456,11 +488,12 @@ async function loadUsage() {
 async function loadTracking() {
   const { data } = await getTrackingRules({ per_page: 100 })
   const entries = Array.isArray(data?.data) ? data.data : []
+  const list = []
 
-  rows.value = entries.map((entry) => {
+  for (const entry of entries) {
     const product = entry.product || {}
 
-    return {
+    list.push({
       id: entry.id,
       product_id: entry.product_id,
       title: product.title || '-',
@@ -468,7 +501,7 @@ async function loadTracking() {
       image_url: product.image_url || null,
       current_price: product.current_price,
       currency: product.currency || 'USD',
-      target_price: normalizeEditablePrice(entry.target_price),
+      target_price: toPriceInput(entry.target_price),
       notify_when: entry.notify_when || 'below',
       is_active: entry.is_active ?? true,
       next_check_at: entry.next_check_at || null,
@@ -476,8 +509,10 @@ async function loadTracking() {
       last_notified_at: entry.last_notified_at || null,
       _saving: false,
       _deleting: false,
-    }
-  })
+    })
+  }
+
+  rows.value = list
 }
 
 async function reloadAll() {

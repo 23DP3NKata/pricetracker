@@ -68,9 +68,15 @@ async function handleSubmit() {
     const { data } = await forgotPassword(email.value)
     successMsg.value = data.status || t('authRecovery.resetLinkSentFallback')
   } catch (e) {
-    errorMsg.value = e.response?.data?.message
-      || e.response?.data?.errors?.email?.[0]
-      || t('authRecovery.failedSendReset')
+    let message = e.response?.data?.message
+    if (!message) {
+      message = e.response?.data?.errors?.email?.[0]
+    }
+    if (!message) {
+      message = t('authRecovery.failedSendReset')
+    }
+
+    errorMsg.value = message
   } finally {
     loading.value = false
   }

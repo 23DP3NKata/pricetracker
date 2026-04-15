@@ -3,11 +3,11 @@
     <div class="d-flex align-center justify-space-between mb-6 ga-3 flex-wrap">
       <h1 class="text-h4 font-weight-bold">{{ $t('adminUsers.title') }}</h1>
       <div class="d-flex ga-2 flex-wrap">
-        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="isTabActive('admin-dashboard') ? 'flat' : 'tonal'" :color="isTabActive('admin-dashboard') ? 'primary' : undefined">{{ $t('adminCommon.dashboard') }}</v-btn>
-        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="isTabActive('admin-users') ? 'flat' : 'tonal'" :color="isTabActive('admin-users') ? 'primary' : undefined">{{ $t('adminCommon.users') }}</v-btn>
-        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="isTabActive('admin-products') ? 'flat' : 'tonal'" :color="isTabActive('admin-products') ? 'primary' : undefined">{{ $t('adminCommon.products') }}</v-btn>
-        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="isTabActive('admin-logs') ? 'flat' : 'tonal'" :color="isTabActive('admin-logs') ? 'primary' : undefined">{{ $t('adminCommon.logs') }}</v-btn>
-        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="isTabActive('admin-actions') ? 'flat' : 'tonal'" :color="isTabActive('admin-actions') ? 'primary' : undefined">{{ $t('adminCommon.actions') }}</v-btn>
+        <v-btn to="/admin/dashboard" rounded="xl" prepend-icon="mdi-shield-account" :variant="tabVariant('admin-dashboard')" :color="tabColor('admin-dashboard')">{{ $t('adminCommon.dashboard') }}</v-btn>
+        <v-btn to="/admin/users" rounded="xl" prepend-icon="mdi-account-group-outline" :variant="tabVariant('admin-users')" :color="tabColor('admin-users')">{{ $t('adminCommon.users') }}</v-btn>
+        <v-btn to="/admin/products" rounded="xl" prepend-icon="mdi-package-variant-closed" :variant="tabVariant('admin-products')" :color="tabColor('admin-products')">{{ $t('adminCommon.products') }}</v-btn>
+        <v-btn to="/admin/logs" rounded="xl" prepend-icon="mdi-text-box-search-outline" :variant="tabVariant('admin-logs')" :color="tabColor('admin-logs')">{{ $t('adminCommon.logs') }}</v-btn>
+        <v-btn to="/admin/actions" rounded="xl" prepend-icon="mdi-history" :variant="tabVariant('admin-actions')" :color="tabColor('admin-actions')">{{ $t('adminCommon.actions') }}</v-btn>
       </div>
     </div>
 
@@ -194,6 +194,16 @@ function isTabActive(name) {
   return route.name === name
 }
 
+function tabVariant(name) {
+  if (isTabActive(name)) return 'flat'
+  return 'tonal'
+}
+
+function tabColor(name) {
+  if (isTabActive(name)) return 'primary'
+  return undefined
+}
+
 const filters = reactive({
   search: '',
   status: null,
@@ -233,7 +243,11 @@ const statusDialog = reactive({
 
 function toggleSort(field) {
   if (filters.sort_by === field) {
-    filters.sort_dir = filters.sort_dir === 'asc' ? 'desc' : 'asc'
+    if (filters.sort_dir === 'asc') {
+      filters.sort_dir = 'desc'
+    } else {
+      filters.sort_dir = 'asc'
+    }
   } else {
     filters.sort_by = field
     filters.sort_dir = 'asc'
@@ -243,15 +257,18 @@ function toggleSort(field) {
 
 function sortIcon(field) {
   if (filters.sort_by !== field) return 'mdi-swap-vertical'
-  return filters.sort_dir === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+  if (filters.sort_dir === 'asc') return 'mdi-arrow-up'
+  return 'mdi-arrow-down'
 }
 
 function roleLabel(role) {
-  return role === 'admin' ? t('adminUsers.adminRole') : t('adminUsers.userRole')
+  if (role === 'admin') return t('adminUsers.adminRole')
+  return t('adminUsers.userRole')
 }
 
 function statusLabel(status) {
-  return status === 'blocked' ? t('adminUsers.blocked') : t('adminUsers.active')
+  if (status === 'blocked') return t('adminUsers.blocked')
+  return t('adminUsers.active')
 }
 
 async function loadUsers(page = 1) {
@@ -277,7 +294,11 @@ async function loadUsers(page = 1) {
 
 function openStatusDialog(user) {
   statusDialog.user = user
-  statusDialog.nextStatus = user.status === 'active' ? 'blocked' : 'active'
+  if (user.status === 'active') {
+    statusDialog.nextStatus = 'blocked'
+  } else {
+    statusDialog.nextStatus = 'active'
+  }
   statusDialog.reason = ''
   statusDialog.open = true
 }

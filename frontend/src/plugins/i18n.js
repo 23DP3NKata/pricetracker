@@ -1485,7 +1485,10 @@ messages.ru = {
 }
 
 const savedLocale = localStorage.getItem('pt-language')
-const resolvedLocale = ['en', 'lv', 'ru'].includes(savedLocale) ? savedLocale : 'lv'
+let resolvedLocale = 'lv'
+if (['en', 'lv', 'ru'].includes(savedLocale)) {
+  resolvedLocale = savedLocale
+}
 
 const i18n = createI18n({
   legacy: false,
