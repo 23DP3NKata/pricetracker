@@ -24,6 +24,13 @@ class VerifyEmailController extends Controller
         }
 
         if ($user->hasVerifiedEmail()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Email already verified.',
+                    'verified' => true,
+                ]);
+            }
+
             return redirect()->intended(
                 config('app.frontend_url').'/dashboard?verified=1'
             );
@@ -31,6 +38,13 @@ class VerifyEmailController extends Controller
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Email verified successfully.',
+                'verified' => true,
+            ]);
         }
 
         return redirect()->intended(

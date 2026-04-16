@@ -1,11 +1,23 @@
 <template>
   <v-container class="auth-container" style="max-width: 520px;">
     <v-card rounded="xl" class="pa-6 text-center">
-      <v-icon color="warning" size="64" class="mb-4">mdi-email-alert-outline</v-icon>
+      <v-icon :color="iconColor" size="64" class="mb-4">{{ iconName }}</v-icon>
       <h2 class="mb-2">{{ $t('authRecovery.verifyTitle') }}</h2>
-      <p class="text-medium-emphasis mb-6">
-        {{ $t('authRecovery.verifySubtitle', { email: auth.user?.email || '' }) }}
+      <p class="text-medium-emphasis mb-4">
+        {{ subtitleText }}
       </p>
+
+      <v-alert v-if="isAutoVerifying" type="info" variant="tonal" rounded="lg" class="mb-4">
+        {{ $t('authRecovery.verifyingFromLink') }}
+      </v-alert>
+
+      <v-alert v-else-if="verifyDone && verifySuccess" type="success" variant="tonal" rounded="lg" class="mb-4">
+        {{ $t('authRecovery.verifySuccessMessage') }}
+      </v-alert>
+
+      <v-alert v-else-if="verifyDone && !verifySuccess" type="error" variant="tonal" rounded="lg" class="mb-4">
+        {{ verifyError || $t('authRecovery.verifyInvalidOrExpired') }}
+      </v-alert>
 
       <v-alert v-if="sent" type="success" variant="tonal" rounded="lg" class="mb-4">
         {{ $t('authRecovery.verifyLinkSent') }}
@@ -24,7 +36,8 @@
         rounded="xl"
         size="large"
         block
-        :loading="loading"
+        :loading="loading || isAutoVerifying"
+        :disabled="isAutoVerifying"
         @click="resend"
         prepend-icon="mdi-email-fast-outline"
       >
@@ -32,28 +45,82 @@
       </v-btn>
 
       <v-btn
-        to="/dashboard"
+        :to="verifySuccess ? '/login' : '/dashboard'"
         variant="text"
         rounded="xl"
         class="mt-3"
       >
-        {{ $t('authRecovery.continueToDashboard') }}
+        {{ verifySuccess ? $t('authRecovery.goToLogin') : $t('authRecovery.continueToDashboard') }}
       </v-btn>
     </v-card>
   </v-container>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { resendVerification } from '@/api'
+import { resendVerification, verifyEmail } from '@/api'
 
 const auth = useAuthStore()
+const route = useRoute()
 const { t } = useI18n()
 const loading = ref(false)
 const sent = ref(false)
 const error = ref(null)
+const isAutoVerifying = ref(false)
+const verifyDone = ref(false)
+const verifySuccess = ref(false)
+const verifyError = ref('')
+
+const hasLinkData = computed(() => {
+  return Boolean(route.params.id && route.params.hash && route.query.expires && route.query.signature)
+})
+
+const subtitleText = computed(() => {
+  if (hasLinkData.value) {
+    return t('authRecovery.verifyFromLinkSubtitle')
+  }
+
+  return t('authRecovery.verifySubtitle', { email: auth.user?.email || '' })
+})
+
+const iconName = computed(() => {
+  if (isAutoVerifying.value) return 'mdi-email-sync-outline'
+  if (verifyDone.value && verifySuccess.value) return 'mdi-email-check-outline'
+  if (verifyDone.value && !verifySuccess.value) return 'mdi-email-remove-outline'
+  return 'mdi-email-alert-outline'
+})
+
+const iconColor = computed(() => {
+  if (isAutoVerifying.value) return 'info'
+  if (verifyDone.value && verifySuccess.value) return 'success'
+  if (verifyDone.value && !verifySuccess.value) return 'error'
+  return 'warning'
+})
+
+async function autoVerifyFromLink() {
+  if (!hasLinkData.value) return
+
+  isAutoVerifying.value = true
+  verifyDone.value = false
+  verifySuccess.value = false
+  verifyError.value = ''
+
+  try {
+    await verifyEmail(route.params.id, route.params.hash, {
+      expires: route.query.expires,
+      signature: route.query.signature,
+    })
+    verifySuccess.value = true
+  } catch (e) {
+    verifyError.value = e.response?.data?.message || t('authRecovery.verifyFailedTryResend')
+  } finally {
+    verifyDone.value = true
+    isAutoVerifying.value = false
+  }
+}
 
 async function resend() {
   loading.value = true
@@ -68,6 +135,10 @@ async function resend() {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  autoVerifyFromLink()
+})
 </script>
 
 <style scoped>

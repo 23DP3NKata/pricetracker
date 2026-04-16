@@ -167,6 +167,10 @@ export function resendVerification() {
   return api.post('/api/email/verification-notification')
 }
 
+export function verifyEmail(id, hash, params = {}) {
+  return api.get(`/api/verify-email/${id}/${hash}`, { params })
+}
+
 // Admin - Users
 export function getAdminDashboard() {
   return api.get('/api/admin/dashboard')

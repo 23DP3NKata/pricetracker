@@ -179,7 +179,13 @@ const messages = {
       verifyLimitInfo: 'Without verification your monthly check limit is 10. After verifying it will be raised to 90.',
       resendVerificationEmail: 'Resend Verification Email',
       continueToDashboard: 'Continue to Dashboard',
-      failedSendVerification: 'Failed to send verification email'
+      failedSendVerification: 'Failed to send verification email',
+      verifyFromLinkSubtitle: 'We are verifying your email from the link in your message.',
+      verifyingFromLink: 'Checking verification link...',
+      verifySuccessMessage: 'Email verified successfully. You can now sign in.',
+      verifyInvalidOrExpired: 'Could not verify email. The link is invalid or expired.',
+      verifyFailedTryResend: 'Could not verify email. Try requesting a new verification email.',
+      goToLogin: 'Go to Sign In'
     },
 
     dashboard: {
@@ -685,7 +691,13 @@ const messages = {
       verifyLimitInfo: 'Bez apstiprināšanas tavs mēneša pārbaudes limits ir 10. Pēc apstiprināšanas tas tiks palielināts līdz 90.',
       resendVerificationEmail: 'Nosūtīt apstiprināšanas e-pastu vēlreiz',
       continueToDashboard: 'Turpināt uz pārskatu',
-      failedSendVerification: 'Neizdevās nosūtīt apstiprināšanas e-pastu'
+      failedSendVerification: 'Neizdevās nosūtīt apstiprināšanas e-pastu',
+      verifyFromLinkSubtitle: 'Mēs apstiprinām tavu e-pastu, izmantojot saiti no vēstules.',
+      verifyingFromLink: 'Pārbaudām apstiprināšanas saiti...',
+      verifySuccessMessage: 'E-pasts veiksmīgi apstiprināts. Tagad vari pierakstīties.',
+      verifyInvalidOrExpired: 'Neizdevās apstiprināt e-pastu. Saite nav derīga vai ir beigusies.',
+      verifyFailedTryResend: 'Neizdevās apstiprināt e-pastu. Mēģini nosūtīt apstiprināšanas e-pastu vēlreiz.',
+      goToLogin: 'Doties uz pierakstīšanos'
     },
 
     dashboard: {
@@ -1193,6 +1205,12 @@ messages.ru = {
     resendVerificationEmail: 'Отправить письмо подтверждения повторно',
     continueToDashboard: 'Продолжить в панель',
     failedSendVerification: 'Не удалось отправить письмо подтверждения',
+    verifyFromLinkSubtitle: 'Подтверждаем ваш email по ссылке из письма.',
+    verifyingFromLink: 'Проверяем ссылку подтверждения...',
+    verifySuccessMessage: 'Почта успешно подтверждена. Теперь можно войти в аккаунт.',
+    verifyInvalidOrExpired: 'Не удалось подтвердить почту. Ссылка недействительна или устарела.',
+    verifyFailedTryResend: 'Не удалось подтвердить почту. Попробуйте отправить письмо подтверждения повторно.',
+    goToLogin: 'Перейти ко входу',
   },
   dashboard: {
     ...messages.en.dashboard,
