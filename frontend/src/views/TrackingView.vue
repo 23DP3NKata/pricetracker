@@ -10,97 +10,84 @@
       </v-btn>
     </div>
 
-    <v-card rounded="xl" class="pa-4 mb-5">
-      <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-2">
-        <div class="text-subtitle-1 font-weight-medium">{{ $t('tracking.monthlyUsage') }}</div>
+    <div class="usage-block mb-5">
+      <div class="usage-head">
+        <div class="text-subtitle-1 font-weight-bold">{{ $t('tracking.monthlyUsage') }}</div>
         <div class="text-body-2">
-          <strong>{{ checksUsed }}</strong> / {{ monthlyLimit }}
+          <span class="font-weight-bold">{{ checksUsed }}</span> / {{ monthlyLimit }}
         </div>
       </div>
 
       <v-progress-linear
         :model-value="usagePercent"
         :color="usageColor()"
-        rounded
-        height="10"
+        height="8"
       />
 
-      <div class="d-flex flex-wrap ga-2 mt-3 text-caption text-medium-emphasis">
-        <v-chip size="small" variant="text" color="primary" class="flat-chip">{{ $t('tracking.activeSection') }}: {{ pendingCount }}</v-chip>
-        <v-chip size="small" variant="text" color="success" class="flat-chip">{{ $t('tracking.completed') }}: {{ completedCount }}</v-chip>
+      <div class="usage-sub text-caption text-medium-emphasis">
+        <span>{{ $t('tracking.activeSection') }}: {{ pendingCount }}</span>
+        <span>{{ $t('tracking.completed') }}: {{ completedCount }}</span>
       </div>
-    </v-card>
+    </div>
 
-    <v-card rounded="xl" class="pa-4 mb-5">
-      <div class="text-subtitle-1 font-weight-medium mb-3">{{ $t('tracking.filterSortTitle') }}</div>
-      <v-row dense>
-        <v-col cols="12" md="4">
-          <v-text-field
-            v-model="searchQuery"
-            :label="$t('tracking.search')"
-            :placeholder="$t('tracking.searchPlaceholder')"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            rounded="lg"
-            density="comfortable"
-            hide-details
-          />
-        </v-col>
+    <div class="filters-inline mb-5">
+      <v-text-field
+        v-model="searchQuery"
+        :placeholder="$t('tracking.searchPlaceholder')"
+        variant="plain"
+        density="compact"
+        hide-details
+        class="filter-field filter-search"
+      />
 
-        <v-col cols="12" sm="6" md="3">
-          <v-select
-            v-model="statusFilter"
-            :items="statusFilterOptions"
-            item-title="text"
-            item-value="value"
-            :label="$t('tracking.filterStatus')"
-            variant="outlined"
-            rounded="lg"
-            density="comfortable"
-            hide-details
-          />
-        </v-col>
+      <v-select
+        v-model="statusFilter"
+        :items="statusFilterOptions"
+        item-title="text"
+        item-value="value"
+        variant="plain"
+        density="compact"
+        placeholder="Status"
+        persistent-placeholder
+        hide-details
+        class="filter-field"
+      />
 
-        <v-col cols="12" sm="6" md="3">
-          <v-select
-            v-model="conditionFilter"
-            :items="conditionFilterOptions"
-            item-title="text"
-            item-value="value"
-            :label="$t('tracking.filterCondition')"
-            variant="outlined"
-            rounded="lg"
-            density="comfortable"
-            hide-details
-          />
-        </v-col>
+      <v-select
+        v-model="conditionFilter"
+        :items="conditionFilterOptions"
+        item-title="text"
+        item-value="value"
+        variant="plain"
+        density="compact"
+        placeholder="Condition"
+        persistent-placeholder
+        hide-details
+        class="filter-field"
+      />
 
-        <v-col cols="12" sm="8" md="2">
-          <v-select
-            v-model="sortBy"
-            :items="sortOptions"
-            item-title="text"
-            item-value="value"
-            :label="$t('tracking.sortBy')"
-            variant="outlined"
-            rounded="lg"
-            density="comfortable"
-            hide-details
-          />
-        </v-col>
-      </v-row>
+      <v-select
+        v-model="sortBy"
+        :items="sortOptions"
+        item-title="text"
+        item-value="value"
+        variant="plain"
+        density="compact"
+        placeholder="Sort by"
+        persistent-placeholder
+        hide-details
+        class="filter-field"
+      />
 
-      <div class="d-flex justify-end mt-3">
-        <v-btn
-          variant="text"
-          rounded
-          prepend-icon="mdi-filter-remove-outline"
-          @click="resetFilters"
-        >
-          {{ $t('tracking.resetFilters') }}
-        </v-btn>
-      </div>
-    </v-card>
+      <v-btn
+        variant="text"
+        rounded
+        class="reset-filters-btn"
+        @click="resetFilters"
+      >
+        {{ $t('tracking.resetFilters') }}
+      </v-btn>
+    </div>
 
     <v-alert v-if="error" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="error = null">
       {{ error }}
@@ -116,178 +103,197 @@
 
     <div v-if="activeRows.length" class="mb-5">
       <div class="section-header">
-        <h2 class="text-subtitle-1 font-weight-bold mb-0 section-title section-title--active">{{ $t('tracking.activeSection') }}</h2>
-        <v-chip size="small" color="primary" variant="text" class="flat-chip">{{ activeRows.length }}</v-chip>
+        <h2 class="text-subtitle-1 font-weight-bold mb-0 section-title">{{ $t('tracking.activeSection') }}</h2>
+        <span class="section-counter">{{ activeRows.length }}</span>
       </div>
 
-      <v-card rounded="xl" class="list-shell">
-      <div class="list-head d-none d-md-grid">
-        <div>{{ $t('tracking.asset') }}</div>
-        <div>{{ $t('tracking.currentPrice') }}</div>
-        <div>{{ $t('tracking.target') }}</div>
-        <div>{{ $t('tracking.condition') }}</div>
-        <div>{{ $t('tracking.status') }}</div>
-        <div>{{ $t('tracking.actions') }}</div>
-      </div>
+      <div class="list-shell">
+        <div class="table-scroll">
+          <div class="list-head">
+            <div>#</div>
+            <div>Coin</div>
+            <div>{{ $t('tracking.currentPrice') }}</div>
+            <div>{{ $t('tracking.target') }}</div>
+            <div>{{ $t('tracking.condition') }}</div>
+            <div class="status-head">{{ $t('tracking.status') }}</div>
+            <div class="text-right">{{ $t('tracking.actions') }}</div>
+          </div>
 
-      <div v-for="item in activeRows" :key="item.id" class="list-row">
-        <router-link :to="`/products/${item.product_id}`" class="asset-link">
-          <div class="asset-col">
-            <v-avatar size="30" color="grey-lighten-4" class="mr-2">
-              <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
-              <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
-            </v-avatar>
+          <div v-for="(item, index) in activeRows" :key="item.id" class="list-row">
+            <div class="index-col">{{ index + 1 }}</div>
+
+            <router-link :to="`/products/${item.product_id}`" class="asset-link">
+              <div class="asset-col">
+                <v-avatar size="30" color="grey-lighten-4" class="mr-2">
+                  <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
+                  <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
+                </v-avatar>
+                <div>
+                  <div class="asset-symbol">{{ item.symbol }}</div>
+                  <div class="asset-title text-medium-emphasis">{{ item.title }}</div>
+                </div>
+              </div>
+            </router-link>
+
             <div>
-              <div class="asset-symbol">{{ item.symbol }}</div>
-              <div class="asset-title text-medium-emphasis">{{ item.title }}</div>
+              <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
+              <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
+            </div>
+
+            <div>
+              <v-text-field
+                v-model="item.target_price"
+                @update:model-value="(value) => normalizeItemTargetInput(item, value)"
+                type="text"
+                inputmode="decimal"
+                maxlength="18"
+                min="0"
+                step="0.01"
+                density="compact"
+                variant="outlined"
+                hide-details
+                class="modern-input"
+                rounded="lg"
+              />
+            </div>
+
+            <div>
+              <v-select
+                v-model="item.notify_when"
+                :items="notifyWhenOptions"
+                item-title="text"
+                item-value="value"
+                density="compact"
+                variant="outlined"
+                hide-details
+                class="modern-input"
+                rounded="lg"
+              />
+            </div>
+
+            <div class="status-cell">
+              <span class="status-text">{{ statusLabel(item) }}</span>
+              <div class="text-caption text-medium-emphasis mt-1" v-if="item.last_notified_at">
+                {{ $t('tracking.completedAt') }}: {{ formatDate(item.last_notified_at) }}
+              </div>
+            </div>
+
+            <div class="actions-col">
+              <v-tooltip :text="$t('tracking.save')" location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    size="x-small"
+                    variant="plain"
+                    class="icon-action-btn"
+                    :loading="item._saving"
+                    icon="mdi-content-save-outline"
+                    :aria-label="$t('tracking.save')"
+                    @click="saveItem(item)"
+                  />
+                </template>
+              </v-tooltip>
+
+              <v-tooltip :text="$t('tracking.remove')" location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    size="x-small"
+                    variant="plain"
+                    class="icon-action-btn"
+                    :loading="item._deleting"
+                    icon="mdi-trash-can-outline"
+                    :aria-label="$t('tracking.remove')"
+                    @click="removeItem(item)"
+                  />
+                </template>
+              </v-tooltip>
             </div>
           </div>
-        </router-link>
-
-        <div>
-          <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
-          <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
-        </div>
-
-        <div class="target-col field-stack">
-          <div class="field-label">{{ $t('tracking.target') }}</div>
-          <v-text-field
-            v-model="item.target_price"
-            @update:model-value="(value) => normalizeItemTargetInput(item, value)"
-            type="text"
-            inputmode="decimal"
-            maxlength="18"
-            counter="18"
-            min="0"
-            step="0.01"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            class="target-input modern-input"
-            rounded="lg"
-          />
-        </div>
-
-        <div class="condition-col field-stack">
-          <div class="field-label">{{ $t('tracking.condition') }}</div>
-          <v-select
-            v-model="item.notify_when"
-            :items="notifyWhenOptions"
-            item-title="text"
-            item-value="value"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            class="condition-select modern-input"
-            rounded="lg"
-          />
-        </div>
-
-        <div class="status-cell">
-          <v-chip size="small" variant="text" :color="statusColor(item)" class="status-chip flat-chip" rounded="lg">
-            {{ statusLabel(item) }}
-          </v-chip>
-          <div class="text-caption text-medium-emphasis mt-1" v-if="item.last_notified_at">
-            {{ $t('tracking.completedAt') }}: {{ formatDate(item.last_notified_at) }}
-          </div>
-        </div>
-
-        <div class="d-flex ga-2 justify-end actions-col">
-          <v-tooltip :text="$t('tracking.save')" location="top">
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                size="small"
-                color="primary"
-                variant="text"
-                rounded
-                class="save-btn"
-                :loading="item._saving"
-                icon="mdi-content-save-outline"
-                :aria-label="$t('tracking.save')"
-                @click="saveItem(item)"
-              />
-            </template>
-          </v-tooltip>
-
-          <v-tooltip :text="$t('tracking.remove')" location="top">
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                size="small"
-                color="error"
-                variant="text"
-                rounded
-                class="remove-btn"
-                :loading="item._deleting"
-                icon="mdi-trash-can-outline"
-                :aria-label="$t('tracking.remove')"
-                @click="removeItem(item)"
-              />
-            </template>
-          </v-tooltip>
         </div>
       </div>
-      </v-card>
     </div>
 
     <div v-if="completedRows.length" class="mb-5">
       <div class="section-header">
-        <h2 class="text-subtitle-1 font-weight-bold mb-0">{{ $t('tracking.completedSection') }}</h2>
-        <v-chip size="small" color="success" variant="text" class="flat-chip">{{ completedRows.length }}</v-chip>
+        <h2 class="text-subtitle-1 font-weight-bold mb-0 section-title">{{ $t('tracking.completedSection') }}</h2>
+        <span class="section-counter">{{ completedRows.length }}</span>
       </div>
 
-      <v-card rounded="xl" class="list-shell completed-shell">
-        <div class="list-head d-none d-md-grid">
-          <div>{{ $t('tracking.asset') }}</div>
-          <div>{{ $t('tracking.currentPrice') }}</div>
-          <div>{{ $t('tracking.condition') }}</div>
-          <div>{{ $t('tracking.status') }}</div>
-        </div>
+      <div class="list-shell">
+        <div class="table-scroll">
+          <div class="list-head">
+            <div>#</div>
+            <div>Coin</div>
+            <div>{{ $t('tracking.currentPrice') }}</div>
+            <div>{{ $t('tracking.target') }}</div>
+            <div>{{ $t('tracking.condition') }}</div>
+            <div class="status-head">{{ $t('tracking.status') }}</div>
+            <div class="text-right">{{ $t('tracking.actions') }}</div>
+          </div>
 
-        <div v-for="item in completedRows" :key="item.id" class="list-row list-row--completed">
-          <router-link :to="`/products/${item.product_id}`" class="asset-link">
-            <div class="asset-col">
-              <v-avatar size="30" color="grey-lighten-4" class="mr-2">
-                <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
-                <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
-              </v-avatar>
-              <div>
-                <div class="asset-symbol">{{ item.symbol }}</div>
-                <div class="asset-title text-medium-emphasis">{{ item.title }}</div>
+          <div v-for="(item, index) in completedRows" :key="item.id" class="list-row list-row--completed">
+            <div class="index-col">{{ index + 1 }}</div>
+
+            <router-link :to="`/products/${item.product_id}`" class="asset-link">
+              <div class="asset-col">
+                <v-avatar size="30" color="grey-lighten-4" class="mr-2">
+                  <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
+                  <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
+                </v-avatar>
+                <div>
+                  <div class="asset-symbol">{{ item.symbol }}</div>
+                  <div class="asset-title text-medium-emphasis">{{ item.title }}</div>
+                </div>
+              </div>
+            </router-link>
+
+            <div>
+              <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
+              <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
+            </div>
+
+            <div class="text-body-2 text-medium-emphasis">
+              {{ formatPrice(item.target_price, item.currency) }}
+            </div>
+
+            <div class="text-body-2 text-medium-emphasis">
+              {{ conditionLabel(item.notify_when) }}
+            </div>
+
+            <div class="status-cell">
+              <span class="status-text">{{ statusLabel(item) }}</span>
+              <div class="text-caption text-medium-emphasis mt-1" v-if="item.last_notified_at">
+                {{ $t('tracking.completedAt') }}: {{ formatDate(item.last_notified_at) }}
               </div>
             </div>
-          </router-link>
 
-          <div>
-            <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
-            <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
-          </div>
-
-          <div>
-            <v-chip size="small" variant="text" color="primary" class="flat-chip">
-              {{ conditionLabel(item.notify_when) }}
-            </v-chip>
-          </div>
-
-          <div class="status-cell">
-            <v-chip size="small" variant="text" :color="statusColor(item)" class="status-chip flat-chip" rounded="lg">
-              {{ statusLabel(item) }}
-            </v-chip>
-            <div class="text-caption text-medium-emphasis mt-1" v-if="item.last_notified_at">
-              {{ $t('tracking.completedAt') }}: {{ formatDate(item.last_notified_at) }}
+            <div class="actions-col">
+              <v-tooltip :text="$t('tracking.remove')" location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    size="x-small"
+                    variant="plain"
+                    class="icon-action-btn"
+                    :loading="item._deleting"
+                    icon="mdi-trash-can-outline"
+                    :aria-label="$t('tracking.remove')"
+                    @click="removeItem(item)"
+                  />
+                </template>
+              </v-tooltip>
             </div>
           </div>
-
         </div>
-      </v-card>
+      </div>
     </div>
 
-    <v-card v-if="!loading && !rows.length" rounded="xl" class="pa-8 text-center">
+    <div v-if="!loading && !rows.length" class="empty-state pa-8 text-center">
       <v-icon size="54" color="primary" class="mb-2">mdi-crosshairs-question</v-icon>
       <div class="text-h6 mb-1">{{ $t('tracking.emptyTitle') }}</div>
       <p class="text-medium-emphasis mb-0">{{ $t('tracking.emptySubtitle') }}</p>
-    </v-card>
+    </div>
   </v-container>
 </template>
 
@@ -447,11 +453,6 @@ function statusLabel(item) {
   return t('tracking.active')
 }
 
-function statusColor(item) {
-  if (item.last_notified_at) return 'success'
-  return 'primary'
-}
-
 function formatPrice(price, currency = 'USD') {
   return formatCurrencyPrice(price, currency)
 }
@@ -582,53 +583,131 @@ onMounted(() => {
   max-width: 1240px;
 }
 
+.usage-block {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  padding-bottom: 12px;
+}
+
+.usage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.usage-sub {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.filters-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-field {
+  min-width: 180px;
+  flex: 1 1 180px;
+}
+
+.filter-search {
+  flex: 1.4 1 260px;
+}
+
+.filter-field :deep(.v-field) {
+  border-radius: 10px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  padding-inline: 8px;
+}
+
+.filter-field :deep(.v-field__outline) {
+  display: none;
+}
+
+.filter-field :deep(.v-field__input) {
+  min-height: 34px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.reset-filters-btn {
+  text-transform: none;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+  padding-inline: 8px;
+  min-width: auto;
+}
+
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 0 2px 10px;
+  margin: 0 2px 8px;
 }
 
 .list-shell {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
-  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: rgb(var(--v-theme-surface));
 }
 
-.completed-shell {
-  border-color: rgba(var(--v-theme-on-surface), 0.1);
+.table-scroll {
+  overflow-x: auto;
+}
+
+.list-head,
+.list-row {
+  min-width: 980px;
 }
 
 .list-head {
-  grid-template-columns: minmax(180px, 1.3fr) minmax(130px, 1fr) minmax(150px, 1fr) minmax(140px, 0.9fr) minmax(140px, 0.9fr) minmax(150px, 1fr);
-  gap: 10px;
-  padding: 12px 16px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  display: grid;
+  grid-template-columns: 56px minmax(220px, 2fr) minmax(130px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(140px, 1fr) minmax(110px, 0.7fr);
+  gap: 12px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
   color: rgba(var(--v-theme-on-surface), 0.62);
-  text-transform: uppercase;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  background: rgba(var(--v-theme-on-surface), 0.02);
 }
 
 .list-row {
   display: grid;
-  grid-template-columns: minmax(180px, 1.3fr) minmax(130px, 1fr) minmax(150px, 1fr) minmax(140px, 0.9fr) minmax(140px, 0.9fr) minmax(150px, 1fr);
+  grid-template-columns: 56px minmax(220px, 2fr) minmax(130px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(140px, 1fr) minmax(110px, 0.7fr);
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
 
-.completed-shell .list-head {
-  grid-template-columns: minmax(200px, 1.6fr) minmax(170px, 1fr) minmax(160px, 1fr) minmax(180px, 1fr);
-}
-
-.completed-shell .list-row {
-  grid-template-columns: minmax(200px, 1.6fr) minmax(170px, 1fr) minmax(160px, 1fr) minmax(180px, 1fr);
+.list-row:hover {
+  background: rgba(var(--v-theme-on-surface), 0.02);
 }
 
 .list-row:last-child {
   border-bottom: 0;
+}
+
+.index-col {
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+}
+
+.section-counter {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+}
+
+.section-title {
+  letter-spacing: 0.01em;
 }
 
 .asset-col {
@@ -641,9 +720,9 @@ onMounted(() => {
   text-decoration: none;
   display: inline-flex;
   width: fit-content;
-  border-radius: 14px;
-  padding: 6px 10px;
-  margin: -6px -10px;
+  border-radius: 8px;
+  padding: 2px 4px;
+  margin: -2px -4px;
 }
 
 .asset-link:hover .asset-symbol,
@@ -652,24 +731,20 @@ onMounted(() => {
 }
 
 .asset-symbol {
-  font-size: 1.12rem;
+  font-size: 1rem;
   line-height: 1.1;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.01em;
 }
 
 .asset-title {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   margin-top: 2px;
 }
 
-.list-row--completed {
-  background: transparent;
-}
-
 .price-main {
-  font-weight: 800;
-  font-size: 0.98rem;
+  font-weight: 700;
+  font-size: 0.95rem;
   letter-spacing: 0.01em;
 }
 
@@ -679,81 +754,84 @@ onMounted(() => {
 }
 
 .status-cell {
-  justify-self: center;
   text-align: center;
+  justify-self: center;
 }
 
-.flat-chip {
-  padding-inline: 0;
+.status-head {
+  text-align: center;
+  justify-self: center;
 }
 
-.status-chip {
-  min-width: 84px;
-  height: 36px;
-  justify-content: center;
-  font-weight: 700;
-}
-
-.field-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.status-text {
+  display: inline-block;
+  font-size: 0.82rem;
   color: rgba(var(--v-theme-on-surface), 0.62);
 }
 
-.modern-input :deep(.v-field) {
-  border-radius: 14px;
+.actions-col {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.icon-action-btn {
+  color: rgba(var(--v-theme-on-surface), 0.62);
+}
+
+.icon-action-btn:hover {
+  color: rgba(var(--v-theme-on-surface), 0.9);
   background: rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.modern-input :deep(.v-field) {
+  border-radius: 10px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
   box-shadow: none;
 }
 
 .modern-input :deep(.v-field__outline) {
-  display: none;
-}
-
-.modern-input :deep(.v-field__input) {
-  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.14);
 }
 
 .modern-input :deep(.v-field--focused) {
-  background: rgba(var(--v-theme-on-surface), 0.06);
-  box-shadow: none;
+  background: rgba(var(--v-theme-on-surface), 0.04);
 }
 
-.section-title {
-  letter-spacing: 0.01em;
+.list-row--completed {
+  background: transparent;
 }
 
-.section-title--active {
-  color: rgb(var(--v-theme-primary));
+.empty-state {
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
 
-.save-btn {
-  width: 36px;
-  min-width: 36px;
+.list-head {
+  text-transform: none;
 }
 
-.remove-btn {
-  width: 36px;
-  min-width: 36px;
+.list-head > *,
+.list-row > * {
+  align-self: center;
 }
+
 
 @media (max-width: 959px) {
-  .list-row {
-    grid-template-columns: 1fr;
+  .filters-inline {
     gap: 8px;
   }
 
-  .status-cell {
-    justify-self: start;
-    text-align: left;
+  .filter-field,
+  .filter-search {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .usage-sub {
+    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>
