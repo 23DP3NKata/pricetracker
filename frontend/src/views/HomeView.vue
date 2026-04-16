@@ -14,17 +14,12 @@
             </p>
 
             <div class="hero-actions">
-              <v-btn to="/register" color="primary" rounded="xl" size="large" prepend-icon="mdi-rocket-launch">
+              <v-btn to="/register" color="primary" size="large" prepend-icon="mdi-rocket-launch">
                 {{ $t('home.cta_start') }}
               </v-btn>
-              <v-btn to="/about" variant="outlined" rounded="xl" size="large" append-icon="mdi-arrow-right">
+              <v-btn to="/about" variant="outlined" size="large" append-icon="mdi-arrow-right">
                 {{ $t('nav.about') }}
               </v-btn>
-            </div>
-
-            <div class="hero-trust">
-              <span class="trust-icon">✓</span>
-              <span>{{ $t('home.trust_line') }}</span>
             </div>
           </v-col>
 
@@ -61,60 +56,29 @@
       </div>
 
       <div class="grid">
-        <v-card class="feature-card" rounded="xl" variant="outlined">
-          <v-card-text class="pa-4">
-            <v-icon color="primary" size="32">mdi-bell-ring</v-icon>
-            <h3>{{ $t('home.feature1_title') }}</h3>
-            <p>{{ $t('home.feature1_desc') }}</p>
-          </v-card-text>
-        </v-card>
+        <div class="feature-item">
+          <v-icon color="primary" size="30">mdi-bell-ring</v-icon>
+          <h3>{{ $t('home.feature1_title') }}</h3>
+          <p>{{ $t('home.feature1_desc') }}</p>
+        </div>
 
-        <v-card class="feature-card" rounded="xl" variant="outlined">
-          <v-card-text class="pa-4">
-            <v-icon color="success" size="32">mdi-chart-timeline-variant</v-icon>
-            <h3>{{ $t('home.feature2_title') }}</h3>
-            <p>{{ $t('home.feature2_desc') }}</p>
-          </v-card-text>
-        </v-card>
+        <div class="feature-item">
+          <v-icon color="success" size="30">mdi-chart-timeline-variant</v-icon>
+          <h3>{{ $t('home.feature2_title') }}</h3>
+          <p>{{ $t('home.feature2_desc') }}</p>
+        </div>
 
-        <v-card class="feature-card" rounded="xl" variant="outlined">
-          <v-card-text class="pa-4">
-            <v-icon color="warning" size="32">mdi-lightning-bolt</v-icon>
-            <h3>{{ $t('home.feature3_title') }}</h3>
-            <p>{{ $t('home.feature3_desc') }}</p>
-          </v-card-text>
-        </v-card>
-
-        <v-card class="feature-card" rounded="xl" variant="outlined">
-          <v-card-text class="pa-4">
-            <v-icon color="info" size="32">mdi-store</v-icon>
-            <h3>{{ $t('home.feature4_title') }}</h3>
-            <p>{{ $t('home.feature4_desc') }}</p>
-          </v-card-text>
-        </v-card>
-
-        <v-card class="feature-card" rounded="xl" variant="outlined">
-          <v-card-text class="pa-4">
-            <v-icon color="error" size="32">mdi-shield-check</v-icon>
-            <h3>{{ $t('home.feature5_title') }}</h3>
-            <p>{{ $t('home.feature5_desc') }}</p>
-          </v-card-text>
-        </v-card>
-
-        <v-card class="feature-card" rounded="xl" variant="outlined">
-          <v-card-text class="pa-4">
-            <v-icon color="secondary" size="32">mdi-devices</v-icon>
-            <h3>{{ $t('home.feature6_title') }}</h3>
-            <p>{{ $t('home.feature6_desc') }}</p>
-          </v-card-text>
-        </v-card>
+        <div class="feature-item">
+          <v-icon color="warning" size="30">mdi-lightning-bolt</v-icon>
+          <h3>{{ $t('home.feature3_title') }}</h3>
+          <p>{{ $t('home.feature3_desc') }}</p>
+        </div>
       </div>
     </section>
 
     <!-- third section -->
     <section class="steps">
       <div class="section-header">
-        <div class="eyebrow">{{ $t('home.how_it_works') }}</div>
         <h2>{{ $t('home.steps_title') }}</h2>
       </div>
 
@@ -147,7 +111,7 @@
     <section class="cta">
       <h2>{{ $t('home.ready_to_save') }}</h2>
       <p>{{ $t('home.cta_desc') }}</p>
-      <v-btn to="/register" color="white" size="x-large" rounded="xl" prepend-icon="mdi-rocket">
+      <v-btn to="/register" color="primary" size="large" prepend-icon="mdi-rocket">
         {{ $t('home.getStartedFree') }}
       </v-btn>
     </section>
@@ -162,16 +126,13 @@
 .home-view {
   width: 100%;
   overflow-x: hidden;
+  background: rgb(var(--v-theme-background));
 }
 
 /* Hero Section */
 .hero {
-  background:
-    radial-gradient(800px 380px at 90% -10%, rgba(var(--v-theme-primary), 0.16), transparent 70%),
-    radial-gradient(650px 300px at -10% 8%, rgba(var(--v-theme-secondary), 0.12), transparent 70%),
-    linear-gradient(180deg, rgba(var(--v-theme-background), 1) 0%, rgba(var(--v-theme-surface), 1) 45%, rgba(var(--v-theme-background), 1) 100%);
-  position: relative;
-  overflow: hidden;
+  background: rgb(var(--v-theme-background));
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
 
 .hero-container {
@@ -181,25 +142,11 @@
 }
 
 .hero-text {
-  animation: slideInLeft 0.6s ease-out;
+  animation: none;
 }
 
 .hero-visual {
-  animation: slideInRight 0.6s ease-out 0.2s both;
-}
-
-.eyebrow {
-  display: inline-block;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0.4rem 0.8rem;
-  border-radius: 999px;
-  background: rgba(var(--v-theme-primary), 0.12);
-  color: rgb(var(--v-theme-primary));
-  border: 1px solid rgba(var(--v-theme-primary), 0.22);
-  margin-bottom: 1rem;
-  font-weight: 600;
+  animation: none;
 }
 
 .hero-title {
@@ -212,13 +159,11 @@
 }
 
 .hero-title span {
-  display: inline-block;
-  background: linear-gradient(120deg, rgb(var(--v-theme-primary)), #1e3a8a);
-  line-height: 1.2;
-  padding-bottom: 0.08em;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  display: inline;
+  background: none;
+  line-height: inherit;
+  padding-bottom: 0;
+  -webkit-text-fill-color: currentColor;
 }
 
 .hero-desc {
@@ -234,27 +179,6 @@
   gap: 0.75rem;
   flex-wrap: wrap;
   margin-bottom: 1.5rem;
-}
-
-.hero-trust {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: rgba(var(--v-theme-on-surface), 0.62);
-}
-
-.trust-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(var(--v-theme-primary), 0.12);
-  color: rgb(var(--v-theme-primary));
-  font-weight: 700;
-  font-size: 0.8rem;
 }
 
 .visual-cards {
@@ -365,33 +289,21 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
-.feature-card {
-  background: rgba(var(--v-theme-surface), 0.9);
-  transition: all 0.3s;
-  border-color: rgba(var(--v-theme-on-surface), 0.12) !important;
+.feature-item {
+  padding: 4px 2px;
 }
 
-.feature-card :deep(.v-card-text) {
-  border-radius: inherit;
-  background: rgba(var(--v-theme-surface), 0.95);
-}
-
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 28px rgba(20, 28, 44, 0.12);
-}
-
-.feature-card h3 {
+.feature-item h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  margin: 1rem 0 0.5rem;
+  margin: 0.7rem 0 0.45rem;
   color: rgb(var(--v-theme-on-surface));
 }
 
-.feature-card p {
+.feature-item p {
   color: rgba(var(--v-theme-on-surface), 0.72);
   line-height: 1.5;
   font-size: 0.95rem;
@@ -400,7 +312,7 @@
 /* steps */
 .steps {
   padding: 5rem 1.5rem;
-  background: rgba(var(--v-theme-surface), 0.55);
+  background: transparent;
 }
 
 .steps-list {
@@ -413,26 +325,22 @@
 
 .step {
   display: grid;
-  grid-template-columns: 64px 1fr;
+  grid-template-columns: 40px 1fr;
   gap: 1rem;
-  padding: 1.5rem;
-  border-radius: 14px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  background: rgba(var(--v-theme-surface), 0.9);
-  margin-bottom: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+}
+
+.step:last-child {
+  border-bottom: 0;
 }
 
 .step-num {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: auto;
+  height: auto;
   font-weight: 700;
-  font-size: 1.5rem;
-  background: rgba(var(--v-theme-primary), 0.12);
-  color: rgb(var(--v-theme-primary));
+  font-size: 1.2rem;
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 
 .step h3 {
@@ -449,44 +357,23 @@
 
 /* cta */
 .cta {
-  padding: 5rem 1.5rem;
+  padding: 3rem 1.5rem 4rem;
   text-align: center;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), #1e3a8a);
+  background: transparent;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
 }
 
 .cta h2 {
-  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
   font-weight: 700;
-  color: white;
+  color: rgb(var(--v-theme-on-surface));
   margin-bottom: 0.5rem;
 }
 
 .cta p {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2rem;
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  font-size: 1rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  margin-bottom: 1.25rem;
 }
 
 @keyframes floatCard {
@@ -502,13 +389,16 @@
   .hero-text {
     margin-bottom: 2rem;
   }
+
   .visual-cards {
     height: 300px;
   }
+
   .card-mock {
     min-width: 200px;
     font-size: 0.9rem;
   }
+
   .grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1rem;
@@ -519,9 +409,11 @@
   .hero-title {
     font-size: 1.8rem;
   }
+
   .visual-cards {
     height: 280px;
   }
+
   .card-1, .card-2, .card-3 {
     position: relative !important;
     top: auto !important;
