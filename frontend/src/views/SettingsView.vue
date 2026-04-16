@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-8" style="max-width: 700px;">
+  <v-container class="py-8 settings-view" style="max-width: 760px;">
     <div class="settings-head mb-6">
       <h1 class="text-h4 font-weight-bold">{{ $t('settings.title') }}</h1>
       <p class="text-medium-emphasis">{{ profile?.email || auth.user?.email }}</p>
@@ -8,208 +8,219 @@
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
     <template v-if="profile">
-      <!-- Account Info -->
-      <v-card rounded="xl" class="pa-6 mb-6 settings-card">
-        <div class="section-title mb-4">
-          <v-avatar size="36" color="primary" variant="tonal">
-            <v-icon size="20">mdi-account-circle-outline</v-icon>
-          </v-avatar>
-          <h3 class="text-h6 font-weight-bold">{{ $t('settings.accountInfo') }}</h3>
-        </div>
-        <v-row>
-          <v-col v-if="isAdmin" cols="12" sm="6">
-            <div class="text-caption text-medium-emphasis">{{ $t('settings.role') }}</div>
-            <v-chip color="warning" size="small" variant="tonal">
-              {{ profile.role }}
-            </v-chip>
-          </v-col>
-          <v-col cols="12" sm="6">
-            <div class="text-caption text-medium-emphasis">{{ $t('settings.emailVerified') }}</div>
-            <v-chip v-if="auth.emailVerified" color="success" size="small" variant="tonal" prepend-icon="mdi-check-circle">
-              {{ $t('settings.verified') }}
-            </v-chip>
-            <v-chip v-else color="warning" size="small" variant="tonal" prepend-icon="mdi-alert-circle">
-              {{ $t('settings.notVerified') }}
-            </v-chip>
-          </v-col>
-          <v-col cols="12" sm="6">
-            <div class="text-caption text-medium-emphasis">{{ $t('settings.monthlyLimit') }}</div>
-            <div class="text-body-1 font-weight-medium">{{ profile.checks_used }} / {{ profile.monthly_limit }}</div>
-          </v-col>
-          <v-col cols="12" sm="6">
-            <div class="text-caption text-medium-emphasis">{{ $t('settings.memberSince') }}</div>
-            <div class="text-body-1 font-weight-medium">{{ formatDate(profile.created_at) }}</div>
-          </v-col>
-        </v-row>
-      </v-card>
-
-      <!-- Email Verification -->
-      <v-card v-if="!auth.emailVerified" rounded="xl" class="pa-6 mb-6 settings-card">
-        <div class="section-title mb-2">
-          <v-avatar size="36" color="warning" variant="tonal">
-            <v-icon size="20">mdi-email-fast-outline</v-icon>
-          </v-avatar>
-          <h3 class="text-h6 font-weight-bold">{{ $t('settings.emailVerification') }}</h3>
-        </div>
-        <p class="text-medium-emphasis mb-4">
-          {{ $t('settings.verificationInfo') }}
-        </p>
-        <v-alert v-if="verifySent" type="success" variant="tonal" rounded="lg" class="mb-4">
-          {{ $t('settings.verificationLinkSent', { email: auth.user?.email || '' }) }}
-        </v-alert>
-        <v-btn
-          v-if="!verifySent"
-          color="warning"
-          rounded="xl"
-          :loading="verifySending"
-          @click="handleResendVerification"
-          prepend-icon="mdi-email-fast-outline"
-        >
-          {{ $t('settings.sendVerificationEmail') }}
-        </v-btn>
-      </v-card>
-
-      <!-- Change Name -->
-      <v-card rounded="xl" class="pa-6 mb-6 settings-card">
-        <div class="section-title mb-4">
-          <v-avatar size="36" color="primary" variant="tonal">
-            <v-icon size="20">mdi-account-edit-outline</v-icon>
-          </v-avatar>
-          <h3 class="text-h6 font-weight-bold">{{ $t('settings.changeName') }}</h3>
-        </div>
-        <v-alert v-if="nameMsg" :type="nameMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="nameMsg = null">
-          {{ nameMsg.text }}
-        </v-alert>
-        <v-form @submit.prevent="handleNameChange" ref="nameFormRef">
-          <v-text-field
-            v-model="nameForm.name"
-            :label="$t('settings.newUsername')"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-account-outline"
-            :error="nameErrors().length > 0"
-            :error-messages="nameErrors()"
-          />
-          <div class="text-caption text-medium-emphasis mb-3" v-if="profile.last_username_change">
-            {{ $t('settings.lastChanged') }} {{ formatDate(profile.last_username_change) }}
-            {{ $t('settings.canChange30') }}
+      <div class="settings-rows">
+        <div class="settings-row">
+          <div class="row-label">Username</div>
+          <div class="row-value">{{ profile.name || '-' }}</div>
+          <div class="row-actions">
+            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('name')">Edit</v-btn>
           </div>
-          <v-btn type="submit" color="primary" rounded="xl" :loading="nameSaving">{{ $t('settings.updateName') }}</v-btn>
-        </v-form>
-      </v-card>
-
-      <!-- Change Email -->
-      <v-card rounded="xl" class="pa-6 mb-6 settings-card">
-        <div class="section-title mb-4">
-          <v-avatar size="36" color="primary" variant="tonal">
-            <v-icon size="20">mdi-email-edit-outline</v-icon>
-          </v-avatar>
-          <h3 class="text-h6 font-weight-bold">{{ $t('settings.changeEmail') }}</h3>
         </div>
-        <v-alert v-if="emailMsg" :type="emailMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="emailMsg = null">
-          {{ emailMsg.text }}
-        </v-alert>
-        <v-form @submit.prevent="handleEmailChange" ref="emailFormRef">
-          <v-text-field
-            v-model="emailForm.email"
-            :label="$t('settings.newEmail')"
-            type="email"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-email-outline"
-            :error="emailErrors().length > 0"
-            :error-messages="emailErrors()"
-          />
-          <v-text-field
-            v-model="emailForm.email_confirmation"
-            :label="$t('settings.confirmNewEmail')"
-            type="email"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-email-check-outline"
-            :error="emailConfirmErrors().length > 0"
-            :error-messages="emailConfirmErrors()"
-          />
-          <v-text-field
-            v-model="emailForm.password"
-            :label="$t('settings.currentPassword')"
-            type="password"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-lock-outline"
-            :error="emailPasswordErrors().length > 0"
-            :error-messages="emailPasswordErrors()"
-          />
-          <v-btn type="submit" color="primary" rounded="xl" :loading="emailSaving">{{ $t('settings.updateEmail') }}</v-btn>
-        </v-form>
-      </v-card>
+        <v-expand-transition>
+          <div v-if="editingField === 'name'" class="row-expand">
+            <v-alert v-if="nameMsg" :type="nameMsg.type" variant="tonal" rounded="lg" class="mb-3" closable @click:close="nameMsg = null">
+              {{ nameMsg.text }}
+            </v-alert>
+            <v-form @submit.prevent="handleNameChange" ref="nameFormRef">
+              <v-text-field
+                v-model="nameForm.name"
+                :placeholder="$t('settings.newUsername')"
+                variant="plain"
+                density="compact"
+                prepend-inner-icon="mdi-account-outline"
+                hide-details="auto"
+                class="flat-field mb-2"
+                :error="nameErrors().length > 0"
+                :error-messages="nameErrors()"
+              />
+              <div class="text-caption text-medium-emphasis mb-3" v-if="profile.last_username_change">
+                {{ $t('settings.lastChanged') }} {{ formatDate(profile.last_username_change) }} {{ $t('settings.canChange30') }}
+              </div>
+              <div class="form-actions">
+                <v-btn variant="text" color="default" size="small" @click="cancelEdit">{{ $t('settings.cancel') }}</v-btn>
+                <v-btn type="submit" variant="flat" color="primary" size="small" :loading="nameSaving">{{ $t('settings.updateName') }}</v-btn>
+              </div>
+            </v-form>
+          </div>
+        </v-expand-transition>
 
-      <!-- Change Password -->
-      <v-card rounded="xl" class="pa-6 settings-card">
-        <div class="section-title mb-4">
-          <v-avatar size="36" color="primary" variant="tonal">
-            <v-icon size="20">mdi-lock-reset</v-icon>
-          </v-avatar>
-          <h3 class="text-h6 font-weight-bold">{{ $t('settings.changePassword') }}</h3>
+        <v-divider />
+
+        <div class="settings-row">
+          <div class="row-label">Email</div>
+          <div class="row-value">{{ profile.email || '-' }}</div>
+          <div class="row-actions">
+            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('email')">Edit</v-btn>
+          </div>
         </div>
-        <v-alert v-if="passwordMsg" :type="passwordMsg.type" variant="tonal" rounded="lg" class="mb-4" closable @click:close="passwordMsg = null">
-          {{ passwordMsg.text }}
-        </v-alert>
-        <v-form @submit.prevent="handlePasswordChange" ref="passwordFormRef">
-          <v-text-field
-            v-model="passwordForm.current_password"
-            :label="$t('settings.currentPassword')"
-            type="password"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-lock-outline"
-            :error="currentPasswordErrors().length > 0"
-            :error-messages="currentPasswordErrors()"
-          />
-          <v-text-field
-            v-model="passwordForm.password"
-            :label="$t('settings.newPassword')"
-            type="password"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-lock-plus-outline"
-            :error="newPasswordErrors().length > 0"
-            :error-messages="newPasswordErrors()"
-          />
-          <v-text-field
-            v-model="passwordForm.password_confirmation"
-            :label="$t('settings.confirmNewPassword')"
-            type="password"
-            variant="outlined"
-            rounded="lg"
-            prepend-inner-icon="mdi-lock-check-outline"
-            :error="confirmPasswordErrors().length > 0"
-            :error-messages="confirmPasswordErrors()"
-          />
-          <v-btn type="submit" color="primary" rounded="xl" :loading="passwordSaving">{{ $t('settings.changePasswordBtn') }}</v-btn>
-        </v-form>
-      </v-card>
+        <v-expand-transition>
+          <div v-if="editingField === 'email'" class="row-expand">
+            <v-alert v-if="emailMsg" :type="emailMsg.type" variant="tonal" rounded="lg" class="mb-3" closable @click:close="emailMsg = null">
+              {{ emailMsg.text }}
+            </v-alert>
+            <v-form @submit.prevent="handleEmailChange" ref="emailFormRef">
+              <v-text-field
+                v-model="emailForm.email"
+                :placeholder="$t('settings.newEmail')"
+                type="email"
+                variant="plain"
+                density="compact"
+                prepend-inner-icon="mdi-email-outline"
+                hide-details="auto"
+                class="flat-field mb-2"
+                :error="emailErrors().length > 0"
+                :error-messages="emailErrors()"
+              />
+              <v-text-field
+                v-model="emailForm.email_confirmation"
+                :placeholder="$t('settings.confirmNewEmail')"
+                type="email"
+                variant="plain"
+                density="compact"
+                prepend-inner-icon="mdi-email-check-outline"
+                hide-details="auto"
+                class="flat-field mb-2"
+                :error="emailConfirmErrors().length > 0"
+                :error-messages="emailConfirmErrors()"
+              />
+              <v-text-field
+                v-model="emailForm.password"
+                :placeholder="$t('settings.currentPassword')"
+                type="password"
+                variant="plain"
+                density="compact"
+                prepend-inner-icon="mdi-lock-outline"
+                hide-details="auto"
+                class="flat-field mb-2"
+                :error="emailPasswordErrors().length > 0"
+                :error-messages="emailPasswordErrors()"
+              />
+              <div class="form-actions">
+                <v-btn variant="text" color="default" size="small" @click="cancelEdit">{{ $t('settings.cancel') }}</v-btn>
+                <v-btn type="submit" variant="flat" color="primary" size="small" :loading="emailSaving">{{ $t('settings.updateEmail') }}</v-btn>
+              </div>
+            </v-form>
+          </div>
+        </v-expand-transition>
 
-      <!-- Delete Account -->
-      <v-card rounded="xl" class="pa-6 mt-6 settings-card settings-card-danger">
-        <div class="section-title mb-4">
-          <v-avatar size="36" color="error" variant="tonal">
-            <v-icon size="20">mdi-delete-alert-outline</v-icon>
-          </v-avatar>
-          <h3 class="text-h6 font-weight-bold">{{ $t('settings.deleteAccount') }}</h3>
+        <v-divider />
+
+        <div class="settings-row">
+          <div class="row-label">Password</div>
+          <div class="row-value">••••••••••••</div>
+          <div class="row-actions">
+            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('password')">Edit</v-btn>
+          </div>
         </div>
+        <v-expand-transition>
+          <div v-if="editingField === 'password'" class="row-expand">
+            <v-alert v-if="passwordMsg" :type="passwordMsg.type" variant="tonal" rounded="lg" class="mb-3" closable @click:close="passwordMsg = null">
+              {{ passwordMsg.text }}
+            </v-alert>
+            <v-form @submit.prevent="handlePasswordChange" ref="passwordFormRef">
+              <v-text-field
+                v-model="passwordForm.current_password"
+                :placeholder="$t('settings.currentPassword')"
+                type="password"
+                variant="plain"
+                density="compact"
+                prepend-inner-icon="mdi-lock-outline"
+                hide-details="auto"
+                class="flat-field mb-2"
+                :error="currentPasswordErrors().length > 0"
+                :error-messages="currentPasswordErrors()"
+              />
+              <v-text-field
+                v-model="passwordForm.password"
+                :placeholder="$t('settings.newPassword')"
+                type="password"
+                variant="plain"
+                density="compact"
+                prepend-inner-icon="mdi-lock-plus-outline"
+                hide-details="auto"
+                class="flat-field mb-2"
+                :error="newPasswordErrors().length > 0"
+                :error-messages="newPasswordErrors()"
+              />
+              <v-text-field
+                v-model="passwordForm.password_confirmation"
+                :placeholder="$t('settings.confirmNewPassword')"
+                type="password"
+                variant="plain"
+                density="compact"
+                prepend-inner-icon="mdi-lock-check-outline"
+                hide-details="auto"
+                class="flat-field mb-2"
+                :error="confirmPasswordErrors().length > 0"
+                :error-messages="confirmPasswordErrors()"
+              />
+              <div class="form-actions">
+                <v-btn variant="text" color="default" size="small" @click="cancelEdit">{{ $t('settings.cancel') }}</v-btn>
+                <v-btn type="submit" variant="flat" color="primary" size="small" :loading="passwordSaving">{{ $t('settings.changePasswordBtn') }}</v-btn>
+              </div>
+            </v-form>
+          </div>
+        </v-expand-transition>
 
-        <p class="text-medium-emphasis mb-4">{{ $t('settings.deleteAccountHint') }}</p>
+        <v-divider />
 
-        <v-btn
-          color="error"
-          rounded="xl"
-          prepend-icon="mdi-delete-outline"
-          @click="openDeleteDialog"
-        >
-          {{ $t('settings.deleteAccount') }}
-        </v-btn>
-      </v-card>
+        <div class="settings-row settings-row--info" v-if="isAdmin">
+          <div class="row-label">{{ $t('settings.role') }}</div>
+          <div class="row-value">{{ profile.role }}</div>
+          <div class="row-actions"></div>
+        </div>
+        <v-divider v-if="isAdmin" />
+
+        <div class="settings-row settings-row--info">
+          <div class="row-label">{{ $t('settings.emailVerified') }}</div>
+          <div class="row-value">
+            <v-chip v-if="auth.emailVerified" color="success" variant="tonal" size="small">{{ $t('settings.verified') }}</v-chip>
+            <v-chip v-else color="warning" variant="tonal" size="small">Not verified</v-chip>
+          </div>
+          <div class="row-actions" v-if="!auth.emailVerified">
+            <v-btn v-if="!verifySent" variant="outlined" color="primary" size="small" class="edit-btn" :loading="verifySending" @click="handleResendVerification">
+              {{ $t('settings.sendVerificationEmail') }}
+            </v-btn>
+            <span v-else class="text-caption text-medium-emphasis">{{ $t('settings.verificationLinkSent', { email: auth.user?.email || '' }) }}</span>
+          </div>
+          <div class="row-actions" v-else></div>
+        </div>
+        <v-divider />
+
+        <div class="settings-row settings-row--info">
+          <div class="row-label">{{ $t('settings.monthlyLimit') }}</div>
+          <div class="row-value">{{ profile.checks_used }} / {{ profile.monthly_limit }}</div>
+          <div class="row-actions"></div>
+        </div>
+        <v-divider />
+
+        <div class="settings-row settings-row--info">
+          <div class="row-label">{{ $t('settings.memberSince') }}</div>
+          <div class="row-value">{{ formatDate(profile.created_at) }}</div>
+          <div class="row-actions"></div>
+        </div>
+      </div>
+
+      <div class="delete-row mt-6">
+        <div class="row-label">{{ $t('settings.deleteAccount') }}</div>
+        <div class="row-value text-medium-emphasis">{{ $t('settings.deleteAccountHint') }}</div>
+        <div class="row-actions">
+          <v-btn
+            v-if="!deleteConfirmArmed"
+            variant="outlined"
+            color="error"
+            size="small"
+            class="edit-btn"
+            @click="armDeleteConfirm"
+          >
+            {{ $t('settings.deleteAccount') }}
+          </v-btn>
+          <div v-else class="delete-confirm-actions">
+            <v-btn variant="text" color="default" size="small" @click="cancelDeleteConfirm">{{ $t('settings.cancel') }}</v-btn>
+            <v-btn variant="flat" color="error" size="small" @click="openDeleteDialog">{{ $t('settings.deleteAccountConfirmBtn') }}</v-btn>
+          </div>
+        </div>
+      </div>
     </template>
 
     <v-dialog v-model="deleteDialog" max-width="560" persistent>
@@ -281,6 +292,7 @@ const { t } = useI18n()
 const loading = ref(true)
 const profile = ref(null)
 const isAdmin = computed(() => profile.value?.role === 'admin' || auth.isAdmin)
+const editingField = ref(null)
 
 // Verification
 const verifySending = ref(false)
@@ -313,6 +325,7 @@ const deleteSubmitting = ref(false)
 const deleteMsg = ref(null)
 const deleteSubmitted = ref(false)
 const deleteForm = reactive({ password: '' })
+const deleteConfirmArmed = ref(false)
 
 function isValidEmail(value) {
   return /.+@.+\..+/.test(value)
@@ -394,6 +407,41 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString(undefined, { timeZone: 'UTC' })
 }
 
+function beginEdit(field) {
+  editingField.value = field
+
+  if (field === 'name') {
+    nameForm.name = profile.value?.name || ''
+    nameSubmitted.value = false
+    nameMsg.value = null
+    return
+  }
+
+  if (field === 'email') {
+    emailForm.email = profile.value?.email || ''
+    emailForm.email_confirmation = profile.value?.email || ''
+    emailForm.password = ''
+    emailSubmitted.value = false
+    emailMsg.value = null
+    return
+  }
+
+  if (field === 'password') {
+    passwordForm.current_password = ''
+    passwordForm.password = ''
+    passwordForm.password_confirmation = ''
+    passwordSubmitted.value = false
+    passwordMsg.value = null
+  }
+}
+
+function cancelEdit() {
+  editingField.value = null
+  nameSubmitted.value = false
+  emailSubmitted.value = false
+  passwordSubmitted.value = false
+}
+
 async function loadProfile() {
   loading.value = true
   try {
@@ -419,6 +467,7 @@ async function handleNameChange() {
     nameSubmitted.value = false
     await auth.fetchUser()
     await loadProfile()
+    editingField.value = null
   } catch (e) {
     nameMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedUpdateName') }
   } finally {
@@ -444,6 +493,7 @@ async function handleEmailChange() {
     emailSubmitted.value = false
     await auth.fetchUser()
     await loadProfile()
+    editingField.value = null
   } catch (e) {
     emailMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedUpdateEmail') }
   } finally {
@@ -470,6 +520,7 @@ async function handlePasswordChange() {
     passwordForm.password = ''
     passwordForm.password_confirmation = ''
     passwordSubmitted.value = false
+    editingField.value = null
   } catch (e) {
     passwordMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedChangePassword') }
   } finally {
@@ -490,6 +541,7 @@ async function handleResendVerification() {
 }
 
 function openDeleteDialog() {
+  deleteConfirmArmed.value = false
   deleteSubmitted.value = false
   deleteMsg.value = null
   deleteForm.password = ''
@@ -501,6 +553,14 @@ function closeDeleteDialog() {
   deleteDialog.value = false
   deleteSubmitted.value = false
   deleteForm.password = ''
+}
+
+function armDeleteConfirm() {
+  deleteConfirmArmed.value = true
+}
+
+function cancelDeleteConfirm() {
+  deleteConfirmArmed.value = false
 }
 
 async function handleDeleteAccount() {
@@ -533,23 +593,109 @@ async function handleDeleteAccount() {
   margin-top: 6px;
 }
 
-.settings-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  box-shadow: 0 14px 26px rgba(18, 24, 38, 0.06);
+.settings-view {
+  background: transparent;
 }
 
-.settings-card-danger {
-  border-color: rgba(var(--v-theme-error), 0.25);
-  box-shadow: 0 14px 26px rgba(175, 42, 42, 0.08);
+.settings-rows {
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
 
-.section-title {
+.settings-row {
+  display: grid;
+  grid-template-columns: 260px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 2px;
+}
+
+.settings-row--info {
+  min-height: 58px;
+}
+
+.row-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.68);
+}
+
+.row-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.row-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.section-title h3 {
-  margin: 0;
+.edit-btn {
+  text-transform: none;
+  min-height: 30px;
+}
+
+.row-expand {
+  padding: 0 2px 14px;
+}
+
+.flat-field :deep(.v-field) {
+  border-radius: 10px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  padding-inline: 10px;
+}
+
+.flat-field :deep(.v-field--focused) {
+  background: rgba(var(--v-theme-on-surface), 0.04);
+}
+
+.flat-field :deep(.v-field__outline) {
+  display: none;
+}
+
+.flat-field :deep(.v-field__input) {
+  min-height: 38px;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.delete-row {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(var(--v-theme-error), 0.2);
+}
+
+.delete-confirm-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 740px) {
+  .settings-row,
+  .delete-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 8px;
+    padding: 12px 0;
+  }
+
+  .row-actions,
+  .form-actions {
+    justify-content: flex-start;
+  }
 }
 </style>
