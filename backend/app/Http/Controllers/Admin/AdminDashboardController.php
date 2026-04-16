@@ -10,10 +10,14 @@ use App\Models\Product;
 use App\Models\SystemLog;
 use App\Models\User;
 use App\Models\UserProduct;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Http\JsonResponse;
 
 class AdminDashboardController extends Controller
 {
+    private const TRACKING_INTERVAL_MINUTES = 5;
+
     public function index(): JsonResponse
     {
         $now = now();
@@ -41,9 +45,15 @@ class AdminDashboardController extends Controller
         $actions7d = AdminAction::where('created_at', '>=', $last7d)->count();
         $notifications24h = Notification::where('created_at', '>=', $last24h)->count();
 
-        $requestsDay = PriceHistory::where('checked_at', '>=', $startOfDay)->count();
-        $requestsMonth = PriceHistory::where('checked_at', '>=', $startOfMonth)->count();
-        $requestsAllTime = PriceHistory::count();
+        $firstCheckAt = PriceHistory::query()->min('checked_at');
+
+        $requestsDay = $this->expectedCyclesSince($startOfDay, $now);
+        $requestsMonth = $this->expectedCyclesSince($startOfMonth, $now);
+        $requestsAllTime = 0;
+
+        if ($firstCheckAt) {
+            $requestsAllTime = $this->expectedCyclesSince($firstCheckAt, $now);
+        }
 
         return response()->json([
             'users_total' => $usersTotal,
@@ -64,5 +74,19 @@ class AdminDashboardController extends Controller
             'requests_month' => $requestsMonth,
             'requests_all_time' => $requestsAllTime,
         ]);
+    }
+
+    private function expectedCyclesSince($startAt, $endAt): int
+    {
+        $start = $startAt instanceof CarbonInterface ? $startAt->copy() : Carbon::parse($startAt);
+        $end = $endAt instanceof CarbonInterface ? $endAt->copy() : Carbon::parse($endAt);
+
+        if ($start->gt($end)) {
+            return 0;
+        }
+
+        $minutes = $start->diffInMinutes($end);
+
+        return intdiv(max(0, $minutes), self::TRACKING_INTERVAL_MINUTES) + 1;
     }
 }
