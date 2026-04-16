@@ -134,6 +134,10 @@ router.beforeEach(async (to) => {
     try { await auth.fetchUser() } catch { /* not logged in */ }
   }
 
+  if (to.name === 'home' && auth.isAuthenticated) {
+    return { name: 'dashboard' }
+  }
+
   if (to.meta.auth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
