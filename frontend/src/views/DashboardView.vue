@@ -2,7 +2,6 @@
   <v-container class="py-8 py-md-10 dashboard-crypto">
     <div class="d-flex flex-wrap align-end justify-space-between mb-4 ga-3">
       <div>
-        <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">{{ $t('dashboard.title') }}</h1>
         <p class="text-medium-emphasis ma-0">
           {{ $t('dashboard.topAssetsSubtitle') }}
         </p>
@@ -47,23 +46,42 @@
           {{ $t('dashboard.emptyTopAssetsHint') }}
         </v-alert>
 
-      <v-card rounded="xl" class="list-shell" v-if="assets.length">
-          <div class="list-head d-none d-md-grid">
-            <div>#</div>
-            <div>{{ $t('dashboard.asset') }}</div>
-            <div class="text-right">{{ $t('dashboard.lastPrice') }}</div>
-            <div class="text-right">{{ $t('dashboard.change24h') }}</div>
-            <div>{{ $t('dashboard.miniChart') }}</div>
-            <div class="text-right">{{ $t('dashboard.action') }}</div>
+      <v-card rounded="lg" class="list-shell" v-if="assets.length">
+          <div class="list-head">
+            <button type="button" class="head-cell sortable-head" :class="{ 'head-active': sortBy === 'rank' }" @click="toggleSort('rank')">
+              #
+              <v-icon size="14" class="sort-icon">{{ sortIcon('rank') }}</v-icon>
+            </button>
+            <button type="button" class="head-cell sortable-head" :class="{ 'head-active': sortBy === 'coin' }" @click="toggleSort('coin')">
+              {{ $t('dashboard.coin') }}
+              <v-icon size="14" class="sort-icon">{{ sortIcon('coin') }}</v-icon>
+            </button>
+            <button type="button" class="head-cell text-right sortable-head" :class="{ 'head-active': sortBy === 'price' }" @click="toggleSort('price')">
+              {{ $t('dashboard.price') }}
+              <v-icon size="14" class="sort-icon">{{ sortIcon('price') }}</v-icon>
+            </button>
+            <button type="button" class="head-cell text-right sortable-head col-1h" :class="{ 'head-active': sortBy === 'change1h' }" @click="toggleSort('change1h')">
+              {{ $t('dashboard.change1h') }}
+              <v-icon size="14" class="sort-icon">{{ sortIcon('change1h') }}</v-icon>
+            </button>
+            <button type="button" class="head-cell text-right sortable-head" :class="{ 'head-active': sortBy === 'change24h' }" @click="toggleSort('change24h')">
+              {{ $t('dashboard.change24h') }}
+              <v-icon size="14" class="sort-icon">{{ sortIcon('change24h') }}</v-icon>
+            </button>
+            <button type="button" class="head-cell text-right sortable-head" :class="{ 'head-active': sortBy === 'change7d' }" @click="toggleSort('change7d')">
+              {{ $t('dashboard.change7d') }}
+              <v-icon size="14" class="sort-icon">{{ sortIcon('change7d') }}</v-icon>
+            </button>
+            <div class="head-cell">{{ $t('dashboard.last7Days') }}</div>
           </div>
 
           <div
-            v-for="(asset, index) in assets"
+            v-for="asset in sortedAssets"
             :key="asset.id"
             class="list-row"
           >
             <div class="rank-col">
-              <span class="rank-badge">{{ index + 1 }}</span>
+              <span class="rank-badge">{{ asset._rank }}</span>
             </div>
 
             <router-link :to="`/products/${asset.id}`" class="asset-link">
@@ -73,48 +91,44 @@
                   <span v-else class="text-caption font-weight-bold">{{ asset.symbol?.slice(0, 1) }}</span>
                 </v-avatar>
                 <div>
-                  <div class="text-subtitle-2 font-weight-bold">{{ asset.symbol }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ asset.title }}</div>
+                  <div class="text-subtitle-2 font-weight-bold">{{ asset.title }} <span class="text-medium-emphasis">{{ asset.symbol }}</span></div>
                 </div>
               </div>
             </router-link>
 
-            <div class="price-col text-md-right">
+            <div class="price-col text-right">
               <div class="price-main">{{ formatPrice(asset.current_price, asset.currency) }}</div>
-              <div class="price-sub text-medium-emphasis">{{ formatPriceUsdHint(asset.current_price) }}</div>
             </div>
 
-            <div class="change-col text-md-right">
-              <v-chip size="small" variant="tonal" :color="trendColor(asset.trend)">
-                {{ formatPercent(asset.price_change_24h) }}
-              </v-chip>
+            <div class="change-col text-right col-1h">
+              <span :class="['change-text', percentClass(asset._change1h)]">
+                {{ formatTrendPercent(asset._change1h) }}
+              </span>
+            </div>
+
+            <div class="change-col text-right">
+              <span :class="['change-text', percentClass(asset._change24h)]">
+                {{ formatTrendPercent(asset._change24h) }}
+              </span>
+            </div>
+
+            <div class="change-col text-right">
+              <span :class="['change-text', percentClass(asset._change7d)]">
+                {{ formatTrendPercent(asset._change7d) }}
+              </span>
             </div>
 
             <div class="chart-col">
-              <div class="sparkline-wrap">
-                <svg viewBox="0 0 220 64" preserveAspectRatio="none" class="sparkline" role="img" :aria-label="t('dashboard.chartAria', { symbol: asset.symbol })">
-                  <polyline
-                    :points="sparklinePoints(asset.history)"
-                    fill="none"
-                    :stroke="sparklineStroke(asset.price_change_24h)"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <div class="action-col text-md-right">
-              <v-btn
-                size="small"
-                rounded
-                variant="text"
-                :class="['dashboard-nav-btn', 'track-btn', { 'track-btn--tracked': asset.is_tracked }]"
-                @click="openTrackDialog(asset)"
-              >
-                {{ asset.is_tracked ? $t('dashboard.tracked') : $t('dashboard.track') }}
-              </v-btn>
+              <svg viewBox="0 0 220 64" preserveAspectRatio="none" class="sparkline" role="img" :aria-label="t('dashboard.chartAria', { symbol: asset.symbol })">
+                <polyline
+                  :points="sparklinePoints(asset.history)"
+                  fill="none"
+                  :stroke="sparklineStroke(asset._change24h)"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
             </div>
           </div>
     </v-card>
@@ -246,6 +260,8 @@ const theme = useTheme()
 const loading = ref(false)
 const error = ref(null)
 const assets = ref([])
+const sortBy = ref('rank')
+const sortDir = ref('asc')
 const lastUpdatedAt = ref(null)
 
 const showTrackDialog = ref(false)
@@ -277,6 +293,33 @@ const coingeckoLogoSrc = computed(() => {
   }
 
   return '/branding/CGAPI-Lockup.svg'
+})
+
+const sortedAssets = computed(() => {
+  const rows = (Array.isArray(assets.value) ? assets.value : []).map((asset, index) => ({
+    ...asset,
+    _rank: index + 1,
+    _change1h: historyChangePercent(asset.history, 1),
+    _change24h: historyChangePercent(asset.history, 24),
+    _change7d: historyChangePercent(asset.history, 24 * 7),
+  }))
+
+  const dir = sortDir.value === 'asc' ? 1 : -1
+  return rows.sort((a, b) => {
+    if (sortBy.value === 'rank') return (a._rank - b._rank) * dir
+    if (sortBy.value === 'coin') {
+      const aCoin = String(a.title || a.symbol || '').toLowerCase()
+      const bCoin = String(b.title || b.symbol || '').toLowerCase()
+      if (aCoin < bCoin) return -1 * dir
+      if (aCoin > bCoin) return 1 * dir
+      return 0
+    }
+    if (sortBy.value === 'price') return ((Number(a.current_price) || 0) - (Number(b.current_price) || 0)) * dir
+    if (sortBy.value === 'change1h') return ((Number(a._change1h) || 0) - (Number(b._change1h) || 0)) * dir
+    if (sortBy.value === 'change24h') return ((Number(a._change24h) || 0) - (Number(b._change24h) || 0)) * dir
+    if (sortBy.value === 'change7d') return ((Number(a._change7d) || 0) - (Number(b._change7d) || 0)) * dir
+    return 0
+  })
 })
 
 const lastUpdatedLabel = computed(() => {
@@ -360,10 +403,67 @@ function formatPercent(value) {
   return `${sign}${num.toFixed(2)}%`
 }
 
-function trendColor(trend) {
-  if (trend === 'up') return 'success'
-  if (trend === 'down') return 'error'
-  return 'grey'
+function formatTrendPercent(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return 'N/A'
+  }
+
+  const num = Number(value)
+  if (num > 0) return `▲ ${num.toFixed(2)}%`
+  if (num < 0) return `▼ ${Math.abs(num).toFixed(2)}%`
+  return `• ${num.toFixed(2)}%`
+}
+
+function percentClass(value) {
+  const num = Number(value)
+  if (Number.isNaN(num)) return 'text-medium-emphasis'
+  if (num > 0) return 'text-success'
+  if (num < 0) return 'text-error'
+  return 'text-medium-emphasis'
+}
+
+function toggleSort(column) {
+  if (sortBy.value === column) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+    return
+  }
+
+  sortBy.value = column
+  sortDir.value = column === 'coin' ? 'asc' : 'desc'
+}
+
+function sortIcon(column) {
+  if (sortBy.value !== column) return 'mdi-unfold-more-horizontal'
+  return sortDir.value === 'asc' ? 'mdi-chevron-up' : 'mdi-chevron-down'
+}
+
+function historyChangePercent(history, hours) {
+  const rows = Array.isArray(history) ? history : []
+  if (rows.length < 2) return null
+
+  const normalized = rows
+    .map((row) => ({
+      price: Number(row?.price),
+      time: new Date(row?.checked_at || '').getTime(),
+    }))
+    .filter((row) => !Number.isNaN(row.price) && row.price > 0 && !Number.isNaN(row.time))
+
+  if (normalized.length < 2) return null
+
+  const latest = normalized[normalized.length - 1]
+  const targetTime = latest.time - (hours * 60 * 60 * 1000)
+
+  let base = normalized[0]
+  for (const row of normalized) {
+    if (row.time <= targetTime) {
+      base = row
+    } else {
+      break
+    }
+  }
+
+  if (!base || base.price <= 0) return null
+  return ((latest.price - base.price) / base.price) * 100
 }
 
 function sparklineStroke(change) {
@@ -491,28 +591,46 @@ onMounted(() => {
 }
 
 .list-shell {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  border: 0 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  background: rgb(var(--v-theme-surface)) !important;
   overflow: hidden;
 }
 
 .list-head {
-  grid-template-columns: 72px minmax(210px, 1.6fr) minmax(160px, 1fr) minmax(120px, 0.7fr) minmax(160px, 1.1fr) minmax(160px, 0.9fr);
+  display: grid;
+  grid-template-columns: 60px minmax(240px, 2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(180px, 1.1fr);
   gap: 12px;
-  padding: 12px 18px;
+  padding: 10px 18px;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   color: rgba(var(--v-theme-on-surface), 0.62);
-  text-transform: uppercase;
+  text-transform: none;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+.list-head > *,
+.list-row > * {
+  justify-self: center;
+  text-align: center;
 }
 
 .list-row {
   display: grid;
-  grid-template-columns: 72px minmax(210px, 1.6fr) minmax(160px, 1fr) minmax(120px, 0.7fr) minmax(160px, 1.1fr) minmax(160px, 0.9fr);
+  grid-template-columns: 60px minmax(240px, 2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(180px, 1.1fr);
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.list-row:hover {
+  background: rgba(var(--v-theme-on-surface), 0.03);
 }
 
 .list-row:last-child {
@@ -520,12 +638,7 @@ onMounted(() => {
 }
 
 .rank-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   font-weight: 700;
 }
 
@@ -538,7 +651,8 @@ onMounted(() => {
   color: inherit;
   text-decoration: none;
   display: inline-flex;
-  width: fit-content;
+  width: 100%;
+  justify-content: center;
 }
 
 .asset-link:hover .text-subtitle-2,
@@ -547,7 +661,7 @@ onMounted(() => {
 }
 
 .price-main {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1rem;
   letter-spacing: 0.01em;
 }
@@ -555,6 +669,11 @@ onMounted(() => {
 .price-sub {
   font-size: 0.76rem;
   margin-top: 2px;
+}
+
+.change-text {
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .coingecko-attribution {
@@ -591,8 +710,38 @@ onMounted(() => {
 
 .sparkline {
   width: 100%;
-  height: 100%;
+  height: 56px;
   display: block;
+}
+
+.head-cell {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: center;
+  font: inherit;
+}
+
+.sortable-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-icon {
+  opacity: 0.45;
+}
+
+.head-active {
+  color: rgba(var(--v-theme-on-surface), 0.94);
+  font-weight: 700;
+}
+
+.head-active .sort-icon {
+  opacity: 0.9;
 }
 
 .dashboard-nav-btn {
@@ -636,24 +785,25 @@ onMounted(() => {
 }
 
 @media (max-width: 959px) {
+  .list-head {
+    grid-template-columns: 52px minmax(180px, 1.5fr) minmax(100px, 0.9fr) minmax(80px, 0.65fr) minmax(80px, 0.65fr) minmax(130px, 1fr);
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+  }
+
   .list-row {
-    grid-template-columns: 52px 1fr;
-    gap: 10px;
+    grid-template-columns: 52px minmax(180px, 1.5fr) minmax(100px, 0.9fr) minmax(80px, 0.65fr) minmax(80px, 0.65fr) minmax(130px, 1fr);
+    gap: 8px;
+    padding: 12px;
   }
 
-  .price-col,
-  .change-col,
-  .chart-col,
-  .action-col {
-    grid-column: 2;
+  .col-1h {
+    display: none;
   }
 
-  .action-col {
-    margin-top: 4px;
-  }
-
-  .sparkline-wrap {
-    height: 48px;
+  .sparkline {
+    height: 42px;
   }
 
   .coingecko-attribution {

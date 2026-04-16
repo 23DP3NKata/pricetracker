@@ -14,31 +14,44 @@
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
     <template v-if="stats">
-      <v-card rounded="xl" class="hero-card pa-4 mb-5">
-        <div class="d-flex flex-wrap align-center justify-space-between ga-3 mb-3">
-          <div>
-            <div class="text-subtitle-1 font-weight-bold">{{ $t('adminDashboard.requestsAllTime') }}</div>
-            <div class="text-caption text-medium-emphasis">{{ $t('adminDashboard.forceRefreshAllPrices') }}</div>
+      <v-card rounded="xl" class="hero-card pa-4 mb-6">
+        <div class="hero-head-row mb-3">
+          <div class="hero-head-inline">
+            <span class="text-subtitle-1 font-weight-bold">{{ $t('adminDashboard.requestsAllTimeShort') }}</span>
+            <span class="text-caption text-medium-emphasis">{{ $t('adminDashboard.forceRefreshAllPricesShort') }}</span>
           </div>
-          <div class="d-flex flex-column ga-2 admin-actions-wrap">
+        </div>
+
+        <div class="requests-actions-row">
+          <div class="request-chips-row">
+            <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
+              {{ $t('adminDashboard.requestsDay') }}: <span class="request-value">{{ formatCount(stats.requests_day) }}</span>
+            </v-chip>
+            <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
+              {{ $t('adminDashboard.requestsMonth') }}: <span class="request-value">{{ formatCount(stats.requests_month) }}</span>
+            </v-chip>
+            <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
+              {{ $t('adminDashboard.requestsAllTime') }}: <span class="request-value">{{ formatCount(stats.requests_all_time) }}</span>
+            </v-chip>
+          </div>
+
+          <div class="admin-actions-row">
             <v-btn
               class="admin-action-btn"
-              color="primary"
-              rounded="xl"
+              rounded="lg"
               prepend-icon="mdi-refresh"
-              variant="flat"
+              variant="text"
               :loading="refreshingAll"
               :disabled="switchingAll"
               @click="refreshAllPrices"
             >
-              {{ $t('adminDashboard.forceRefreshAllPrices') }}
+              {{ $t('adminDashboard.forceRefreshAllPricesShort') }}
             </v-btn>
             <v-btn
               class="admin-action-btn"
-              :color="stopStartButtonColor"
-              rounded="xl"
+              rounded="lg"
               :prepend-icon="stopStartButtonIcon"
-              variant="tonal"
+              variant="text"
               :loading="switchingAll"
               :disabled="refreshingAll"
               @click="toggleAllProducts"
@@ -46,18 +59,6 @@
               {{ $t(stopStartButtonLabel) }}
             </v-btn>
           </div>
-        </div>
-
-        <div class="d-flex flex-wrap ga-2">
-          <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
-            {{ $t('adminDashboard.requestsDay') }}: <span class="request-value">{{ formatCount(stats.requests_day) }}</span>
-          </v-chip>
-          <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
-            {{ $t('adminDashboard.requestsMonth') }}: <span class="request-value">{{ formatCount(stats.requests_month) }}</span>
-          </v-chip>
-          <v-chip variant="flat" rounded="lg" class="request-chip request-chip--soft">
-            {{ $t('adminDashboard.requestsAllTime') }}: <span class="request-value">{{ formatCount(stats.requests_all_time) }}</span>
-          </v-chip>
         </div>
       </v-card>
 
@@ -162,10 +163,6 @@ const stopStartButtonIcon = computed(() => {
   if (canStopAllProducts.value) return 'mdi-stop-circle-outline'
   return 'mdi-play-circle-outline'
 })
-const stopStartButtonColor = computed(() => {
-  if (canStopAllProducts.value) return 'warning'
-  return 'success'
-})
 
 function formatCount(value) {
   return new Intl.NumberFormat().format(Number(value || 0))
@@ -234,6 +231,8 @@ onMounted(loadStats)
 .hero-card {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  position: relative;
+  z-index: 1;
 }
 
 .request-chip {
@@ -256,6 +255,8 @@ onMounted(loadStats)
   letter-spacing: 0.08em;
   color: rgba(var(--v-theme-on-surface), 0.56);
   font-weight: 700;
+  position: relative;
+  z-index: 2;
 }
 
 .metric-card {
@@ -291,13 +292,74 @@ onMounted(loadStats)
   color: rgba(var(--v-theme-on-surface), 0.72);
 }
 
-.admin-actions-wrap {
-  width: min(100%, 360px);
+.hero-head-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hero-head-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.requests-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.request-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-actions-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
   margin-left: auto;
-  align-items: flex-end;
+  justify-content: flex-end;
 }
 
 .admin-action-btn {
-  width: 80%;
+  min-height: 36px;
+  padding-inline: 10px;
+  white-space: nowrap;
+  text-align: left;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: rgba(var(--v-theme-on-surface), 0.78);
+}
+
+.admin-action-btn:hover {
+  background: rgba(var(--v-theme-on-surface), 0.05);
+}
+
+@media (max-width: 700px) {
+  .requests-actions-row {
+    align-items: stretch;
+  }
+
+  .request-chips-row {
+    width: 100%;
+  }
+
+  .admin-actions-row {
+    flex-direction: column;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-action-btn {
+    width: 100%;
+    min-width: 0;
+  }
 }
 </style>
