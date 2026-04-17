@@ -120,13 +120,21 @@
 
             <div class="chart-col">
               <svg viewBox="0 0 220 64" preserveAspectRatio="none" class="sparkline" role="img" :aria-label="t('dashboard.chartAria', { symbol: asset.symbol })">
+                <line x1="0" y1="32" x2="220" y2="32" class="sparkline-baseline" />
                 <polyline
                   :points="sparklinePoints(asset.history)"
                   fill="none"
                   :stroke="sparklineStroke(asset._change24h)"
-                  stroke-width="2"
+                  stroke-width="2.6"
                   stroke-linecap="round"
                   stroke-linejoin="round"
+                />
+                <circle
+                  v-if="sparklineLastPoint(asset.history)"
+                  :cx="sparklineLastPoint(asset.history).x"
+                  :cy="sparklineLastPoint(asset.history).y"
+                  r="2.8"
+                  :fill="sparklineStroke(asset._change24h)"
                 />
               </svg>
             </div>
@@ -296,30 +304,55 @@ const coingeckoLogoSrc = computed(() => {
 })
 
 const sortedAssets = computed(() => {
-  const rows = (Array.isArray(assets.value) ? assets.value : []).map((asset, index) => ({
-    ...asset,
-    _rank: index + 1,
-    _change1h: historyChangePercent(asset.history, 1),
-    _change24h: historyChangePercent(asset.history, 24),
-    _change7d: historyChangePercent(asset.history, 24 * 7),
-  }))
+  const source = Array.isArray(assets.value) ? assets.value : []
+  const list = []
+
+  for (let i = 0; i < source.length; i += 1) {
+    const asset = source[i]
+    list.push({
+      ...asset,
+      _rank: i + 1,
+      _change1h: historyChangePercent(asset.history, 1),
+      _change24h: historyChangePercent(asset.history, 24),
+      _change7d: historyChangePercent(asset.history, 24 * 7),
+    })
+  }
 
   const dir = sortDir.value === 'asc' ? 1 : -1
-  return rows.sort((a, b) => {
-    if (sortBy.value === 'rank') return (a._rank - b._rank) * dir
+
+  list.sort((a, b) => {
+    if (sortBy.value === 'rank') {
+      return (a._rank - b._rank) * dir
+    }
+
     if (sortBy.value === 'coin') {
-      const aCoin = String(a.title || a.symbol || '').toLowerCase()
-      const bCoin = String(b.title || b.symbol || '').toLowerCase()
-      if (aCoin < bCoin) return -1 * dir
-      if (aCoin > bCoin) return 1 * dir
+      const aName = String(a.title || a.symbol || '').toLowerCase()
+      const bName = String(b.title || b.symbol || '').toLowerCase()
+      if (aName < bName) return -1 * dir
+      if (aName > bName) return 1 * dir
       return 0
     }
-    if (sortBy.value === 'price') return ((Number(a.current_price) || 0) - (Number(b.current_price) || 0)) * dir
-    if (sortBy.value === 'change1h') return ((Number(a._change1h) || 0) - (Number(b._change1h) || 0)) * dir
-    if (sortBy.value === 'change24h') return ((Number(a._change24h) || 0) - (Number(b._change24h) || 0)) * dir
-    if (sortBy.value === 'change7d') return ((Number(a._change7d) || 0) - (Number(b._change7d) || 0)) * dir
+
+    if (sortBy.value === 'price') {
+      return ((Number(a.current_price) || 0) - (Number(b.current_price) || 0)) * dir
+    }
+
+    if (sortBy.value === 'change1h') {
+      return ((Number(a._change1h) || 0) - (Number(b._change1h) || 0)) * dir
+    }
+
+    if (sortBy.value === 'change24h') {
+      return ((Number(a._change24h) || 0) - (Number(b._change24h) || 0)) * dir
+    }
+
+    if (sortBy.value === 'change7d') {
+      return ((Number(a._change7d) || 0) - (Number(b._change7d) || 0)) * dir
+    }
+
     return 0
   })
+
+  return list
 })
 
 const lastUpdatedLabel = computed(() => {
@@ -441,29 +474,33 @@ function historyChangePercent(history, hours) {
   const rows = Array.isArray(history) ? history : []
   if (rows.length < 2) return null
 
-  const normalized = rows
-    .map((row) => ({
-      price: Number(row?.price),
-      time: new Date(row?.checked_at || '').getTime(),
-    }))
-    .filter((row) => !Number.isNaN(row.price) && row.price > 0 && !Number.isNaN(row.time))
+  const clean = []
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i]
+    const price = Number(row?.price)
+    const time = new Date(row?.checked_at || '').getTime()
 
-  if (normalized.length < 2) return null
+    if (!Number.isNaN(price) && price > 0 && !Number.isNaN(time)) {
+      clean.push({ price, time })
+    }
+  }
 
-  const latest = normalized[normalized.length - 1]
-  const targetTime = latest.time - (hours * 60 * 60 * 1000)
+  if (clean.length < 2) return null
 
-  let base = normalized[0]
-  for (const row of normalized) {
-    if (row.time <= targetTime) {
-      base = row
+  const last = clean[clean.length - 1]
+  const needTime = last.time - (hours * 60 * 60 * 1000)
+
+  let base = clean[0]
+  for (let i = 0; i < clean.length; i += 1) {
+    if (clean[i].time <= needTime) {
+      base = clean[i]
     } else {
       break
     }
   }
 
   if (!base || base.price <= 0) return null
-  return ((latest.price - base.price) / base.price) * 100
+  return ((last.price - base.price) / base.price) * 100
 }
 
 function sparklineStroke(change) {
@@ -473,40 +510,56 @@ function sparklineStroke(change) {
 
 function sparklinePoints(history) {
   const rows = Array.isArray(history) ? history : []
-  if (!rows.length) {
-    return '0,32 220,32'
+  if (!rows.length) return '0,32 220,32'
+
+  const nums = []
+  for (let i = 0; i < rows.length; i += 1) {
+    const p = Number(rows[i]?.price)
+    if (!Number.isNaN(p)) nums.push(p)
   }
 
-  const values = []
-  for (const row of rows) {
-    const price = Number(row?.price)
-    if (!Number.isNaN(price)) {
-      values.push(price)
-    }
-  }
+  if (!nums.length) return '0,32 220,32'
 
-  if (!values.length) {
-    return '0,32 220,32'
-  }
-
-  const min = Math.min(...values)
-  const max = Math.max(...values)
+  const min = Math.min(...nums)
+  const max = Math.max(...nums)
   const span = max - min || 1
-  const points = []
 
-  for (let i = 0; i < values.length; i += 1) {
-    const price = values[i]
-    const x = (i / Math.max(values.length - 1, 1)) * 220
-    const y = 56 - ((price - min) / span) * 48
-    points.push(`${x.toFixed(2)},${y.toFixed(2)}`)
+  const out = []
+  for (let i = 0; i < nums.length; i += 1) {
+    const x = (i / Math.max(nums.length - 1, 1)) * 220
+    const y = 56 - ((nums[i] - min) / span) * 48
+    out.push(`${x.toFixed(2)},${y.toFixed(2)}`)
   }
 
-  return points.join(' ')
+  return out.join(' ')
+}
+
+function sparklineLastPoint(history) {
+  const rows = Array.isArray(history) ? history : []
+  if (!rows.length) return null
+
+  const nums = []
+  for (let i = 0; i < rows.length; i += 1) {
+    const p = Number(rows[i]?.price)
+    if (!Number.isNaN(p)) nums.push(p)
+  }
+
+  if (!nums.length) return null
+
+  const min = Math.min(...nums)
+  const max = Math.max(...nums)
+  const span = max - min || 1
+
+  const lastIndex = nums.length - 1
+  const x = (lastIndex / Math.max(lastIndex, 1)) * 220
+  const y = 56 - ((nums[lastIndex] - min) / span) * 48
+  return { x, y }
 }
 
 async function loadTopAssets() {
   loading.value = true
   error.value = null
+
   try {
     const { data } = await getTopAssets(10)
     assets.value = Array.isArray(data?.data) ? data.data : []
@@ -517,6 +570,7 @@ async function loadTopAssets() {
       return
     }
 
+    // Если сервер не дал meta.last_updated_at, берем самое свежее из списка.
     let latest = null
     let latestTime = 0
 
@@ -702,7 +756,7 @@ onMounted(() => {
 }
 
 .sparkline-wrap {
-  height: 56px;
+  height: 64px;
   border-radius: 12px;
   background: rgba(var(--v-theme-on-surface), 0.04);
   padding: 8px;
@@ -710,8 +764,14 @@ onMounted(() => {
 
 .sparkline {
   width: 100%;
-  height: 56px;
+  height: 64px;
   display: block;
+}
+
+.sparkline-baseline {
+  stroke: rgba(148, 163, 184, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
 }
 
 .head-cell {
@@ -803,7 +863,7 @@ onMounted(() => {
   }
 
   .sparkline {
-    height: 42px;
+    height: 56px;
   }
 
   .coingecko-attribution {

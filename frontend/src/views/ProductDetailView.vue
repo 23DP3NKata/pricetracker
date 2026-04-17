@@ -78,7 +78,11 @@
         </v-row>
 
         <div class="mb-4 chart-wrap">
-          <Line :data="chartData" :options="chartOptions" />
+          <div class="chart-scroll">
+            <div class="chart-inner" :style="{ minWidth: `${chartMinWidth}px` }">
+              <Line :data="chartData" :options="chartOptions" />
+            </div>
+          </div>
         </div>
 
         <!-- Price table -->
@@ -138,6 +142,7 @@
 import { ref, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useDisplay } from 'vuetify'
 import { useProductsStore } from '@/stores/products'
 import { getPriceHistory } from '@/api'
 import { formatCurrencyPrice } from '@/utils/price'
@@ -157,6 +162,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const route = useRoute()
 const { t } = useI18n()
+const { smAndDown } = useDisplay()
 const store = useProductsStore()
 
 const product = ref(null)
@@ -257,6 +263,33 @@ function formatDate(dateStr) {
   return date.toLocaleString()
 }
 
+function formatChartAxisDate(dateStr) {
+  const timestamp = parseHistoryDate(dateStr)
+  if (!Number.isFinite(timestamp)) return ''
+
+  const date = new Date(timestamp)
+  if (smAndDown.value) {
+    return new Intl.DateTimeFormat(undefined, {
+      month: 'short',
+      day: 'numeric',
+    }).format(date)
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+}
+
+const chartMinWidth = computed(() => {
+  const points = historyData.value.length
+  const base = smAndDown.value ? 340 : 520
+  const perPoint = smAndDown.value ? 16 : 11
+  return Math.max(base, points * perPoint)
+})
+
 function parseHistoryDate(dateStr) {
   if (!dateStr) return Number.NEGATIVE_INFINITY
 
@@ -277,41 +310,40 @@ function parseHistoryDate(dateStr) {
 const sortedHistoryData = computed(() => {
   const rows = [...historyData.value]
 
-  if (historySortKey.value === 'date') {
-    rows.sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
-  }
+  rows.sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
 
   if (historySortKey.value === 'change') {
-    const byDateAsc = [...rows].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
-    const withChange = []
+    const temp = []
 
-    for (let i = 0; i < byDateAsc.length; i += 1) {
-      const entry = byDateAsc[i]
-      let change = null
-      if (i < byDateAsc.length - 1) {
-        change = priceDiff(entry.price, byDateAsc[i + 1].price)
+    for (let i = 0; i < rows.length; i += 1) {
+      const item = rows[i]
+      let diff = Number.NEGATIVE_INFINITY
+
+      if (i < rows.length - 1) {
+        const raw = priceDiff(item.price, rows[i + 1].price)
+        if (Number.isFinite(raw)) {
+          diff = Math.abs(raw)
+        }
       }
 
-      withChange.push({ entry, change })
+      temp.push({ item, diff })
     }
 
-    withChange.sort((a, b) => {
-      const aVal = a.change === null ? Number.NEGATIVE_INFINITY : Math.abs(a.change)
-      const bVal = b.change === null ? Number.NEGATIVE_INFINITY : Math.abs(b.change)
-      return aVal - bVal
-    })
+    temp.sort((a, b) => a.diff - b.diff)
 
-    const reordered = []
-    for (const row of withChange) {
-      reordered.push(row.entry)
+    const changedRows = []
+    for (let i = 0; i < temp.length; i += 1) {
+      changedRows.push(temp[i].item)
     }
-    rows.splice(0, rows.length, ...reordered)
+
+    if (historySortDir.value === 'desc') {
+      changedRows.reverse()
+    }
+
+    return changedRows
   }
 
-  if (historySortDir.value === 'desc') {
-    rows.reverse()
-  }
-
+  if (historySortDir.value === 'desc') rows.reverse()
   return rows
 })
 
@@ -328,7 +360,7 @@ const chartData = computed(() => {
   const points = []
 
   for (const entry of asc) {
-    labels.push(formatDate(entry.checked_at))
+    labels.push(formatChartAxisDate(entry.checked_at))
     points.push(Number(entry.price))
   }
 
@@ -342,6 +374,8 @@ const chartData = computed(() => {
         backgroundColor: 'rgba(25, 118, 210, 0.15)',
         borderWidth: 2,
         pointRadius: 2,
+        pointHoverRadius: 5,
+        pointHitRadius: 16,
         tension: 0.25,
         fill: true,
       },
@@ -358,6 +392,15 @@ const chartOptions = computed(() => ({
     },
     tooltip: {
       callbacks: {
+        title(context) {
+          const first = context?.[0]
+          if (!first) return ''
+
+          const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
+          const row = asc[first.dataIndex]
+          if (!row) return ''
+          return formatDate(row.checked_at)
+        },
         label(context) {
           const currency = (product.value?.currency || 'USD').toUpperCase()
           const y = Number(context.parsed.y)
@@ -372,14 +415,18 @@ const chartOptions = computed(() => ({
   },
   scales: {
     x: {
+      grid: {
+        display: false,
+      },
       ticks: {
         maxRotation: 0,
         autoSkip: true,
-        maxTicksLimit: 6,
+        maxTicksLimit: smAndDown.value ? 4 : 8,
       },
     },
     y: {
       ticks: {
+        maxTicksLimit: smAndDown.value ? 5 : 7,
         callback(value) {
           return new Intl.NumberFormat(undefined, {
             minimumFractionDigits: 2,
@@ -393,11 +440,7 @@ const chartOptions = computed(() => ({
 
 function setHistorySort(key) {
   if (historySortKey.value === key) {
-    if (historySortDir.value === 'desc') {
-      historySortDir.value = 'asc'
-    } else {
-      historySortDir.value = 'desc'
-    }
+    historySortDir.value = historySortDir.value === 'desc' ? 'asc' : 'desc'
     return
   }
 
@@ -416,10 +459,7 @@ async function loadProduct() {
 
 async function loadHistory() {
   try {
-    let days = historyDays.value
-    if (historyDays.value === -1) {
-      days = null
-    }
+    const days = historyDays.value === -1 ? null : historyDays.value
 
     const { data } = await getPriceHistory(route.params.id, days)
     historyData.value = data.history || []
@@ -465,6 +505,26 @@ watch(
 }
 
 .chart-wrap {
-  min-height: 280px;
+  min-height: 300px;
+}
+
+.chart-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chart-inner {
+  height: 300px;
+}
+
+@media (max-width: 600px) {
+  .chart-wrap {
+    min-height: 260px;
+  }
+
+  .chart-inner {
+    height: 260px;
+  }
 }
 </style>
