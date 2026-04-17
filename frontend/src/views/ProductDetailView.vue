@@ -487,6 +487,7 @@ const chartOptions = computed(() => {
         display: false,
       },
       tooltip: {
+        displayColors: false,
         callbacks: {
           title(context) {
             const first = context?.[0]
