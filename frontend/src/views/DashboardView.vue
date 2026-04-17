@@ -86,7 +86,7 @@
 
             <router-link :to="`/products/${asset.id}`" class="asset-link">
               <div class="asset-col">
-                <v-avatar :size="xs ? 26 : 34" color="grey-lighten-4" class="mr-2">
+                <v-avatar :size="xs ? 24 : 34" color="grey-lighten-4" class="mr-2">
                   <v-img v-if="asset.image_url" :src="asset.image_url" :alt="asset.symbol" />
                   <span v-else class="text-caption font-weight-bold">{{ asset.symbol?.slice(0, 1) }}</span>
                 </v-avatar>
@@ -740,6 +740,7 @@ onMounted(() => {
 .change-text {
   font-size: 0.9rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .coingecko-attribution {
@@ -885,15 +886,33 @@ onMounted(() => {
 
 @media (max-width: 599px) {
   .list-head {
-    grid-template-columns: 32px 1fr auto auto;
-    padding: 10px 12px;
+    grid-template-columns: 28px minmax(80px, 1fr) minmax(90px, auto) minmax(70px, auto);
+    padding: 10px 8px;
     gap: 8px;
   }
 
   .list-row {
-    grid-template-columns: 32px 1fr auto auto;
-    padding: 10px 12px;
+    grid-template-columns: 28px minmax(80px, 1fr) minmax(90px, auto) minmax(70px, auto);
+    padding: 10px 8px;
     gap: 8px;
+  }
+
+  .price-col {
+    min-width: 90px;
+  }
+
+  .price-main {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .list-row > .change-col:last-of-type,
+  .list-head > .head-cell:last-of-type {
+    min-width: 60px;
+  }
+
+  .coin-symbol {
+    font-size: 0.9rem;
   }
 
   .rank-badge {
