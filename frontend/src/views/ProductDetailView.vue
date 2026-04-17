@@ -79,7 +79,7 @@
 
         <div class="mb-4 chart-wrap">
           <div class="chart-scroll">
-            <div class="chart-inner" :style="{ minWidth: `${chartMinWidth}px` }">
+            <div class="chart-inner" :style="{ height: '280px' }">
               <Line :data="chartData" :options="chartOptions" />
             </div>
           </div>
@@ -283,13 +283,6 @@ function formatChartAxisDate(dateStr) {
   }).format(date)
 }
 
-const chartMinWidth = computed(() => {
-  const points = historyData.value.length
-  const base = smAndDown.value ? 340 : 520
-  const perPoint = smAndDown.value ? 16 : 11
-  return Math.max(base, points * perPoint)
-})
-
 function parseHistoryDate(dateStr) {
   if (!dateStr) return Number.NEGATIVE_INFINITY
 
@@ -354,12 +347,93 @@ const displayedHistoryData = computed(() => {
   return sortedHistoryData.value.slice(0, HISTORY_INITIAL_LIMIT)
 })
 
-const chartData = computed(() => {
+const chartRows = computed(() => {
   const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
+  const maxPoints = 200
+
+  if (asc.length <= maxPoints) return asc
+
+  const bucketCount = Math.ceil(maxPoints / 2)
+  const bucketSize = Math.ceil(asc.length / bucketCount)
+  const sampled = []
+
+  for (let start = 0; start < asc.length; start += bucketSize) {
+    const end = Math.min(start + bucketSize, asc.length)
+
+    let minIndex = start
+    let maxIndex = start
+    let minPrice = Number(asc[start]?.price)
+    let maxPrice = Number(asc[start]?.price)
+
+    if (!Number.isFinite(minPrice)) minPrice = Number.POSITIVE_INFINITY
+    if (!Number.isFinite(maxPrice)) maxPrice = Number.NEGATIVE_INFINITY
+
+    for (let i = start; i < end; i += 1) {
+      const price = Number(asc[i]?.price)
+      if (!Number.isFinite(price)) continue
+
+      if (price < minPrice) {
+        minPrice = price
+        minIndex = i
+      }
+
+      if (price > maxPrice) {
+        maxPrice = price
+        maxIndex = i
+      }
+    }
+
+    if (minIndex === maxIndex) {
+      sampled.push(asc[minIndex])
+      continue
+    }
+
+    if (minIndex < maxIndex) {
+      sampled.push(asc[minIndex], asc[maxIndex])
+      continue
+    }
+
+    sampled.push(asc[maxIndex], asc[minIndex])
+  }
+
+  const thinned = []
+  let prev = null
+
+  for (const row of sampled) {
+    if (row !== prev) {
+      thinned.push(row)
+      prev = row
+    }
+  }
+
+  const first = asc[0]
+  const last = asc[asc.length - 1]
+
+  if (thinned[0] !== first) {
+    thinned.unshift(first)
+  }
+
+  if (thinned[thinned.length - 1] !== last) {
+    thinned.push(last)
+  }
+
+  if (thinned.length <= maxPoints) return thinned
+
+  const step = Math.ceil(thinned.length / maxPoints)
+  const compact = thinned.filter((_, i) => i % step === 0)
+
+  if (compact[compact.length - 1] !== last) {
+    compact.push(last)
+  }
+
+  return compact
+})
+
+const chartData = computed(() => {
   const labels = []
   const points = []
 
-  for (const entry of asc) {
+  for (const entry of chartRows.value) {
     labels.push(formatChartAxisDate(entry.checked_at))
     points.push(Number(entry.price))
   }
@@ -373,7 +447,7 @@ const chartData = computed(() => {
         borderColor: '#1976d2',
         backgroundColor: 'rgba(25, 118, 210, 0.15)',
         borderWidth: 2,
-        pointRadius: 2,
+        pointRadius: points.length > 100 ? 0 : 3,
         pointHoverRadius: 5,
         pointHitRadius: 16,
         tension: 0.25,
@@ -418,8 +492,7 @@ const chartOptions = computed(() => {
             const first = context?.[0]
             if (!first) return ''
 
-            const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
-            const row = asc[first.dataIndex]
+            const row = chartRows.value[first.dataIndex]
             if (!row) return ''
             return formatDate(row.checked_at)
           },
@@ -443,7 +516,7 @@ const chartOptions = computed(() => {
         ticks: {
           maxRotation: 0,
           autoSkip: true,
-          maxTicksLimit: smAndDown.value ? 4 : 8,
+          maxTicksLimit: 8,
         },
       },
       y: {
@@ -530,26 +603,16 @@ watch(
 }
 
 .chart-wrap {
-  min-height: 300px;
+  width: 100%;
 }
 
 .chart-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  overflow: hidden;
 }
 
 .chart-inner {
-  height: 300px;
-}
-
-@media (max-width: 600px) {
-  .chart-wrap {
-    min-height: 260px;
-  }
-
-  .chart-inner {
-    height: 260px;
-  }
+  width: 100%;
+  height: 280px;
 }
 </style>
