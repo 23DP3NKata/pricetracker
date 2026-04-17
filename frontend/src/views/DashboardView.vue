@@ -17,7 +17,7 @@
         class="dashboard-nav-btn"
         @click="loadTopAssets"
       >
-        {{ $t('dashboard.refresh') }}
+        <span class="d-none d-sm-inline">{{ $t('dashboard.refresh') }}</span>
       </v-btn>
     </div>
 
@@ -60,7 +60,7 @@
               {{ $t('dashboard.price') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('price') }}</v-icon>
             </button>
-            <button type="button" class="head-cell text-right sortable-head col-1h" :class="{ 'head-active': sortBy === 'change1h' }" @click="toggleSort('change1h')">
+            <button type="button" class="head-cell text-right sortable-head col-1h d-none d-sm-block" :class="{ 'head-active': sortBy === 'change1h' }" @click="toggleSort('change1h')">
               {{ $t('dashboard.change1h') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('change1h') }}</v-icon>
             </button>
@@ -68,11 +68,11 @@
               {{ $t('dashboard.change24h') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('change24h') }}</v-icon>
             </button>
-            <button type="button" class="head-cell text-right sortable-head" :class="{ 'head-active': sortBy === 'change7d' }" @click="toggleSort('change7d')">
+            <button type="button" class="head-cell text-right sortable-head d-none d-sm-block" :class="{ 'head-active': sortBy === 'change7d' }" @click="toggleSort('change7d')">
               {{ $t('dashboard.change7d') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('change7d') }}</v-icon>
             </button>
-            <div class="head-cell">{{ $t('dashboard.last7Days') }}</div>
+            <div class="head-cell d-none d-sm-block">{{ $t('dashboard.last7Days') }}</div>
           </div>
 
           <div
@@ -86,12 +86,15 @@
 
             <router-link :to="`/products/${asset.id}`" class="asset-link">
               <div class="asset-col">
-                <v-avatar size="34" color="grey-lighten-4" class="mr-2">
+                <v-avatar :size="xs ? 26 : 34" color="grey-lighten-4" class="mr-2">
                   <v-img v-if="asset.image_url" :src="asset.image_url" :alt="asset.symbol" />
                   <span v-else class="text-caption font-weight-bold">{{ asset.symbol?.slice(0, 1) }}</span>
                 </v-avatar>
                 <div>
-                  <div class="text-subtitle-2 font-weight-bold">{{ asset.title }} <span class="text-medium-emphasis">{{ asset.symbol }}</span></div>
+                  <div class="coin-line font-weight-bold">
+                    <span class="coin-name">{{ asset.title }}</span>
+                    <span class="coin-symbol text-medium-emphasis">{{ asset.symbol }}</span>
+                  </div>
                 </div>
               </div>
             </router-link>
@@ -100,7 +103,7 @@
               <div class="price-main">{{ formatPrice(asset.current_price, asset.currency) }}</div>
             </div>
 
-            <div class="change-col text-right col-1h">
+            <div class="change-col text-right col-1h d-none d-sm-block">
               <span :class="['change-text', percentClass(asset._change1h)]">
                 {{ formatTrendPercent(asset._change1h) }}
               </span>
@@ -112,13 +115,13 @@
               </span>
             </div>
 
-            <div class="change-col text-right">
+            <div class="change-col text-right d-none d-sm-block">
               <span :class="['change-text', percentClass(asset._change7d)]">
                 {{ formatTrendPercent(asset._change7d) }}
               </span>
             </div>
 
-            <div class="chart-col">
+            <div class="chart-col d-none d-sm-block">
               <svg viewBox="0 0 220 64" preserveAspectRatio="none" class="sparkline" role="img" :aria-label="t('dashboard.chartAria', { symbol: asset.symbol })">
                 <line x1="0" y1="32" x2="220" y2="32" class="sparkline-baseline" />
                 <polyline
@@ -258,11 +261,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useTheme } from 'vuetify'
+import { useDisplay, useTheme } from 'vuetify'
 import { getTopAssets, trackAsset } from '@/api'
 import { formatCurrencyPrice, formatDecimalPrice, roundToTwo, sanitizePriceInput, toPriceInput } from '@/utils/price'
 
 const { t } = useI18n()
+const { xs } = useDisplay()
 const theme = useTheme()
 
 const loading = ref(false)
@@ -709,9 +713,17 @@ onMounted(() => {
   justify-content: center;
 }
 
-.asset-link:hover .text-subtitle-2,
+.asset-link:hover .coin-line,
+.asset-link:hover .coin-symbol,
 .asset-link:hover .text-caption {
   color: rgb(var(--v-theme-primary));
+}
+
+.coin-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .price-main {
@@ -868,6 +880,28 @@ onMounted(() => {
 
   .coingecko-attribution {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 599px) {
+  .list-head {
+    grid-template-columns: 32px 1fr auto auto;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .list-row {
+    grid-template-columns: 32px 1fr auto auto;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .rank-badge {
+    font-size: 0.78rem;
+  }
+
+  .coin-name {
+    display: none;
   }
 }
 </style>
