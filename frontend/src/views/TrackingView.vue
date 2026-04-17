@@ -110,21 +110,21 @@
       <div class="list-shell">
         <div class="table-scroll">
           <div class="list-head">
-            <div>#</div>
-            <div>Coin</div>
+            <div class="head-index">#</div>
+            <div class="head-coin">Coin</div>
             <div>{{ $t('tracking.currentPrice') }}</div>
             <div>{{ $t('tracking.target') }}</div>
             <div>{{ $t('tracking.condition') }}</div>
             <div class="status-head">{{ $t('tracking.status') }}</div>
-            <div class="text-right">{{ $t('tracking.actions') }}</div>
+            <div class="head-actions">{{ $t('tracking.actions') }}</div>
           </div>
 
           <div v-for="(item, index) in activeRows" :key="item.id" class="list-row">
             <div class="index-col">{{ index + 1 }}</div>
 
-            <router-link :to="`/products/${item.product_id}`" class="asset-link">
+            <router-link :to="`/products/${item.product_id}`" class="asset-link coin-cell">
               <div class="asset-col">
-                <v-avatar size="30" color="grey-lighten-4" class="mr-2">
+                <v-avatar size="30" color="grey-lighten-4">
                   <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
                   <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
                 </v-avatar>
@@ -135,12 +135,12 @@
               </div>
             </router-link>
 
-            <div>
+            <div class="price-col">
               <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
               <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
             </div>
 
-            <div>
+            <div class="target-col">
               <v-text-field
                 v-model="item.target_price"
                 @update:model-value="(value) => normalizeItemTargetInput(item, value)"
@@ -157,7 +157,7 @@
               />
             </div>
 
-            <div>
+            <div class="condition-col">
               <v-select
                 v-model="item.notify_when"
                 :items="notifyWhenOptions"
@@ -223,21 +223,21 @@
       <div class="list-shell">
         <div class="table-scroll">
           <div class="list-head">
-            <div>#</div>
-            <div>Coin</div>
+            <div class="head-index">#</div>
+            <div class="head-coin">Coin</div>
             <div>{{ $t('tracking.currentPrice') }}</div>
             <div>{{ $t('tracking.target') }}</div>
             <div>{{ $t('tracking.condition') }}</div>
             <div class="status-head">{{ $t('tracking.status') }}</div>
-            <div class="text-right">{{ $t('tracking.actions') }}</div>
+            <div class="head-actions">{{ $t('tracking.actions') }}</div>
           </div>
 
           <div v-for="(item, index) in completedRows" :key="item.id" class="list-row list-row--completed">
             <div class="index-col">{{ index + 1 }}</div>
 
-            <router-link :to="`/products/${item.product_id}`" class="asset-link">
+            <router-link :to="`/products/${item.product_id}`" class="asset-link coin-cell">
               <div class="asset-col">
-                <v-avatar size="30" color="grey-lighten-4" class="mr-2">
+                <v-avatar size="30" color="grey-lighten-4">
                   <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
                   <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
                 </v-avatar>
@@ -248,16 +248,16 @@
               </div>
             </router-link>
 
-            <div>
+            <div class="price-col">
               <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
               <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
             </div>
 
-            <div class="text-body-2 text-medium-emphasis">
+            <div class="target-col text-body-2 text-medium-emphasis">
               {{ formatPrice(item.target_price, item.currency) }}
             </div>
 
-            <div class="text-body-2 text-medium-emphasis">
+            <div class="condition-col text-body-2 text-medium-emphasis">
               {{ conditionLabel(item.notify_when) }}
             </div>
 
@@ -651,6 +651,7 @@ onMounted(() => {
 }
 
 .list-shell {
+  --tracking-grid: 40px minmax(200px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(120px, 0.8fr) minmax(100px, 0.8fr);
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -663,12 +664,13 @@ onMounted(() => {
 
 .list-head,
 .list-row {
-  min-width: 980px;
+  min-width: 1020px;
 }
 
 .list-head {
   display: grid;
-  grid-template-columns: 56px minmax(220px, 2fr) minmax(130px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(140px, 1fr) minmax(110px, 0.7fr);
+  grid-template-columns: var(--tracking-grid);
+  align-items: center;
   gap: 12px;
   padding: 10px 14px;
   font-size: 0.82rem;
@@ -680,7 +682,7 @@ onMounted(() => {
 
 .list-row {
   display: grid;
-  grid-template-columns: 56px minmax(220px, 2fr) minmax(130px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(140px, 1fr) minmax(110px, 0.7fr);
+  grid-template-columns: var(--tracking-grid);
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
@@ -698,6 +700,8 @@ onMounted(() => {
 .index-col {
   font-weight: 600;
   color: rgba(var(--v-theme-on-surface), 0.62);
+  text-align: center;
+  justify-self: center;
 }
 
 .section-counter {
@@ -713,16 +717,28 @@ onMounted(() => {
 .asset-col {
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
 .asset-link {
   color: inherit;
   text-decoration: none;
-  display: inline-flex;
-  width: fit-content;
+  display: flex;
+  width: 100%;
+  justify-content: center;
   border-radius: 8px;
   padding: 2px 4px;
   margin: -2px -4px;
+}
+
+.coin-cell {
+  align-self: center;
+}
+
+.price-col,
+.target-col,
+.condition-col {
+  align-self: center;
 }
 
 .asset-link:hover .asset-symbol,
@@ -763,6 +779,21 @@ onMounted(() => {
   justify-self: center;
 }
 
+.head-index {
+  text-align: center;
+  justify-self: center;
+}
+
+.head-coin {
+  text-align: center;
+  justify-self: center;
+}
+
+.head-actions {
+  text-align: right;
+  justify-self: stretch;
+}
+
 .status-text {
   display: inline-block;
   font-size: 0.82rem;
@@ -773,7 +804,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 2px;
+  gap: 8px;
 }
 
 .icon-action-btn {
