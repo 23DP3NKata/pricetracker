@@ -12,7 +12,7 @@
       </v-alert>
 
       <v-alert v-else-if="verifyDone && verifySuccess" type="success" variant="tonal" rounded="lg" class="mb-4">
-        {{ $t('authRecovery.verifySuccessMessage') }}
+        {{ verifySuccessText }}
       </v-alert>
 
       <v-alert v-else-if="verifyDone && !verifySuccess" type="error" variant="tonal" rounded="lg" class="mb-4">
@@ -75,6 +75,7 @@ const isAutoVerifying = ref(false)
 const verifyDone = ref(false)
 const verifySuccess = ref(false)
 const verifyError = ref('')
+const verifyStatus = ref('')
 
 const isVerifiedFromQuery = computed(() => {
   const verified = String(route.query.verified || '').toLowerCase()
@@ -109,8 +110,26 @@ const iconColor = computed(() => {
   return 'warning'
 })
 
+const verifySuccessText = computed(() => {
+  if (verifyStatus.value === 'already_verified') {
+    return t('authRecovery.verifyAlreadyVerifiedMessage')
+  }
+
+  return t('authRecovery.verifySuccessMessage')
+})
+
 async function autoVerifyFromLink() {
   if (isVerifiedFromQuery.value) {
+    verifyStatus.value = String(route.query.status || 'already_verified').toLowerCase()
+
+    if (auth.isAuthenticated) {
+      try {
+        await auth.fetchUser()
+      } catch {
+        // Ignore fetch errors here; dashboard will still load.
+      }
+    }
+
     await router.replace({
       path: '/dashboard',
       query: { verified: '1', status: String(route.query.status || 'already_verified') },
@@ -133,8 +152,17 @@ async function autoVerifyFromLink() {
 
     const status = response?.data?.status
     const verified = response?.data?.verified
+    verifyStatus.value = String(status || '').toLowerCase()
 
     if (status === 'already_verified' || status === 'verified' || verified === true) {
+      if (auth.isAuthenticated) {
+        try {
+          await auth.fetchUser()
+        } catch {
+          // Ignore fetch errors here; dashboard will still load.
+        }
+      }
+
       verifySuccess.value = true
       await router.replace({
         path: '/dashboard',
@@ -143,12 +171,22 @@ async function autoVerifyFromLink() {
       return
     }
 
+    if (auth.isAuthenticated) {
+      try {
+        await auth.fetchUser()
+      } catch {
+        // Ignore fetch errors here; dashboard will still load.
+      }
+    }
+
     verifySuccess.value = true
+    verifyStatus.value = 'verified'
     await router.replace({
       path: '/dashboard',
       query: { verified: '1', status: 'verified' },
     })
   } catch (e) {
+    verifyStatus.value = ''
     verifyError.value = e.response?.data?.message || t('authRecovery.verifyFailedTryResend')
   } finally {
     verifyDone.value = true

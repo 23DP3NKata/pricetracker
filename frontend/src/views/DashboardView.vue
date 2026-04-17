@@ -21,6 +21,18 @@
       </v-btn>
     </div>
 
+    <v-alert
+      v-if="verificationFlash.show"
+      :type="verificationFlash.type"
+      variant="tonal"
+      rounded="lg"
+      class="mb-4"
+      closable
+      @click:close="verificationFlash.show = false"
+    >
+      {{ verificationFlash.message }}
+    </v-alert>
+
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-5" />
 
         <v-alert
@@ -261,11 +273,14 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { useDisplay, useTheme } from 'vuetify'
 import { getTopAssets, trackAsset } from '@/api'
 import { formatCurrencyPrice, formatDecimalPrice, roundToTwo, sanitizePriceInput, toPriceInput } from '@/utils/price'
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 const { xs } = useDisplay()
 const theme = useTheme()
 
@@ -275,6 +290,11 @@ const assets = ref([])
 const sortBy = ref('rank')
 const sortDir = ref('asc')
 const lastUpdatedAt = ref(null)
+const verificationFlash = ref({
+  show: false,
+  type: 'success',
+  message: '',
+})
 
 const showTrackDialog = ref(false)
 const selectedAsset = ref(null)
@@ -638,7 +658,34 @@ async function submitTracking() {
   }
 }
 
+function applyVerificationFlash() {
+  const status = String(route.query.status || '').toLowerCase()
+  const verified = String(route.query.verified || '').toLowerCase()
+
+  if (status === 'already_verified') {
+    verificationFlash.value = {
+      show: true,
+      type: 'info',
+      message: t('dashboard.alreadyVerifiedBanner'),
+    }
+  } else if (status === 'verified' || verified === '1' || verified === 'true') {
+    verificationFlash.value = {
+      show: true,
+      type: 'success',
+      message: t('dashboard.verificationSuccessBanner'),
+    }
+  }
+
+  if (route.query.status !== undefined || route.query.verified !== undefined) {
+    const nextQuery = { ...route.query }
+    delete nextQuery.status
+    delete nextQuery.verified
+    router.replace({ query: nextQuery })
+  }
+}
+
 onMounted(() => {
+  applyVerificationFlash()
   loadTopAssets()
 })
 </script>

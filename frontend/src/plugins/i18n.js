@@ -172,6 +172,7 @@ const messages = {
       verifyFromLinkSubtitle: 'We are verifying your email from the link in your message.',
       verifyingFromLink: 'Checking verification link...',
       verifySuccessMessage: 'Email verified successfully. You can now sign in.',
+      verifyAlreadyVerifiedMessage: 'Your email is already verified. You can continue using your account.',
       verifyInvalidOrExpired: 'Could not verify email. The link is invalid or expired.',
       verifyFailedTryResend: 'Could not verify email. Try requesting a new verification email.',
       goToLogin: 'Go to Sign In'
@@ -212,6 +213,8 @@ const messages = {
       invalidTargetPrice: 'Please enter a valid target price.',
       failedSaveTracking: 'Failed to save tracking settings.',
       chartAria: 'Price chart for {symbol}',
+      verificationSuccessBanner: 'Email verified successfully. Your account limits are now updated.',
+      alreadyVerifiedBanner: 'Your email was already verified earlier. Everything is up to date.',
     },
 
     markets: {
@@ -675,6 +678,7 @@ const messages = {
       verifyFromLinkSubtitle: 'Mēs apstiprinām tavu e-pastu, izmantojot saiti no vēstules.',
       verifyingFromLink: 'Pārbaudām apstiprināšanas saiti...',
       verifySuccessMessage: 'E-pasts veiksmīgi apstiprināts. Tagad vari pierakstīties.',
+      verifyAlreadyVerifiedMessage: 'Tavs e-pasts jau ir apstiprināts. Vari turpināt lietot kontu.',
       verifyInvalidOrExpired: 'Neizdevās apstiprināt e-pastu. Saite nav derīga vai ir beigusies.',
       verifyFailedTryResend: 'Neizdevās apstiprināt e-pastu. Mēģini nosūtīt apstiprināšanas e-pastu vēlreiz.',
       goToLogin: 'Doties uz pierakstīšanos'
@@ -715,6 +719,8 @@ const messages = {
       invalidTargetPrice: 'Norādi derīgu mērķa cenu.',
       failedSaveTracking: 'Neizdevās saglabāt izsekošanas iestatījumus.',
       chartAria: 'Cenas grafiks aktīvam {symbol}',
+      verificationSuccessBanner: 'E-pasts veiksmīgi apstiprināts. Tava konta limiti ir atjaunināti.',
+      alreadyVerifiedBanner: 'Tavs e-pasts jau bija apstiprināts iepriekš. Viss ir aktuāls.',
     },
 
     markets: {
@@ -1179,6 +1185,7 @@ messages.ru = {
     verifyFromLinkSubtitle: 'Подтверждаем ваш email по ссылке из письма.',
     verifyingFromLink: 'Проверяем ссылку подтверждения...',
     verifySuccessMessage: 'Почта успешно подтверждена. Теперь можно войти в аккаунт.',
+    verifyAlreadyVerifiedMessage: 'Ваша почта уже подтверждена. Можете продолжать пользоваться аккаунтом.',
     verifyInvalidOrExpired: 'Не удалось подтвердить почту. Ссылка недействительна или устарела.',
     verifyFailedTryResend: 'Не удалось подтвердить почту. Попробуйте отправить письмо подтверждения повторно.',
     goToLogin: 'Перейти ко входу',
@@ -1219,6 +1226,8 @@ messages.ru = {
     invalidTargetPrice: 'Укажите корректную целевую цену.',
     failedSaveTracking: 'Не удалось сохранить отслеживание.',
     chartAria: 'График цены для {symbol}',
+    verificationSuccessBanner: 'Почта успешно подтверждена. Лимиты аккаунта уже обновлены.',
+    alreadyVerifiedBanner: 'Почта уже была подтверждена ранее. Всё актуально.',
   },
   markets: {
     ...messages.en.markets,
