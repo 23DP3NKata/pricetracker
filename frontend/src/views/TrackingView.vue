@@ -143,7 +143,7 @@
             <div class="target-col">
               <v-text-field
                 v-model="item.target_price"
-                @update:model-value="(value) => normalizeItemTargetInput(item, value)"
+                @update:model-value="val => { normalizeItemTargetInput(item, val); item._unsaved = true }"
                 type="text"
                 inputmode="decimal"
                 maxlength="18"
@@ -160,6 +160,7 @@
             <div class="condition-col">
               <v-select
                 v-model="item.notify_when"
+                @update:model-value="() => item._unsaved = true"
                 :items="notifyWhenOptions"
                 item-title="text"
                 item-value="value"
@@ -183,10 +184,12 @@
                 <template #activator="{ props }">
                   <v-btn
                     v-bind="props"
-                    size="x-small"
-                    variant="plain"
+                    size="small"
+                    :variant="item._unsaved ? 'tonal' : 'text'"
                     class="icon-action-btn"
                     :loading="item._saving"
+                    :color="item._unsaved ? 'primary' : 'default'"
+                    :style="item._unsaved ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
                     icon="mdi-content-save-outline"
                     :aria-label="$t('tracking.save')"
                     @click="saveItem(item)"
@@ -198,10 +201,14 @@
                 <template #activator="{ props }">
                   <v-btn
                     v-bind="props"
-                    size="x-small"
-                    variant="plain"
+                    size="small"
+                    variant="text"
                     class="icon-action-btn"
                     :loading="item._deleting"
+                    @mouseenter="item._hoverDelete = true"
+                    @mouseleave="item._hoverDelete = false"
+                    :color="item._hoverDelete ? 'error' : 'default'"
+                    :style="item._hoverDelete ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
                     icon="mdi-trash-can-outline"
                     :aria-label="$t('tracking.remove')"
                     @click="removeItem(item)"
@@ -273,10 +280,14 @@
                 <template #activator="{ props }">
                   <v-btn
                     v-bind="props"
-                    size="x-small"
-                    variant="plain"
+                    size="small"
+                    variant="text"
                     class="icon-action-btn"
                     :loading="item._deleting"
+                    @mouseenter="item._hoverDelete = true"
+                    @mouseleave="item._hoverDelete = false"
+                    :color="item._hoverDelete ? 'error' : 'default'"
+                    :style="item._hoverDelete ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
                     icon="mdi-trash-can-outline"
                     :aria-label="$t('tracking.remove')"
                     @click="removeItem(item)"
@@ -508,6 +519,8 @@ async function loadTracking() {
       next_check_at: entry.next_check_at || null,
       last_checked_at: entry.last_checked_at || null,
       last_notified_at: entry.last_notified_at || null,
+      _unsaved: false,
+      _hoverDelete: false,
       _saving: false,
       _deleting: false,
     })
@@ -553,6 +566,7 @@ async function saveItem(item) {
       is_active: !!item.is_active,
     })
     await reloadAll()
+    item._unsaved = false
     successMsg.value = t('tracking.saved')
   } catch (e) {
     error.value = e.response?.data?.message || t('tracking.failedSave')
