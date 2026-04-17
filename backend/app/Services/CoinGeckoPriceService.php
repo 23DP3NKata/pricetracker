@@ -480,7 +480,15 @@ class CoinGeckoPriceService
                     'product_id' => $product->id,
                     'old_price' => $oldPrice,
                     'new_price' => $newPrice,
-                    'message' => "Target price reached for {$symbol}: {$newPrice} {$currency} (target: {$target} {$currency})",
+                    'message_key' => 'target_reached',
+                    'message_params' => [
+                        'symbol' => $symbol,
+                        'currency' => $currency,
+                        'target_price' => $target,
+                        'old_price' => $oldPrice,
+                        'new_price' => $newPrice,
+                        'notify_when' => $condition,
+                    ],
                 ]);
 
                 $tracker->update([

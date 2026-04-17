@@ -309,6 +309,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
+import { getNotificationText, isTrackingStoppedNotification } from '@/utils/notificationText'
 
 const theme = useTheme()
 const router = useRouter()
@@ -345,12 +346,7 @@ function handleLogoClick() {
 }
 
 function notificationText(notification) {
-  return notification?.message || notification?.title || i18n.t('ux.notificationFallback')
-}
-
-function isTrackingStoppedNotification(notification) {
-  const msg = (notification?.message || '').toLowerCase()
-  return msg.includes('tracking stopped')
+  return getNotificationText(notification, i18n.t)
 }
 
 function notificationDate(value) {

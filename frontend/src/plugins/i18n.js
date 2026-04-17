@@ -354,6 +354,8 @@ const messages = {
       alertsHere: 'You\'ll see price change alerts here',
       productFallback: 'Product #{id}',
       trackingStopped: 'Tracking stopped',
+      messageTargetReached: '{symbol}: target reached. Current {currentPrice} {currency}, target {targetPrice} {currency}.',
+      messageTrackingStopped: 'Tracking stopped for this asset.',
       justNow: 'just now',
       minAgo: '{count} min ago',
       hourAgo: '{count}h ago'
@@ -855,6 +857,8 @@ const messages = {
       alertsHere: 'Šeit redzēsi paziņojumus par cenu izmaiņām',
       productFallback: 'Produkts #{id}',
       trackingStopped: 'Izsekošana apturēta',
+      messageTargetReached: '{symbol}: mērķis sasniegts. Pašreizējā cena {currentPrice} {currency}, mērķis {targetPrice} {currency}.',
+      messageTrackingStopped: 'Šim aktīvam izsekošana apturēta.',
       justNow: 'tikko',
       minAgo: 'pirms {count} min',
       hourAgo: 'pirms {count}h'
@@ -1356,6 +1360,8 @@ messages.ru = {
     noNotifications: 'Нет уведомлений',
     alertsHere: 'Здесь будут уведомления об изменении цен',
     trackingStopped: 'Отслеживание остановлено',
+    messageTargetReached: '{symbol}: цель достигнута. Текущая цена {currentPrice} {currency}, цель {targetPrice} {currency}.',
+    messageTrackingStopped: 'Отслеживание этого актива остановлено.',
     justNow: 'только что',
     minAgo: '{count} мин назад',
     hourAgo: '{count}ч назад',

@@ -61,7 +61,7 @@
                   {{ notificationChipText(n) }}
                 </v-chip>
               </div>
-              <div v-if="n.message" class="text-caption text-medium-emphasis mt-1">{{ n.message }}</div>
+              <div class="text-caption text-medium-emphasis mt-1">{{ notificationMessage(n) }}</div>
             </div>
 
             <div class="text-caption text-medium-emphasis text-no-wrap">
@@ -91,6 +91,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useNotificationsStore } from '@/stores/notifications'
+import { getNotificationText, isTrackingStoppedNotification } from '@/utils/notificationText'
 
 const store = useNotificationsStore()
 const router = useRouter()
@@ -98,8 +99,11 @@ const { t } = useI18n()
 const currentPage = ref(1)
 
 function isTrackingStopped(notification) {
-  const msg = (notification?.message || '').toLowerCase()
-  return msg.includes('tracking stopped')
+  return isTrackingStoppedNotification(notification)
+}
+
+function notificationMessage(notification) {
+  return getNotificationText(notification, t)
 }
 
 function notificationIcon(notification) {

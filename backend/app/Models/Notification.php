@@ -14,6 +14,8 @@ class Notification extends Model
         'product_id',
         'old_price',
         'new_price',
+        'message_key',
+        'message_params',
         'message',
         'is_read',
     ];
@@ -23,6 +25,7 @@ class Notification extends Model
         return [
             'old_price' => 'decimal:8',
             'new_price' => 'decimal:8',
+            'message_params' => 'array',
             'is_read' => 'boolean',
             'created_at' => 'datetime',
         ];
