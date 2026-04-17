@@ -383,60 +383,85 @@ const chartData = computed(() => {
   }
 })
 
-const chartOptions = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        title(context) {
-          const first = context?.[0]
-          if (!first) return ''
+const chartOptions = computed(() => {
+  const prices = []
 
-          const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
-          const row = asc[first.dataIndex]
-          if (!row) return ''
-          return formatDate(row.checked_at)
-        },
-        label(context) {
-          const currency = (product.value?.currency || 'USD').toUpperCase()
-          const y = Number(context.parsed.y)
+  for (const entry of historyData.value) {
+    const price = Number(entry.price)
+    if (Number.isFinite(price)) {
+      prices.push(price)
+    }
+  }
 
-          return `${new Intl.NumberFormat(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(y)} ${currency}`
-        },
-      },
-    },
-  },
-  scales: {
-    x: {
-      grid: {
+  let yMin
+  let yMax
+
+  if (prices.length) {
+    const minPrice = Math.min(...prices)
+    const maxPrice = Math.max(...prices)
+    const padding = Math.max((maxPrice - minPrice) * 0.1, 1)
+
+    yMin = minPrice - padding
+    yMax = maxPrice + padding
+  }
+
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
         display: false,
       },
-      ticks: {
-        maxRotation: 0,
-        autoSkip: true,
-        maxTicksLimit: smAndDown.value ? 4 : 8,
-      },
-    },
-    y: {
-      ticks: {
-        maxTicksLimit: smAndDown.value ? 5 : 7,
-        callback(value) {
-          return new Intl.NumberFormat(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(Number(value))
+      tooltip: {
+        callbacks: {
+          title(context) {
+            const first = context?.[0]
+            if (!first) return ''
+
+            const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
+            const row = asc[first.dataIndex]
+            if (!row) return ''
+            return formatDate(row.checked_at)
+          },
+          label(context) {
+            const currency = (product.value?.currency || 'USD').toUpperCase()
+            const y = Number(context.parsed.y)
+
+            return `${new Intl.NumberFormat(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }).format(y)} ${currency}`
+          },
         },
       },
     },
-  },
-}))
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: smAndDown.value ? 4 : 8,
+        },
+      },
+      y: {
+        min: yMin,
+        max: yMax,
+        ticks: {
+          maxTicksLimit: smAndDown.value ? 5 : 7,
+          callback(value) {
+            return new Intl.NumberFormat(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }).format(Number(value))
+          },
+        },
+      },
+    },
+  }
+})
 
 function setHistorySort(key) {
   if (historySortKey.value === key) {
