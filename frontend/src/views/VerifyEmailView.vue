@@ -60,11 +60,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { resendVerification, verifyEmail } from '@/api'
 
 const auth = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 const loading = ref(false)
 const sent = ref(false)
@@ -73,6 +75,13 @@ const isAutoVerifying = ref(false)
 const verifyDone = ref(false)
 const verifySuccess = ref(false)
 const verifyError = ref('')
+
+const isVerifiedFromQuery = computed(() => {
+  const verified = String(route.query.verified || '').toLowerCase()
+  const status = String(route.query.status || '').toLowerCase()
+
+  return verified === '1' || verified === 'true' || status === 'already_verified' || status === 'verified'
+})
 
 const hasLinkData = computed(() => {
   return Boolean(route.params.id && route.params.hash && route.query.expires && route.query.signature)
@@ -101,6 +110,14 @@ const iconColor = computed(() => {
 })
 
 async function autoVerifyFromLink() {
+  if (isVerifiedFromQuery.value) {
+    await router.replace({
+      path: '/dashboard',
+      query: { verified: '1', status: String(route.query.status || 'already_verified') },
+    })
+    return
+  }
+
   if (!hasLinkData.value) return
 
   isAutoVerifying.value = true
@@ -109,11 +126,28 @@ async function autoVerifyFromLink() {
   verifyError.value = ''
 
   try {
-    await verifyEmail(route.params.id, route.params.hash, {
+    const response = await verifyEmail(route.params.id, route.params.hash, {
       expires: route.query.expires,
       signature: route.query.signature,
     })
+
+    const status = response?.data?.status
+    const verified = response?.data?.verified
+
+    if (status === 'already_verified' || status === 'verified' || verified === true) {
+      verifySuccess.value = true
+      await router.replace({
+        path: '/dashboard',
+        query: { verified: '1', status: status || 'verified' },
+      })
+      return
+    }
+
     verifySuccess.value = true
+    await router.replace({
+      path: '/dashboard',
+      query: { verified: '1', status: 'verified' },
+    })
   } catch (e) {
     verifyError.value = e.response?.data?.message || t('authRecovery.verifyFailedTryResend')
   } finally {
