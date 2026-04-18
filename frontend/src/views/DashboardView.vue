@@ -262,15 +262,13 @@
             <div class="text-caption text-medium-emphasis mt-2">{{ $t('dashboard.onlyNumbersHint') }}</div>
           </div>
 
-          <v-select
-            v-model="trackForm.notifyWhen"
-            :items="notifyWhenOptions"
-            item-title="text"
-            item-value="value"
-            :label="$t('dashboard.notifyCondition')"
-            rounded="lg"
-            variant="outlined"
-          />
+          <div class="mb-4">
+            <div class="text-caption text-medium-emphasis mb-2">{{ $t('dashboard.notifyCondition') }}</div>
+            <v-btn-toggle v-model="trackForm.notifyWhen" mandatory rounded="lg" class="notify-when-toggle">
+              <v-btn value="above" rounded="lg">{{ $t('dashboard.conditionAbove') }}</v-btn>
+              <v-btn value="below" rounded="lg">{{ $t('dashboard.conditionBelow') }}</v-btn>
+            </v-btn-toggle>
+          </div>
 
           <div class="d-flex justify-end ga-2 mt-2">
             <v-btn variant="text" rounded="xl" :disabled="trackLoading" @click="showTrackDialog = false">{{ $t('form.cancel') }}</v-btn>
@@ -317,13 +315,8 @@ const trackError = ref(null)
 
 const trackForm = ref({
   targetPrice: '',
-  notifyWhen: 'below',
+  notifyWhen: 'above',
 })
-
-const notifyWhenOptions = computed(() => [
-  { text: t('dashboard.conditionDropToTarget'), value: 'below' },
-  { text: t('dashboard.conditionRiseToTarget'), value: 'above' },
-])
 
 const quickAdjustPercents = computed(() => {
   if (trackForm.value.notifyWhen === 'below') {
@@ -637,7 +630,7 @@ function openTrackDialog(asset) {
   selectedAsset.value = asset
   trackForm.value = {
     targetPrice: toPriceInput(asset.current_price),
-    notifyWhen: 'below',
+    notifyWhen: 'above',
   }
   trackError.value = null
   showTrackDialog.value = true
@@ -897,6 +890,19 @@ onMounted(() => {
 
 .quick-adjust-btn {
   text-transform: none;
+}
+
+.notify-when-toggle {
+  width: fit-content;
+  margin: 0 auto;
+  gap: 8px;
+}
+
+.notify-when-toggle :deep(.v-btn) {
+  flex: 0 0 auto;
+  min-width: 140px;
+  text-transform: none;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.25);
 }
 
 .action-col {
