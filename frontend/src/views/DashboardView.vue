@@ -757,6 +757,9 @@ onMounted(() => {
 .asset-col {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  width: min(100%, 160px);
+  text-align: left;
 }
 
 .asset-link {
@@ -776,6 +779,7 @@ onMounted(() => {
 .coin-line {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
   white-space: nowrap;
 }
