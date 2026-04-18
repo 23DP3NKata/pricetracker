@@ -460,7 +460,7 @@ const chartData = computed(() => {
 const chartOptions = computed(() => {
   const prices = []
 
-  for (const entry of historyData.value) {
+  for (const entry of chartRows.value) {
     const price = Number(entry.price)
     if (Number.isFinite(price)) {
       prices.push(price)
@@ -471,12 +471,17 @@ const chartOptions = computed(() => {
   let yMax
 
   if (prices.length) {
-    const minPrice = Math.min(...prices)
-    const maxPrice = Math.max(...prices)
-    const padding = Math.max((maxPrice - minPrice) * 0.1, 1)
+    const minVal = Math.min(...prices)
+    const maxVal = Math.max(...prices)
+    const pad = (maxVal - minVal) * 0.1 || 0.01
 
-    yMin = minPrice - padding
-    yMax = maxPrice + padding
+    if (minVal > 0) {
+      yMin = Math.max(0, minVal - pad)
+    } else {
+      yMin = minVal - pad
+    }
+
+    yMax = maxVal + pad
   }
 
   return {
