@@ -404,7 +404,12 @@ function deletePasswordErrors() {
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString(undefined, { timeZone: 'UTC' })
+  return new Date(dateStr).toLocaleDateString('lv-LV', {
+    timeZone: 'UTC',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 }
 
 function beginEdit(field) {
