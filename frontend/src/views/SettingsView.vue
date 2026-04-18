@@ -11,13 +11,27 @@
       <div class="settings-rows">
         <div class="settings-row">
           <div class="row-label">{{ $t('settings.usernameLabel') }}</div>
-          <div class="row-value">{{ profile.name || '-' }}</div>
+          <div class="row-value">
+            <div>{{ profile.name || '-' }}</div>
+            <div v-if="nameNextDate" class="text-caption text-medium-emphasis mt-1">
+              {{ $t('settings.canChangeAfter', { date: nameNextDate }) }}
+            </div>
+          </div>
           <div class="row-actions">
-            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('name')">{{ $t('settings.edit') }}</v-btn>
+            <v-btn
+              variant="outlined"
+              color="primary"
+              size="small"
+              class="edit-btn"
+              :disabled="nameLocked"
+              @click="beginEdit('name')"
+            >
+              {{ $t('settings.edit') }}
+            </v-btn>
           </div>
         </div>
         <v-expand-transition>
-          <div v-if="editingField === 'name'" class="row-expand">
+          <div v-if="editingField === 'name' && !nameLocked" class="row-expand">
             <v-alert v-if="nameMsg" :type="nameMsg.type" variant="tonal" rounded="lg" class="mb-3" closable @click:close="nameMsg = null">
               {{ nameMsg.text }}
             </v-alert>
@@ -293,6 +307,28 @@ const loading = ref(true)
 const profile = ref(null)
 const isAdmin = computed(() => profile.value?.role === 'admin' || auth.isAdmin)
 const editingField = ref(null)
+const lockDays = 30
+
+const nameUnlockDate = computed(() => {
+  const last = profile.value?.last_username_change
+  if (!last) return null
+
+  const d = new Date(last)
+  if (Number.isNaN(d.getTime())) return null
+
+  d.setUTCDate(d.getUTCDate() + lockDays)
+  return d
+})
+
+const nameLocked = computed(() => {
+  if (!nameUnlockDate.value) return false
+  return Date.now() < nameUnlockDate.value.getTime()
+})
+
+const nameNextDate = computed(() => {
+  if (!nameUnlockDate.value) return ''
+  return formatDate(nameUnlockDate.value)
+})
 
 // Verification
 const verifySending = ref(false)
@@ -404,7 +440,11 @@ function deletePasswordErrors() {
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('lv-LV', {
+
+  const dateValue = dateStr instanceof Date ? dateStr : new Date(dateStr)
+  if (Number.isNaN(dateValue.getTime())) return '—'
+
+  return dateValue.toLocaleDateString('lv-LV', {
     timeZone: 'UTC',
     day: '2-digit',
     month: '2-digit',
@@ -413,6 +453,10 @@ function formatDate(dateStr) {
 }
 
 function beginEdit(field) {
+  if (field === 'name' && nameLocked.value) {
+    return
+  }
+
   editingField.value = field
 
   if (field === 'name') {
@@ -461,6 +505,10 @@ async function loadProfile() {
 }
 
 async function handleNameChange() {
+  if (nameLocked.value) {
+    return
+  }
+
   nameSubmitted.value = true
   if (nameErrors().length) return
 
