@@ -171,12 +171,12 @@
     </v-card>
 
     <div v-if="assets.length" class="coingecko-attribution">
-      <span class="coingecko-source">Source:</span>
+      <span class="coingecko-source">{{ $t('dashboard.sourceLabel') }}</span>
       <a
         href="https://www.coingecko.com/"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Source: CoinGecko"
+        :aria-label="$t('dashboard.sourceAria')"
       >
         <img :src="coingeckoLogoSrc" alt="CoinGecko" class="coingecko-logo" />
       </a>

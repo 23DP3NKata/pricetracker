@@ -111,7 +111,7 @@
         <div class="table-scroll">
           <div class="list-head">
             <div class="head-index">#</div>
-            <div class="head-coin">Coin</div>
+            <div class="head-coin">{{ $t('tracking.asset') }}</div>
             <div>{{ $t('tracking.currentPrice') }}</div>
             <div>{{ $t('tracking.target') }}</div>
             <div>{{ $t('tracking.condition') }}</div>
@@ -231,7 +231,7 @@
         <div class="table-scroll">
           <div class="list-head">
             <div class="head-index">#</div>
-            <div class="head-coin">Coin</div>
+            <div class="head-coin">{{ $t('tracking.asset') }}</div>
             <div>{{ $t('tracking.currentPrice') }}</div>
             <div>{{ $t('tracking.target') }}</div>
             <div>{{ $t('tracking.condition') }}</div>

@@ -181,6 +181,8 @@ const messages = {
     dashboard: {
       title: 'Crypto',
       topAssetsSubtitle: 'Top-10 popular coins.',
+      sourceLabel: 'Source:',
+      sourceAria: 'Source: CoinGecko',
       lastUpdated: 'Last updated',
       refresh: 'Refresh',
       emptyTopAssetsHint: 'The list is empty because top assets are not yet available in the database. Data will appear automatically after the next server sync or after adding assets.',
@@ -305,6 +307,10 @@ const messages = {
 
     settings: {
       title: 'Settings',
+      usernameLabel: 'Username',
+      emailLabel: 'Email',
+      passwordLabel: 'Password',
+      edit: 'Edit',
       accountInfo: 'Account Info',
       role: 'Role',
       emailVerified: 'Email Verified',
@@ -348,6 +354,13 @@ const messages = {
       deleteAccountConfirmBtn: 'Delete Permanently',
       cancel: 'Cancel',
       failedDeleteAccount: 'Failed to delete account'
+    },
+
+    notFound: {
+      code: '404',
+      message: 'Page not found. The address may be incorrect or the page was moved.',
+      goHome: 'Go Home',
+      goDashboard: 'Dashboard'
     },
 
     notificationsPage: {
@@ -687,6 +700,8 @@ const messages = {
     dashboard: {
       title: 'Kriptovalūta',
       topAssetsSubtitle: 'Top-10 populārākās monētas.',
+      sourceLabel: 'Avots:',
+      sourceAria: 'Avots: CoinGecko',
       lastUpdated: 'Pēdējais atjauninājums',
       refresh: 'Atjaunot',
       emptyTopAssetsHint: 'Saraksts ir tukšs, jo datubāzē vēl nav top aktīvu. Dati parādīsies automātiski pēc nākamās servera sinhronizācijas vai pēc aktīvu pievienošanas.',
@@ -811,6 +826,10 @@ const messages = {
 
     settings: {
       title: 'Iestatījumi',
+      usernameLabel: 'Lietotājvārds',
+      emailLabel: 'E-pasts',
+      passwordLabel: 'Parole',
+      edit: 'Rediģēt',
       accountInfo: 'Konta informācija',
       role: 'Loma',
       emailVerified: 'E-pasts apstiprināts',
@@ -854,6 +873,13 @@ const messages = {
       deleteAccountConfirmBtn: 'Dzēst neatgriezeniski',
       cancel: 'Atcelt',
       failedDeleteAccount: 'Neizdevās dzēst kontu'
+    },
+
+    notFound: {
+      code: '404',
+      message: 'Lapa nav atrasta. Adrese var būt nepareiza vai lapa ir pārvietota.',
+      goHome: 'Uz sākumu',
+      goDashboard: 'Kriptovalūta'
     },
 
     notificationsPage: {
@@ -1135,7 +1161,7 @@ messages.ru = {
     timeline2026Desc: 'Добавили синхронизацию топ-монет, более чистую историю и стабильные уведомления по цели.',
     timeline2026Feature1: 'Снимок Top-10 криптоактивов',
     timeline2026Feature2: 'Уведомления по целевым уровням',
-    timelineFutureYear: 'Next',
+    timelineFutureYear: 'Далее',
     timelineFutureTitle: 'Следующий этап',
     timelineFutureDesc: 'В планах: вид портфеля, больше условий для алертов и понятные недельные отчеты.',
     timelineFutureFeature1: 'Вид портфеля',
@@ -1194,6 +1220,8 @@ messages.ru = {
     ...messages.en.dashboard,
     title: 'Криптовалюта',
     topAssetsSubtitle: 'Топ-10 популярных монет.',
+    sourceLabel: 'Источник:',
+    sourceAria: 'Источник: CoinGecko',
     lastUpdated: 'Последнее обновление',
     refresh: 'Обновить',
     emptyTopAssetsHint: 'Список пуст, потому что в базе пока нет топ-активов. Данные появятся автоматически после следующей синхронизации сервера или после добавления активов.',
@@ -1318,6 +1346,10 @@ messages.ru = {
   settings: {
     ...messages.en.settings,
     title: 'Настройки',
+    usernameLabel: 'Имя пользователя',
+    emailLabel: 'Email',
+    passwordLabel: 'Пароль',
+    edit: 'Изменить',
     accountInfo: 'Информация об аккаунте',
     role: 'Роль',
     emailVerified: 'Email подтвержден',
@@ -1361,6 +1393,13 @@ messages.ru = {
     deleteAccountConfirmBtn: 'Удалить навсегда',
     cancel: 'Отмена',
     failedDeleteAccount: 'Не удалось удалить аккаунт',
+  },
+  notFound: {
+    ...messages.en.notFound,
+    code: '404',
+    message: 'Страница не найдена. Адрес может быть неверным или страница была перемещена.',
+    goHome: 'На главную',
+    goDashboard: 'Криптовалюта',
   },
   notificationsPage: {
     ...messages.en.notificationsPage,

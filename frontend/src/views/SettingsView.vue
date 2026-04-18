@@ -10,10 +10,10 @@
     <template v-if="profile">
       <div class="settings-rows">
         <div class="settings-row">
-          <div class="row-label">Username</div>
+          <div class="row-label">{{ $t('settings.usernameLabel') }}</div>
           <div class="row-value">{{ profile.name || '-' }}</div>
           <div class="row-actions">
-            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('name')">Edit</v-btn>
+            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('name')">{{ $t('settings.edit') }}</v-btn>
           </div>
         </div>
         <v-expand-transition>
@@ -47,10 +47,10 @@
         <v-divider />
 
         <div class="settings-row">
-          <div class="row-label">Email</div>
+          <div class="row-label">{{ $t('settings.emailLabel') }}</div>
           <div class="row-value">{{ profile.email || '-' }}</div>
           <div class="row-actions">
-            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('email')">Edit</v-btn>
+            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('email')">{{ $t('settings.edit') }}</v-btn>
           </div>
         </div>
         <v-expand-transition>
@@ -106,10 +106,10 @@
         <v-divider />
 
         <div class="settings-row">
-          <div class="row-label">Password</div>
+          <div class="row-label">{{ $t('settings.passwordLabel') }}</div>
           <div class="row-value">••••••••••••</div>
           <div class="row-actions">
-            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('password')">Edit</v-btn>
+            <v-btn variant="outlined" color="primary" size="small" class="edit-btn" @click="beginEdit('password')">{{ $t('settings.edit') }}</v-btn>
           </div>
         </div>
         <v-expand-transition>
@@ -175,7 +175,7 @@
           <div class="row-label">{{ $t('settings.emailVerified') }}</div>
           <div class="row-value">
             <v-chip v-if="auth.emailVerified" color="success" variant="tonal" size="small">{{ $t('settings.verified') }}</v-chip>
-            <v-chip v-else color="warning" variant="tonal" size="small">Not verified</v-chip>
+            <v-chip v-else color="warning" variant="tonal" size="small">{{ $t('settings.notVerified') }}</v-chip>
           </div>
           <div class="row-actions" v-if="!auth.emailVerified">
             <v-btn v-if="!verifySent" variant="outlined" color="primary" size="small" class="edit-btn" :loading="verifySending" @click="handleResendVerification">
