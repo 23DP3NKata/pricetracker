@@ -84,6 +84,7 @@
               {{ $t('dashboard.change7d') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('change7d') }}</v-icon>
             </button>
+            <div class="head-cell d-none d-sm-block">{{ $t('dashboard.action') }}</div>
             <div class="head-cell d-none d-sm-block">{{ $t('dashboard.last7Days') }}</div>
           </div>
 
@@ -131,6 +132,19 @@
               <span :class="['change-text', percentClass(asset._change7d)]">
                 {{ formatTrendPercent(asset._change7d) }}
               </span>
+            </div>
+
+            <div class="action-col d-none d-sm-flex">
+              <v-btn
+                size="small"
+                rounded="lg"
+                variant="text"
+                class="track-btn"
+                :class="{ 'track-btn--tracked': asset.is_tracked }"
+                @click="openTrackDialog(asset)"
+              >
+                {{ asset.is_tracked ? $t('dashboard.tracked') : $t('dashboard.track') }}
+              </v-btn>
             </div>
 
             <div class="chart-col d-none d-sm-block">
@@ -705,7 +719,7 @@ onMounted(() => {
 
 .list-head {
   display: grid;
-  grid-template-columns: 60px minmax(240px, 2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(180px, 1.1fr);
+  grid-template-columns: 60px minmax(240px, 2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(120px, 0.75fr) minmax(180px, 1.1fr);
   gap: 12px;
   padding: 10px 18px;
   font-size: 0.82rem;
@@ -727,7 +741,7 @@ onMounted(() => {
 
 .list-row {
   display: grid;
-  grid-template-columns: 60px minmax(240px, 2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(180px, 1.1fr);
+  grid-template-columns: 60px minmax(240px, 2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(120px, 0.75fr) minmax(180px, 1.1fr);
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
@@ -885,6 +899,10 @@ onMounted(() => {
   text-transform: none;
 }
 
+.action-col {
+  justify-content: center;
+}
+
 .track-btn {
   min-width: 104px;
   height: 34px;
@@ -906,14 +924,14 @@ onMounted(() => {
 
 @media (max-width: 959px) {
   .list-head {
-    grid-template-columns: 52px minmax(180px, 1.5fr) minmax(100px, 0.9fr) minmax(80px, 0.65fr) minmax(80px, 0.65fr) minmax(130px, 1fr);
+    grid-template-columns: 52px minmax(180px, 1.5fr) minmax(100px, 0.9fr) minmax(80px, 0.65fr) minmax(80px, 0.65fr) minmax(120px, 0.8fr) minmax(130px, 1fr);
     gap: 8px;
     padding: 10px 12px;
     font-size: 0.78rem;
   }
 
   .list-row {
-    grid-template-columns: 52px minmax(180px, 1.5fr) minmax(100px, 0.9fr) minmax(80px, 0.65fr) minmax(80px, 0.65fr) minmax(130px, 1fr);
+    grid-template-columns: 52px minmax(180px, 1.5fr) minmax(100px, 0.9fr) minmax(80px, 0.65fr) minmax(80px, 0.65fr) minmax(120px, 0.8fr) minmax(130px, 1fr);
     gap: 8px;
     padding: 12px;
   }
