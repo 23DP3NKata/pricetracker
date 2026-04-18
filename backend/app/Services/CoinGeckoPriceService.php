@@ -426,11 +426,11 @@ class CoinGeckoPriceService
             'consecutive_errors' => 0,
         ]);
 
-        $lastHistory = PriceHistory::where('product_id', $product->id)
+        $lastPrice = PriceHistory::where('product_id', $product->id)
             ->orderByDesc('checked_at')
-            ->first();
+            ->value('price');
 
-        if (!$lastHistory || (float) $lastHistory->price !== $newPrice) {
+        if ($lastPrice === null || (float) $lastPrice !== (float) $newPrice) {
             PriceHistory::create([
                 'product_id' => $product->id,
                 'price' => $newPrice,
