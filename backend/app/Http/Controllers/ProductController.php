@@ -32,6 +32,8 @@ class ProductController extends Controller
             ->where('status', 'active')
             ->whereNotNull('symbol')
             ->whereNotNull('current_price')
+            ->orderByRaw('CASE WHEN rank IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('rank')
             ->orderByDesc('tracking_count')
             ->orderByDesc('checks_count')
             ->limit($limit)

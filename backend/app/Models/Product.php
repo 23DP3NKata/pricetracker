@@ -18,6 +18,7 @@ class Product extends Model
         'current_price',
         'price_change_24h',
         'trend',
+        'rank',
         'currency',
         'status',
         'tracking_count',

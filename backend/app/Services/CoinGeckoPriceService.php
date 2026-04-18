@@ -31,10 +31,14 @@ class CoinGeckoPriceService
         return config('services.coingecko.default_assets', [
             ['symbol' => 'BTC', 'name' => 'Bitcoin'],
             ['symbol' => 'ETH', 'name' => 'Ethereum'],
-            ['symbol' => 'LTC', 'name' => 'Litecoin'],
-            ['symbol' => 'SOL', 'name' => 'Solana'],
-            ['symbol' => 'BNB', 'name' => 'BNB'],
+            ['symbol' => 'USDT', 'name' => 'Tether'],
             ['symbol' => 'XRP', 'name' => 'XRP'],
+            ['symbol' => 'TRX', 'name' => 'TRON'],
+            ['symbol' => 'DOGE', 'name' => 'Dogecoin'],
+            ['symbol' => 'BNB', 'name' => 'BNB'],
+            ['symbol' => 'USDC', 'name' => 'USD Coin'],
+            ['symbol' => 'SOL', 'name' => 'Solana'],
+            ['symbol' => 'LTC', 'name' => 'Litecoin'],
         ]);
     }
 
@@ -69,6 +73,11 @@ class CoinGeckoPriceService
 
         if (empty($defaults)) {
             return ['synced' => 0, 'errors' => 0, 'error_details' => [], 'product_ids' => []];
+        }
+
+        $rankBySymbol = [];
+        foreach ($defaults as $index => $symbol) {
+            $rankBySymbol[$symbol] = $index + 1;
         }
 
         $coinIdBySymbol = [];
@@ -115,6 +124,7 @@ class CoinGeckoPriceService
                 'canonical_url' => 'coingecko:' . $coinId,
                 'product_page_url' => 'https://www.coingecko.com/en/coins/' . $coinId,
                 'image_url' => $market['image'] ?? null,
+                'rank' => $rankBySymbol[$symbol] ?? null,
                 'currency' => strtoupper($this->vsCurrency),
                 'status' => 'active',
             ]);
