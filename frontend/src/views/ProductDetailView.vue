@@ -89,33 +89,23 @@
         <v-table v-if="historyData.length" density="compact">
           <thead>
             <tr>
-              <th>
-                <button type="button" class="table-sort-btn" @click="setHistorySort('date')">
-                  {{ $t('productDetail.date') }}
-                  <v-icon v-if="historySortKey === 'date'" size="14">{{ sortArrowIcon() }}</v-icon>
-                </button>
-              </th>
+              <th>{{ $t('productDetail.date') }}</th>
               <th class="text-right">{{ $t('productDetail.price') }}</th>
-              <th class="text-right">
-                <button type="button" class="table-sort-btn table-sort-btn-right" @click="setHistorySort('change')">
-                  {{ $t('productDetail.change') }}
-                  <v-icon v-if="historySortKey === 'change'" size="14">{{ sortArrowIcon() }}</v-icon>
-                </button>
-              </th>
+              <th class="text-right">{{ $t('productDetail.change') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(entry, i) in displayedHistoryData" :key="`${entry.checked_at}-${entry.price}-${i}`">
+            <tr v-for="(entry, i) in historyData" :key="`${entry.checked_at}-${entry.price}-${i}`">
               <td>{{ formatDate(entry.checked_at) }}</td>
               <td class="text-right font-weight-medium">{{ formatPrice(entry.price) }}</td>
               <td class="text-right">
-                <template v-if="i < displayedHistoryData.length - 1">
+                <template v-if="i < historyData.length - 1">
                   <v-chip
-                    :color="historyChangeColor(entry.price, displayedHistoryData[i + 1].price)"
+                    :color="historyChangeColor(entry.price, historyData[i + 1].price)"
                     size="x-small"
                     variant="tonal"
                   >
-                    {{ formatPriceDiff(entry.price, displayedHistoryData[i + 1].price) }} {{ (product?.currency || 'USD').toUpperCase() }}
+                    {{ formatPriceDiff(entry.price, historyData[i + 1].price) }} {{ (product?.currency || 'USD').toUpperCase() }}
                   </v-chip>
                 </template>
               </td>
@@ -123,9 +113,20 @@
           </tbody>
         </v-table>
 
-        <div v-if="hasMoreHistory" class="d-flex justify-center mt-3">
-          <v-btn variant="text" rounded="xl" @click="showAllHistory = !showAllHistory">
-            {{ showAllHistory ? $t('productDetail.showLessHistory') : $t('productDetail.showMoreHistory') }}
+        <div v-if="historyData.length" class="d-flex justify-center align-center ga-3 mt-3">
+          <v-btn variant="text" rounded="xl" :disabled="historyPage <= 1" @click="historyPage -= 1">
+            ← Prev
+          </v-btn>
+          <div class="text-body-2 text-medium-emphasis">
+            {{ $t('productDetail.pageIndicator', { current: historyPagination.current_page, last: historyPagination.last_page }) }}
+          </div>
+          <v-btn
+            variant="text"
+            rounded="xl"
+            :disabled="historyPage >= historyPagination.last_page"
+            @click="historyPage += 1"
+          >
+            Next →
           </v-btn>
         </div>
 
@@ -168,20 +169,19 @@ const store = useProductsStore()
 const product = ref(null)
 const historyDays = ref(30)
 const historyData = ref([])
+const chartHistoryData = ref([])
 const historyStats = ref(null)
-const historySortKey = ref('date')
-const historySortDir = ref('desc')
-const showAllHistory = ref(false)
-const HISTORY_INITIAL_LIMIT = 10
+const historyPage = ref(1)
+const historyPagination = ref({
+  current_page: 1,
+  last_page: 1,
+  per_page: 10,
+  total: 0,
+})
 
 function statusLabel(status) {
   if (status === 'active') return t('productDetail.active')
   return t('productDetail.paused')
-}
-
-function sortArrowIcon() {
-  if (historySortDir.value === 'desc') return 'mdi-arrow-down'
-  return 'mdi-arrow-up'
 }
 
 function trendLabel(trend) {
@@ -300,55 +300,8 @@ function parseHistoryDate(dateStr) {
   return date.getTime()
 }
 
-const sortedHistoryData = computed(() => {
-  const rows = [...historyData.value]
-
-  rows.sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
-
-  if (historySortKey.value === 'change') {
-    const temp = []
-
-    for (let i = 0; i < rows.length; i += 1) {
-      const item = rows[i]
-      let diff = Number.NEGATIVE_INFINITY
-
-      if (i < rows.length - 1) {
-        const raw = priceDiff(item.price, rows[i + 1].price)
-        if (Number.isFinite(raw)) {
-          diff = Math.abs(raw)
-        }
-      }
-
-      temp.push({ item, diff })
-    }
-
-    temp.sort((a, b) => a.diff - b.diff)
-
-    const changedRows = []
-    for (let i = 0; i < temp.length; i += 1) {
-      changedRows.push(temp[i].item)
-    }
-
-    if (historySortDir.value === 'desc') {
-      changedRows.reverse()
-    }
-
-    return changedRows
-  }
-
-  if (historySortDir.value === 'desc') rows.reverse()
-  return rows
-})
-
-const hasMoreHistory = computed(() => sortedHistoryData.value.length > HISTORY_INITIAL_LIMIT)
-
-const displayedHistoryData = computed(() => {
-  if (showAllHistory.value) return sortedHistoryData.value
-  return sortedHistoryData.value.slice(0, HISTORY_INITIAL_LIMIT)
-})
-
 const chartRows = computed(() => {
-  const asc = [...historyData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
+  const asc = [...chartHistoryData.value].sort((a, b) => parseHistoryDate(a.checked_at) - parseHistoryDate(b.checked_at))
   const maxPoints = 200
 
   if (asc.length <= maxPoints) return asc
@@ -542,16 +495,6 @@ const chartOptions = computed(() => {
   }
 })
 
-function setHistorySort(key) {
-  if (historySortKey.value === key) {
-    historySortDir.value = historySortDir.value === 'desc' ? 'asc' : 'desc'
-    return
-  }
-
-  historySortKey.value = key
-  historySortDir.value = 'desc'
-}
-
 function priceDiff(current, previous) {
   return Number(current) - Number(previous)
 }
@@ -565,25 +508,45 @@ async function loadHistory() {
   try {
     const days = historyDays.value === -1 ? null : historyDays.value
 
-    const { data } = await getPriceHistory(route.params.id, days)
+    const { data } = await getPriceHistory(route.params.id, days, historyPage.value)
     historyData.value = data.history || []
+    chartHistoryData.value = data.chart_history || data.history || []
     historyStats.value = data.stats || null
+    historyPagination.value = {
+      current_page: data?.pagination?.current_page || 1,
+      last_page: data?.pagination?.last_page || 1,
+      per_page: data?.pagination?.per_page || 10,
+      total: data?.pagination?.total || historyData.value.length,
+    }
+    historyPage.value = historyPagination.value.current_page
   } catch {
     historyData.value = []
+    chartHistoryData.value = []
     historyStats.value = null
+    historyPagination.value = {
+      current_page: 1,
+      last_page: 1,
+      per_page: 10,
+      total: 0,
+    }
   }
 }
 
-watch(historyDays, () => loadHistory())
-
 watch(historyDays, () => {
-  showAllHistory.value = false
+  if (historyPage.value !== 1) {
+    historyPage.value = 1
+    return
+  }
+
+  loadHistory()
 })
+
+watch(historyPage, () => loadHistory())
 
 watch(
   () => route.params.id,
   async () => {
-    showAllHistory.value = false
+    historyPage.value = 1
     await loadProduct()
     await loadHistory()
   },

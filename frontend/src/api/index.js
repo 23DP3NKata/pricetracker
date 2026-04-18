@@ -128,10 +128,10 @@ export function deleteTrackingRule(id) {
 }
 
 // Price History
-export function getPriceHistory(productId, days = 30) {
-  let params = {}
+export function getPriceHistory(productId, days = 30, page = 1) {
+  const params = { page }
   if (days !== null) {
-    params = { days }
+    params.days = days
   }
 
   return api.get(`/api/products/${productId}/prices`, { params })

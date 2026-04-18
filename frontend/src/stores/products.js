@@ -78,8 +78,8 @@ export const useProductsStore = defineStore('products', () => {
     products.value = next
   }
 
-  async function fetchPriceHistory(productId, days = 30) {
-    const { data } = await apiGetPriceHistory(productId, days)
+  async function fetchPriceHistory(productId, days = 30, page = 1) {
+    const { data } = await apiGetPriceHistory(productId, days, page)
     priceHistory.value = data
     return data
   }
