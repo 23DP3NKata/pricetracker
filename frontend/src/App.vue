@@ -69,7 +69,15 @@
                 <v-divider />
 
                 <v-card-actions>
-                  <v-btn to="/notifications" variant="text" block @click="notificationsMenu = false">{{ $t('notifications.all') }}</v-btn>
+                  <v-btn
+                    v-if="notificationsStore.notifications.length > 0 && notificationsStore.unreadCount > 0"
+                    variant="text"
+                    @click="markAllNotificationsFromMenu"
+                  >
+                    {{ $t('notificationsPage.markAllRead') }}
+                  </v-btn>
+                  <v-spacer />
+                  <v-btn to="/notifications" variant="text" @click="notificationsMenu = false">{{ $t('notifications.all') }}</v-btn>
                 </v-card-actions>
               </v-card>
             </v-menu>
@@ -381,6 +389,14 @@ async function openNotification(notification) {
   }
 
   router.push({ name: 'notifications' })
+}
+
+async function markAllNotificationsFromMenu() {
+  try {
+    await notificationsStore.markAllRead()
+  } catch {
+    // Non-critical in popup context; keep menu usable even if request fails.
+  }
 }
 
 function toggleTheme() {
