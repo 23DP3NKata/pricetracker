@@ -76,10 +76,11 @@
               {{ $t('dashboard.change1h') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('change1h') }}</v-icon>
             </button>
-            <button type="button" class="head-cell text-right sortable-head" :class="{ 'head-active': sortBy === 'change24h' }" @click="toggleSort('change24h')">
+            <button type="button" class="head-cell text-right sortable-head d-none d-sm-inline-flex" :class="{ 'head-active': sortBy === 'change24h' }" @click="toggleSort('change24h')">
               {{ $t('dashboard.change24h') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('change24h') }}</v-icon>
             </button>
+            <div class="head-cell d-sm-none">{{ $t('dashboard.action') }}</div>
             <button type="button" class="head-cell text-right sortable-head d-none d-sm-block" :class="{ 'head-active': sortBy === 'change7d' }" @click="toggleSort('change7d')">
               {{ $t('dashboard.change7d') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('change7d') }}</v-icon>
@@ -122,7 +123,7 @@
               </span>
             </div>
 
-            <div class="change-col text-right">
+            <div class="change-col text-right d-none d-sm-block">
               <span :class="['change-text', percentClass(asset._change24h)]">
                 {{ formatTrendPercent(asset._change24h) }}
               </span>
@@ -166,6 +167,18 @@
                   :fill="sparklineStroke(asset._change24h)"
                 />
               </svg>
+            </div>
+
+            <div class="mobile-track-action d-flex d-sm-none justify-end">
+              <v-btn
+                size="small"
+                rounded="lg"
+                variant="tonal"
+                color="primary"
+                @click.stop="openTrackDialog(asset)"
+              >
+                {{ asset.is_tracked ? $t('dashboard.tracked') : $t('dashboard.track') }}
+              </v-btn>
             </div>
           </div>
     </v-card>
@@ -930,6 +943,10 @@ onMounted(() => {
 
 .track-btn--tracked:hover {
   background: rgba(var(--v-theme-primary), 0.1) !important;
+}
+
+.mobile-track-action {
+  justify-self: end;
 }
 
 @media (max-width: 959px) {
