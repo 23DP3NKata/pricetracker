@@ -18,7 +18,6 @@
         <div class="hero-head-row mb-3">
           <div class="hero-head-inline">
             <span class="text-subtitle-1 font-weight-bold">{{ $t('adminDashboard.requestsAllTimeShort') }}</span>
-            <span class="text-caption text-medium-emphasis">{{ $t('adminDashboard.forceRefreshAllPricesShort') }}</span>
           </div>
         </div>
 
