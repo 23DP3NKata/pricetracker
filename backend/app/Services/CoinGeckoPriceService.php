@@ -781,6 +781,10 @@ class CoinGeckoPriceService
 
             throw new \RuntimeException("CoinGecko request failed ({$status}): {$message}");
         }
+        
+        Cache::increment('api_requests_day_' . now()->format('Y-m-d'));
+        Cache::increment('api_requests_month_' . now()->format('Y-m'));
+        Cache::increment('api_requests_total');
 
         return $response;
     }
