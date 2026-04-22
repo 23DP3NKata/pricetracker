@@ -47,11 +47,13 @@ class AdminDashboardController extends Controller
 
         $firstCheckAt = PriceHistory::query()->min('checked_at');
 
-        $requestsDay = $this->expectedCyclesSince($startOfDay, $now);
-        $requestsMonth = $this->expectedCyclesSince($startOfMonth, $now);
+        $systemStart = Carbon::parse(env('SYSTEM_START_DATE', now()));
+
+        $requestsDay = $this->expectedCyclesSince(max($startOfDay, $systemStart), $now);
+        $requestsMonth = $this->expectedCyclesSince(max($startOfMonth, $systemStart), $now);
         $requestsAllTime = 0;
 
-        if ($firstCheckAt) {
+        if ($firstCheckAt && Carbon::parse($firstCheckAt)->gte($systemStart)) {
             $requestsAllTime = $this->expectedCyclesSince($firstCheckAt, $now);
         }
 
