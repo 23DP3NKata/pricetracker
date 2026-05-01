@@ -321,8 +321,6 @@ class CoinGeckoPriceService
                 ->each(function (UserProduct $up) {
                     $up->update([
                         'last_checked_at' => now(),
-                        'check_interval' => self::TRACKING_INTERVAL_MINUTES,
-                        'next_check_at' => now()->addMinutes(self::TRACKING_INTERVAL_MINUTES),
                     ]);
                 });
         }
@@ -504,7 +502,6 @@ class CoinGeckoPriceService
                 $tracker->update([
                     'last_notified_at' => now(),
                     'is_active' => false,
-                    'next_check_at' => null,
                 ]);
             });
     }

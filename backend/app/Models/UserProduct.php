@@ -12,11 +12,9 @@ class UserProduct extends Model
     protected $fillable = [
         'user_id',
         'product_id',
-        'check_interval',
         'target_price',
         'notify_when',
         'last_checked_at',
-        'next_check_at',
         'last_notified_at',
         'is_active',
     ];
@@ -26,7 +24,6 @@ class UserProduct extends Model
         return [
             'target_price' => 'decimal:8',
             'last_checked_at' => 'datetime',
-            'next_check_at' => 'datetime',
             'last_notified_at' => 'datetime',
             'is_active' => 'boolean',
         ];

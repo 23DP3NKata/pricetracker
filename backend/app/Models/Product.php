@@ -39,7 +39,7 @@ class Product extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_products')
-            ->withPivot('check_interval', 'target_price', 'notify_when', 'last_checked_at', 'next_check_at', 'last_notified_at', 'is_active', 'created_at');
+            ->withPivot('target_price', 'notify_when', 'last_checked_at', 'last_notified_at', 'is_active', 'created_at');
     }
 
     public function priceHistory(): HasMany

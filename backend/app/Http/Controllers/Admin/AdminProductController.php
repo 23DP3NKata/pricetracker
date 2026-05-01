@@ -255,7 +255,7 @@ class AdminProductController extends Controller
             $trackersScheduled = UserProduct::query()
                 ->whereIn('product_id', $productIds)
                 ->where('is_active', true)
-                ->update(['next_check_at' => now()]);
+                ->count();
         }
 
         SystemLog::create([

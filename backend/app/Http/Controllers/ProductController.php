@@ -15,7 +15,6 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
-    private const TRACKING_INTERVAL_MINUTES = 5;
 
     public function __construct(
         protected CoinGeckoPriceService $priceService,
@@ -152,7 +151,7 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'sort_by' => ['nullable', Rule::in(['created_at', 'title', 'symbol', 'current_price', 'next_check_at', 'last_checked_at'])],
+            'sort_by' => ['nullable', Rule::in(['created_at', 'title', 'symbol', 'current_price', 'last_checked_at'])],
             'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
             'symbol' => ['nullable', 'string', 'max:20'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
@@ -163,7 +162,6 @@ class ProductController extends Controller
             'title' => 'products.title',
             'symbol' => 'products.symbol',
             'current_price' => 'products.current_price',
-            'next_check_at' => 'user_products.next_check_at',
             'last_checked_at' => 'user_products.last_checked_at',
         ];
 
@@ -176,7 +174,7 @@ class ProductController extends Controller
         $query = $request->user()
             ->products()
             ->where('products.status', 'active')
-            ->withPivot('check_interval', 'target_price', 'notify_when', 'is_active', 'last_checked_at', 'next_check_at', 'last_notified_at', 'created_at')
+            ->withPivot('target_price', 'notify_when', 'is_active', 'last_checked_at', 'last_notified_at', 'created_at')
             ->orderBy($sortColumn, $sortDir);
 
         if ($symbolFilter !== '') {
@@ -265,9 +263,7 @@ class ProductController extends Controller
             return $directionError;
         }
 
-        $checkInterval = self::TRACKING_INTERVAL_MINUTES;
-
-        $createResult = DB::transaction(function () use ($authUser, $product, $checkInterval, $validated) {
+        $createResult = DB::transaction(function () use ($authUser, $product, $validated) {
             $user = User::query()->lockForUpdate()->findOrFail($authUser->id);
 
             if ($user->checks_used >= $user->monthly_limit) {
@@ -277,10 +273,8 @@ class ProductController extends Controller
             $tracking = UserProduct::query()->create([
                 'user_id' => $user->id,
                 'product_id' => $product->id,
-                'check_interval' => $checkInterval,
                 'target_price' => $validated['target_price'] ?? null,
                 'notify_when' => $validated['notify_when'] ?? 'below',
-                'next_check_at' => now()->addMinutes($checkInterval),
             ]);
 
             $product->increment('tracking_count');
@@ -335,12 +329,10 @@ class ProductController extends Controller
                 'id' => $rule->id,
                 'user_id' => $rule->user_id,
                 'product_id' => $rule->product_id,
-                'check_interval' => $rule->check_interval,
                 'target_price' => $rule->target_price,
                 'notify_when' => $rule->notify_when,
                 'is_active' => (bool) $rule->is_active,
                 'last_checked_at' => optional($rule->last_checked_at)->toDateTimeString(),
-                'next_check_at' => optional($rule->next_check_at)->toDateTimeString(),
                 'last_notified_at' => optional($rule->last_notified_at)->toDateTimeString(),
                 'created_at' => optional($rule->created_at)->toDateTimeString(),
                 'product' => [
@@ -401,19 +393,6 @@ class ProductController extends Controller
         }
 
         $updates = $validated;
-        $hasActiveUpdate = array_key_exists('is_active', $validated);
-        $effectiveActive = (bool) $tracking->is_active;
-        if ($hasActiveUpdate) {
-            $effectiveActive = (bool) $validated['is_active'];
-        }
-
-        if ($hasActiveUpdate) {
-            $updates['check_interval'] = self::TRACKING_INTERVAL_MINUTES;
-            $updates['next_check_at'] = null;
-            if ($effectiveActive) {
-                $updates['next_check_at'] = now()->addMinutes(self::TRACKING_INTERVAL_MINUTES);
-            }
-        }
 
         if (array_key_exists('target_price', $validated) && $validated['target_price'] === null) {
             $updates['last_notified_at'] = null;
@@ -474,7 +453,6 @@ class ProductController extends Controller
                 'target_price' => $pivot->target_price,
                 'notify_when' => $pivot->notify_when,
                 'last_checked_at' => optional($pivot->last_checked_at)->toDateTimeString(),
-                'next_check_at' => optional($pivot->next_check_at)->toDateTimeString(),
                 'last_notified_at' => optional($pivot->last_notified_at)->toDateTimeString(),
                 'created_at' => optional($pivot->created_at)->toDateTimeString(),
             ] : null,
@@ -513,7 +491,6 @@ class ProductController extends Controller
             'price_change_24h' => $product->price_change_24h,
             'trend' => $product->trend,
             'checked_at' => $checkedAt,
-            'next_check_at' => optional($tracking->next_check_at)->toDateTimeString(),
         ]);
     }
 
@@ -561,20 +538,6 @@ class ProductController extends Controller
         }
 
         $updates = $validated;
-
-        $hasActiveUpdate = array_key_exists('is_active', $validated);
-        $effectiveActive = (bool) $pivot->is_active;
-        if ($hasActiveUpdate) {
-            $effectiveActive = (bool) $validated['is_active'];
-        }
-
-        if ($hasActiveUpdate) {
-            $updates['check_interval'] = self::TRACKING_INTERVAL_MINUTES;
-            $updates['next_check_at'] = null;
-            if ($effectiveActive) {
-                $updates['next_check_at'] = now()->addMinutes(self::TRACKING_INTERVAL_MINUTES);
-            }
-        }
 
         if (array_key_exists('target_price', $validated) && $validated['target_price'] === null) {
             $updates['last_notified_at'] = null;

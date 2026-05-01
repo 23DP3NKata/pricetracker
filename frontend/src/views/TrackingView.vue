@@ -516,7 +516,6 @@ async function loadTracking() {
       target_price: toPriceInput(entry.target_price),
       notify_when: entry.notify_when || 'below',
       is_active: entry.is_active ?? true,
-      next_check_at: entry.next_check_at || null,
       last_checked_at: entry.last_checked_at || null,
       last_notified_at: entry.last_notified_at || null,
       _unsaved: false,
