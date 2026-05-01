@@ -163,11 +163,12 @@
                 variant="outlined"
                 color="primary"
                 class="track-btn text-wrap"
+                height="auto"
+                style="min-height: 36px; padding-top: 6px; padding-bottom: 6px;"
                 prepend-icon="mdi-bell-plus"
-                :title="$t('dashboard.addAlertDesc')"
                 @click="openTrackDialog(asset)"
               >
-                {{ $t('dashboard.addAlert') }}
+                <span v-html="$t('dashboard.addAlert')"></span>
               </v-btn>
             </div>
 
@@ -178,11 +179,12 @@
                 variant="outlined"
                 color="primary"
                 class="track-btn text-wrap"
+                height="auto"
+                style="min-height: 36px; padding-top: 6px; padding-bottom: 6px;"
                 prepend-icon="mdi-bell-plus"
-                :title="$t('dashboard.addAlertDesc')"
                 @click.stop="openTrackDialog(asset)"
               >
-                {{ $t('dashboard.addAlert') }}
+                <span v-html="$t('dashboard.addAlert')"></span>
               </v-btn>
             </div>
           </div>
@@ -934,7 +936,8 @@ onMounted(() => {
 .track-btn {
   min-width: 105px;
   width: auto;
-  height: 34px;
+  min-height: 34px;
+  height: auto;
   font-weight: 600;
   text-transform: none;
   white-space: normal;
