@@ -85,8 +85,8 @@
               {{ $t('dashboard.change7d') }}
               <v-icon size="14" class="sort-icon">{{ sortIcon('change7d') }}</v-icon>
             </button>
-            <div class="head-cell d-none d-sm-block">{{ $t('dashboard.action') }}</div>
             <div class="head-cell d-none d-sm-block">{{ $t('dashboard.last7Days') }}</div>
+            <div class="head-cell d-none d-sm-block">{{ $t('dashboard.action') }}</div>
           </div>
 
           <div
@@ -135,19 +135,6 @@
               </span>
             </div>
 
-            <div class="action-col d-none d-sm-flex">
-              <v-btn
-                size="small"
-                rounded="lg"
-                variant="text"
-                class="track-btn"
-                :class="{ 'track-btn--tracked': asset.is_tracked }"
-                @click="openTrackDialog(asset)"
-              >
-                {{ asset.is_tracked ? $t('dashboard.tracked') : $t('dashboard.track') }}
-              </v-btn>
-            </div>
-
             <div class="chart-col d-none d-sm-block">
               <svg viewBox="0 0 220 64" preserveAspectRatio="none" class="sparkline" role="img" :aria-label="t('dashboard.chartAria', { symbol: asset.symbol })">
                 <line x1="0" y1="32" x2="220" y2="32" class="sparkline-baseline" />
@@ -169,15 +156,33 @@
               </svg>
             </div>
 
+            <div class="action-col d-none d-sm-flex">
+              <v-btn
+                size="small"
+                rounded="lg"
+                variant="outlined"
+                color="primary"
+                class="track-btn text-wrap"
+                prepend-icon="mdi-bell-plus"
+                :title="$t('dashboard.addAlertDesc')"
+                @click="openTrackDialog(asset)"
+              >
+                {{ $t('dashboard.addAlert') }}
+              </v-btn>
+            </div>
+
             <div class="mobile-track-action d-flex d-sm-none justify-end">
               <v-btn
                 size="small"
                 rounded="lg"
-                variant="tonal"
+                variant="outlined"
                 color="primary"
+                class="track-btn text-wrap"
+                prepend-icon="mdi-bell-plus"
+                :title="$t('dashboard.addAlertDesc')"
                 @click.stop="openTrackDialog(asset)"
               >
-                {{ asset.is_tracked ? $t('dashboard.tracked') : $t('dashboard.track') }}
+                {{ $t('dashboard.addAlert') }}
               </v-btn>
             </div>
           </div>
@@ -725,7 +730,7 @@ onMounted(() => {
 
 .list-head {
   display: grid;
-  grid-template-columns: 60px minmax(240px, 2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(120px, 0.75fr) minmax(180px, 1.1fr);
+  grid-template-columns: 60px minmax(140px, 1.2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(120px, 0.75fr) minmax(180px, 1.1fr);
   gap: 12px;
   padding: 10px 18px;
   font-size: 0.82rem;
@@ -747,7 +752,7 @@ onMounted(() => {
 
 .list-row {
   display: grid;
-  grid-template-columns: 60px minmax(240px, 2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(120px, 0.75fr) minmax(180px, 1.1fr);
+  grid-template-columns: 60px minmax(140px, 1.2fr) minmax(120px, 0.9fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(82px, 0.55fr) minmax(120px, 0.75fr) minmax(180px, 1.1fr);
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
@@ -927,22 +932,13 @@ onMounted(() => {
 }
 
 .track-btn {
-  min-width: 104px;
+  min-width: 105px;
+  width: auto;
   height: 34px;
-  transition: color 0.2s ease, background-color 0.2s ease;
-}
-
-.track-btn:hover {
-  background: rgba(var(--v-theme-on-surface), 0.05) !important;
-}
-
-.track-btn--tracked {
-  color: rgb(var(--v-theme-primary));
   font-weight: 600;
-}
-
-.track-btn--tracked:hover {
-  background: rgba(var(--v-theme-primary), 0.1) !important;
+  text-transform: none;
+  white-space: normal;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mobile-track-action {
