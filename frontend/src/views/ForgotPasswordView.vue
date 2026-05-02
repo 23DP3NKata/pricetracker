@@ -33,9 +33,15 @@
           rounded="xl"
           block
           :loading="loading"
+          :disabled="timerActive && timerRemaining > 0"
           class="mt-2"
         >
-          {{ $t('authRecovery.sendResetLink') }}
+          <span v-if="timerActive && timerRemaining > 0">
+            {{ $t('authRecovery.waitBefore') }} {{ timerRemaining }}s
+          </span>
+          <span v-else>
+            {{ $t('authRecovery.sendResetLink') }}
+          </span>
         </v-btn>
       </v-form>
 
@@ -47,9 +53,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { forgotPassword } from '@/api'
+
+const COOLDOWN_SECONDS = 60
+const TIMER_KEY = 'forgot_password_timer'
 
 const formRef = ref(null)
 const { t } = useI18n()
@@ -57,8 +66,62 @@ const email = ref('')
 const loading = ref(false)
 const successMsg = ref(null)
 const errorMsg = ref(null)
+const timerActive = ref(false)
+const timerRemaining = ref(0)
+let timerInterval = null
+
+function startCooldown() {
+  const now = Date.now()
+  const expireTime = now + COOLDOWN_SECONDS * 1000
+  localStorage.setItem(TIMER_KEY, expireTime.toString())
+  timerActive.value = true
+  updateTimer()
+}
+
+function updateTimer() {
+  const expireTime = parseInt(localStorage.getItem(TIMER_KEY) || '0')
+  const now = Date.now()
+  const remaining = Math.max(0, Math.ceil((expireTime - now) / 1000))
+  
+  timerRemaining.value = remaining
+  
+  if (remaining <= 0) {
+    timerActive.value = false
+    localStorage.removeItem(TIMER_KEY)
+    if (timerInterval) {
+      clearInterval(timerInterval)
+    }
+  }
+}
+
+function checkExistingTimer() {
+  const expireTime = parseInt(localStorage.getItem(TIMER_KEY) || '0')
+  if (expireTime > 0) {
+    updateTimer()
+    if (timerRemaining.value > 0) {
+      timerActive.value = true
+      if (!timerInterval) {
+        timerInterval = setInterval(updateTimer, 100)
+      }
+    }
+  }
+}
+
+onMounted(() => {
+  checkExistingTimer()
+})
+
+onUnmounted(() => {
+  if (timerInterval) {
+    clearInterval(timerInterval)
+  }
+})
 
 async function handleSubmit() {
+  if (timerActive.value && timerRemaining.value > 0) {
+    return
+  }
+
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
@@ -67,6 +130,7 @@ async function handleSubmit() {
   try {
     const { data } = await forgotPassword(email.value)
     successMsg.value = data.status || t('authRecovery.resetLinkSentFallback')
+    startCooldown()
   } catch (e) {
     let message = e.response?.data?.message
     if (!message) {
@@ -79,6 +143,12 @@ async function handleSubmit() {
     errorMsg.value = message
   } finally {
     loading.value = false
+    if (!errorMsg.value) {
+      startCooldown()
+      if (!timerInterval) {
+        timerInterval = setInterval(updateTimer, 100)
+      }
+    }
   }
 }
 </script>
