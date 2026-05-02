@@ -23,7 +23,8 @@
           variant="outlined"
           rounded="lg"
           prepend-inner-icon="mdi-email-outline"
-          :rules="[v => !!v || $t('auth.required'), v => /.+@.+\..+/.test(v) || $t('auth.invalidEmail')]"
+          :error="submitted && emailError.messages.length > 0"
+          :error-messages="submitted ? emailError.messages : []"
         />
 
         <v-btn
@@ -68,7 +69,19 @@ const successMsg = ref(null)
 const errorMsg = ref(null)
 const timerActive = ref(false)
 const timerRemaining = ref(0)
+const submitted = ref(false)
+const emailError = ref({ show: false, messages: [] })
 let timerInterval = null
+
+function validateEmail() {
+  const messages = []
+  if (!email.value) {
+    messages.push(t('auth.required'))
+  } else if (!/.+@.+\..+/.test(email.value)) {
+    messages.push(t('auth.invalidEmail'))
+  }
+  return messages
+}
 
 function startCooldown() {
   const now = Date.now()
@@ -122,8 +135,14 @@ async function handleSubmit() {
     return
   }
 
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
+  submitted.value = true
+  const emailMessages = validateEmail()
+  emailError.value.messages = emailMessages
+  emailError.value.show = emailMessages.length > 0
+
+  if (emailError.value.show) {
+    return
+  }
 
   loading.value = true
   errorMsg.value = null

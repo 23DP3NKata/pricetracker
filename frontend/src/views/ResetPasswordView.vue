@@ -35,7 +35,8 @@
               variant="outlined"
               rounded="lg"
               prepend-inner-icon="mdi-email-outline"
-              :rules="[v => !!v || $t('auth.required'), v => /.+@.+\..+/.test(v) || $t('auth.invalidEmail')]"
+              :error="submitted && emailError.messages.length > 0"
+              :error-messages="submitted ? emailError.messages : []"
             />
 
             <v-text-field
@@ -47,7 +48,8 @@
               prepend-inner-icon="mdi-lock-outline"
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
               @click:append-inner="showPassword = !showPassword"
-              :rules="[v => !!v || $t('auth.required'), v => v.length >= 8 || $t('auth.min8Chars')]"
+              :error="submitted && passwordError.messages.length > 0"
+              :error-messages="submitted ? passwordError.messages : []"
             />
 
             <v-text-field
@@ -57,7 +59,8 @@
               variant="outlined"
               rounded="lg"
               prepend-inner-icon="mdi-lock-check-outline"
-              :rules="[v => !!v || $t('auth.required'), v => v === form.password || $t('settings.passwordsNoMatch')]"
+              :error="submitted && confirmError.messages.length > 0"
+              :error-messages="submitted ? confirmError.messages : []"
             />
 
             <v-btn
@@ -96,12 +99,47 @@ const loading = ref(false)
 const successMsg = ref(null)
 const errorMsg = ref(null)
 
+const submitted = ref(false)
+const emailError = ref({ show: false, messages: [] })
+const passwordError = ref({ show: false, messages: [] })
+const confirmError = ref({ show: false, messages: [] })
+
 const form = reactive({
   token: '',
   email: '',
   password: '',
   password_confirmation: '',
 })
+
+function validateEmail() {
+  const messages = []
+  if (!form.email) {
+    messages.push(t('auth.required'))
+  } else if (!/.+@.+\..+/.test(form.email)) {
+    messages.push(t('auth.invalidEmail'))
+  }
+  return messages
+}
+
+function validatePassword() {
+  const messages = []
+  if (!form.password) {
+    messages.push(t('auth.required'))
+  } else if (form.password.length < 8) {
+    messages.push(t('auth.min8Chars'))
+  }
+  return messages
+}
+
+function validateConfirm() {
+  const messages = []
+  if (!form.password_confirmation) {
+    messages.push(t('auth.required'))
+  } else if (form.password_confirmation !== form.password) {
+    messages.push(t('settings.passwordsNoMatch'))
+  }
+  return messages
+}
 
 onMounted(() => {
   form.token = route.params.token || ''
@@ -114,8 +152,24 @@ onMounted(() => {
 })
 
 async function handleSubmit() {
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
+  submitted.value = true
+
+  const emailMessages = validateEmail()
+  const passwordMessages = validatePassword()
+  const confirmMessages = validateConfirm()
+
+  emailError.value.messages = emailMessages
+  emailError.value.show = emailMessages.length > 0
+
+  passwordError.value.messages = passwordMessages
+  passwordError.value.show = passwordMessages.length > 0
+
+  confirmError.value.messages = confirmMessages
+  confirmError.value.show = confirmMessages.length > 0
+
+  if (emailError.value.show || passwordError.value.show || confirmError.value.show) {
+    return
+  }
 
   loading.value = true
   errorMsg.value = null

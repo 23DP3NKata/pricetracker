@@ -36,7 +36,8 @@
               rounded="lg"
               prepend-inner-icon="mdi-account-outline"
               class="mb-2"
-              :rules="[v => !!v || $t('auth.required'), v => v.length >= 2 || $t('auth.min2Chars')]"
+              :error="submitted && nameError.messages.length > 0"
+              :error-messages="submitted ? nameError.messages : []"
             />
 
             <v-text-field
@@ -47,7 +48,8 @@
               rounded="lg"
               prepend-inner-icon="mdi-email-outline"
               class="mb-2"
-              :rules="[v => !!v || $t('auth.required'), v => /.+@.+\..+/.test(v) || $t('auth.invalidEmail')]"
+              :error="submitted && emailError.messages.length > 0"
+              :error-messages="submitted ? emailError.messages : []"
             />
 
             <v-text-field
@@ -60,7 +62,8 @@
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
               @click:append-inner="showPassword = !showPassword"
               class="mb-2"
-              :rules="[v => !!v || $t('auth.required'), v => v.length >= 8 || $t('auth.min8Chars')]"
+              :error="submitted && passwordError.messages.length > 0"
+              :error-messages="submitted ? passwordError.messages : []"
             />
 
             <v-text-field
@@ -70,7 +73,8 @@
               variant="outlined"
               rounded="lg"
               prepend-inner-icon="mdi-lock-check-outline"
-              :rules="[v => !!v || $t('auth.required'), v => v === form.password || $t('auth.passwordsDontMatch')]"
+              :error="submitted && confirmError.messages.length > 0"
+              :error-messages="submitted ? confirmError.messages : []"
             />
 
             <v-btn
@@ -100,12 +104,20 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from 'vue-i18n'
 
 const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 const formRef = ref(null)
 const showPassword = ref(false)
 const errors = ref(null)
+
+const submitted = ref(false)
+const nameError = ref({ show: false, messages: [] })
+const emailError = ref({ show: false, messages: [] })
+const passwordError = ref({ show: false, messages: [] })
+const confirmError = ref({ show: false, messages: [] })
 
 const form = reactive({
   name: '',
@@ -114,9 +126,69 @@ const form = reactive({
   password_confirmation: '',
 })
 
+function validateName() {
+  const messages = []
+  if (!form.name) {
+    messages.push(t('auth.required'))
+  } else if (form.name.length < 2) {
+    messages.push(t('auth.min2Chars'))
+  }
+  return messages
+}
+
+function validateEmail() {
+  const messages = []
+  if (!form.email) {
+    messages.push(t('auth.required'))
+  } else if (!/.+@.+\..+/.test(form.email)) {
+    messages.push(t('auth.invalidEmail'))
+  }
+  return messages
+}
+
+function validatePassword() {
+  const messages = []
+  if (!form.password) {
+    messages.push(t('auth.required'))
+  } else if (form.password.length < 8) {
+    messages.push(t('auth.min8Chars'))
+  }
+  return messages
+}
+
+function validateConfirm() {
+  const messages = []
+  if (!form.password_confirmation) {
+    messages.push(t('auth.required'))
+  } else if (form.password_confirmation !== form.password) {
+    messages.push(t('auth.passwordsDontMatch'))
+  }
+  return messages
+}
+
 async function handleRegister() {
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
+  submitted.value = true
+
+  const nameMessages = validateName()
+  const emailMessages = validateEmail()
+  const passwordMessages = validatePassword()
+  const confirmMessages = validateConfirm()
+
+  nameError.value.messages = nameMessages
+  nameError.value.show = nameMessages.length > 0
+
+  emailError.value.messages = emailMessages
+  emailError.value.show = emailMessages.length > 0
+
+  passwordError.value.messages = passwordMessages
+  passwordError.value.show = passwordMessages.length > 0
+
+  confirmError.value.messages = confirmMessages
+  confirmError.value.show = confirmMessages.length > 0
+
+  if (nameError.value.show || emailError.value.show || passwordError.value.show || confirmError.value.show) {
+    return
+  }
 
   errors.value = null
   try {

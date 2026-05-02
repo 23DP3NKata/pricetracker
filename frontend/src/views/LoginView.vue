@@ -29,7 +29,8 @@
               rounded="lg"
               prepend-inner-icon="mdi-email-outline"
               class="mb-2"
-              :rules="[v => !!v || $t('auth.required'), v => /.+@.+\..+/.test(v) || $t('auth.invalidEmail')]"
+              :error="submitted && emailError.messages.length > 0"
+              :error-messages="submitted ? emailError.messages : []"
             />
 
             <v-text-field
@@ -41,7 +42,8 @@
               prepend-inner-icon="mdi-lock-outline"
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
               @click:append-inner="showPassword = !showPassword"
-              :rules="[v => !!v || $t('auth.required')]"
+              :error="submitted && passwordError.messages.length > 0"
+              :error-messages="submitted ? passwordError.messages : []"
             />
 
             <div class="d-flex justify-end mb-4">
@@ -77,17 +79,41 @@
 import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from 'vue-i18n'
 
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 const formRef = ref(null)
 const showPassword = ref(false)
+
+const submitted = ref(false)
+const emailError = ref({ show: false, messages: [] })
+const passwordError = ref({ show: false, messages: [] })
 
 const form = reactive({
   email: '',
   password: '',
 })
+
+function validateEmail() {
+  const messages = []
+  if (!form.email) {
+    messages.push(t('auth.required'))
+  } else if (!/.+@.+\..+/.test(form.email)) {
+    messages.push(t('auth.invalidEmail'))
+  }
+  return messages
+}
+
+function validatePassword() {
+  const messages = []
+  if (!form.password) {
+    messages.push(t('auth.required'))
+  }
+  return messages
+}
 
 function resolveSafeRedirect() {
   const rawRedirect = route.query.redirect
@@ -109,8 +135,20 @@ function resolveSafeRedirect() {
 }
 
 async function handleLogin() {
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
+  submitted.value = true
+
+  const emailMessages = validateEmail()
+  const passwordMessages = validatePassword()
+
+  emailError.value.messages = emailMessages
+  emailError.value.show = emailMessages.length > 0
+
+  passwordError.value.messages = passwordMessages
+  passwordError.value.show = passwordMessages.length > 0
+
+  if (emailError.value.show || passwordError.value.show) {
+    return
+  }
 
   try {
     await auth.login(form)
