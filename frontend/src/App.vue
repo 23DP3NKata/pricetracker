@@ -274,6 +274,34 @@
           <v-divider class="my-3" />
           <v-list-item to="/login" rounded>{{ $t('nav.signIn') }}</v-list-item>
           <v-btn to="/register" color="primary" block rounded class="mt-2">{{ $t('nav.getStarted') }}</v-btn>
+
+          <v-divider class="my-3" />
+          <v-list-item
+            rounded
+            :prepend-icon="themeToggleIcon()"
+            :title="themeToggleTitle()"
+            @click="toggleTheme"
+          />
+
+          <v-menu v-model="languageMenuMobile" location="bottom" offset="8">
+            <template #activator="{ props }">
+              <v-list-item
+                v-bind="props"
+                rounded
+                prepend-icon="mdi-translate"
+                :title="$t('nav.language')"
+                :subtitle="currentLanguageLabel"
+              />
+            </template>
+
+            <v-card min-width="220" rounded="lg" elevation="2">
+              <v-list density="compact" class="py-1">
+                <v-list-item :active="i18n.locale.value === 'en'" :title="i18n.t('ux.languageEnglish')" @click="setLanguage('en')" />
+                <v-list-item :active="i18n.locale.value === 'lv'" :title="i18n.t('ux.languageLatvian')" @click="setLanguage('lv')" />
+                <v-list-item :active="i18n.locale.value === 'ru'" :title="i18n.t('ux.languageRussian')" @click="setLanguage('ru')" />
+              </v-list>
+            </v-card>
+          </v-menu>
         </v-list>
       </template>
     </v-navigation-drawer>
