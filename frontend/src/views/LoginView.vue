@@ -29,8 +29,12 @@
               rounded="lg"
               prepend-inner-icon="mdi-email-outline"
               class="mb-2"
+              autocomplete="email"
+              name="email"
               :error="submitted && emailError.messages.length > 0"
               :error-messages="submitted ? emailError.messages : []"
+              @change="form.email = $event"
+              @blur="form.email = ($event.target).value"
             />
 
             <v-text-field
@@ -41,7 +45,11 @@
               rounded="lg"
               prepend-inner-icon="mdi-lock-outline"
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+              autocomplete="current-password"
+              name="password"
               @click:append-inner="showPassword = !showPassword"
+              @change="form.password = $event"
+              @blur="form.password = ($event.target).value"
               :error="submitted && passwordError.messages.length > 0"
               :error-messages="submitted ? passwordError.messages : []"
             />
@@ -76,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
@@ -95,6 +103,15 @@ const passwordError = ref({ show: false, messages: [] })
 const form = reactive({
   email: '',
   password: '',
+})
+
+onMounted(() => {
+  setTimeout(() => {
+    const emailInput = document.querySelector('input[type="email"]')
+    const passInput = document.querySelector('input[type="password"]')
+    if (emailInput?.value) form.email = emailInput.value
+    if (passInput?.value) form.password = passInput.value
+  }, 500)
 })
 
 function validateEmail() {
