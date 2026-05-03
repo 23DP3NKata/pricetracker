@@ -113,20 +113,29 @@
           </tbody>
         </v-table>
 
-        <div v-if="historyData.length" class="d-flex justify-center align-center ga-3 mt-3">
-          <v-btn variant="text" rounded="xl" :disabled="historyPage <= 1" @click="historyPage -= 1">
-            ← Prev
+        <div v-if="historyData.length" class="d-flex justify-center align-center flex-wrap ga-2 mt-3">
+          <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage <= 1" @click="goToPage(1)">
+            «
           </v-btn>
-          <div class="text-body-2 text-medium-emphasis">
-            {{ $t('productDetail.pageIndicator', { current: historyPagination.current_page, last: historyPagination.last_page }) }}
+          <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage <= 1" @click="goToPage(historyPage - 1)">
+            ‹
+          </v-btn>
+          <div class="d-flex align-center ga-2 text-body-2 text-medium-emphasis">
+            <span>{{ $t('productDetail.pageIndicator', { current: historyPage, last: totalPages }) }}</span>
+            <input
+              class="page-input"
+              type="number"
+              :value="historyPage"
+              min="1"
+              :max="totalPages"
+              @change="goToPage(Number($event.target.value))"
+            />
           </div>
-          <v-btn
-            variant="text"
-            rounded="xl"
-            :disabled="historyPage >= historyPagination.last_page"
-            @click="historyPage += 1"
-          >
-            Next →
+          <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage >= totalPages" @click="goToPage(historyPage + 1)">
+            ›
+          </v-btn>
+          <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage >= totalPages" @click="goToPage(totalPages)">
+            »
           </v-btn>
         </div>
 
@@ -172,12 +181,14 @@ const historyData = ref([])
 const chartHistoryData = ref([])
 const historyStats = ref(null)
 const historyPage = ref(1)
+const loadingPage = ref(false)
 const historyPagination = ref({
   current_page: 1,
   last_page: 1,
   per_page: 10,
   total: 0,
 })
+const totalPages = computed(() => Math.max(1, Number(historyPagination.value.last_page) || 1))
 
 function statusLabel(status) {
   if (status === 'active') return t('productDetail.active')
@@ -532,16 +543,29 @@ async function loadHistory() {
   }
 }
 
-watch(historyDays, () => {
-  if (historyPage.value !== 1) {
-    historyPage.value = 1
-    return
+async function goToPage(p) {
+  if (loadingPage.value) return
+
+  const nextPage = Number(p)
+  if (!Number.isFinite(nextPage)) return
+
+  const clampedPage = Math.min(totalPages.value, Math.max(1, Math.trunc(nextPage)))
+  if (clampedPage === historyPage.value) return
+
+  loadingPage.value = true
+  historyPage.value = clampedPage
+
+  try {
+    await loadHistory()
+  } finally {
+    loadingPage.value = false
   }
+}
 
-  loadHistory()
+watch(historyDays, async () => {
+  historyPage.value = 1
+  await loadHistory()
 })
-
-watch(historyPage, () => loadHistory())
 
 watch(
   () => route.params.id,
@@ -583,5 +607,21 @@ watch(
 .chart-inner {
   width: 100%;
   height: 280px;
+}
+
+.page-input {
+  width: 48px;
+  text-align: center;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.2);
+  border-radius: 8px;
+  padding: 4px 6px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+}
+
+.page-input:focus {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 1px;
 }
 </style>
