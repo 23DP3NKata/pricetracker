@@ -33,8 +33,6 @@
               name="email"
               :error="submitted && emailError.messages.length > 0"
               :error-messages="submitted ? emailError.messages : []"
-              @change="form.email = $event"
-              @blur="form.email = ($event.target).value"
             />
 
             <v-text-field
@@ -48,8 +46,6 @@
               autocomplete="current-password"
               name="password"
               @click:append-inner="showPassword = !showPassword"
-              @change="form.password = $event"
-              @blur="form.password = ($event.target).value"
               :error="submitted && passwordError.messages.length > 0"
               :error-messages="submitted ? passwordError.messages : []"
             />
