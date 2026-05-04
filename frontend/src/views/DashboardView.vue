@@ -166,6 +166,7 @@
                 height="auto"
                 style="min-height: 36px; padding-top: 6px; padding-bottom: 6px;"
                 prepend-icon="mdi-bell-plus"
+                :disabled="!emailVerified"
                 @click="openTrackDialog(asset)"
               >
                 <span v-html="$t('dashboard.addAlert')"></span>
@@ -182,6 +183,7 @@
                 height="auto"
                 style="min-height: 36px; padding-top: 6px; padding-bottom: 6px;"
                 prepend-icon="mdi-bell-plus"
+                :disabled="!emailVerified"
                 @click.stop="openTrackDialog(asset)"
               >
                 <span v-html="$t('dashboard.addAlert')"></span>
@@ -308,6 +310,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay, useTheme } from 'vuetify'
 import { getTopAssets, trackAsset } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 import { formatCurrencyPrice, formatDecimalPrice, roundToTwo, sanitizePriceInput, toPriceInput } from '@/utils/price'
 
 const { t } = useI18n()
@@ -315,6 +318,7 @@ const route = useRoute()
 const router = useRouter()
 const { xs } = useDisplay()
 const theme = useTheme()
+const auth = useAuthStore()
 
 const loading = ref(false)
 const error = ref(null)
@@ -337,6 +341,8 @@ const trackForm = ref({
   targetPrice: '',
   notifyWhen: 'above',
 })
+
+const emailVerified = computed(() => auth.emailVerified)
 
 const quickAdjustPercents = computed(() => {
   if (trackForm.value.notifyWhen === 'below') {
@@ -647,6 +653,8 @@ async function loadTopAssets() {
 }
 
 function openTrackDialog(asset) {
+  if (!emailVerified.value) return
+
   selectedAsset.value = asset
   trackForm.value = {
     targetPrice: toPriceInput(asset.current_price),
@@ -657,7 +665,7 @@ function openTrackDialog(asset) {
 }
 
 async function submitTracking() {
-  if (!selectedAsset.value || trackLoading.value) return
+  if (!selectedAsset.value || trackLoading.value || !emailVerified.value) return
 
   const targetPrice = roundToTwo(trackForm.value.targetPrice)
 

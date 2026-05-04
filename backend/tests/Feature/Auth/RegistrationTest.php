@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,6 +20,15 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+            'monthly_limit' => 0,
+        ]);
+
+        $user = User::where('email', 'test@example.com')->first();
+
+        $this->assertNotNull($user);
+        $this->assertFalse($user->hasVerifiedEmail());
         $response->assertNoContent();
     }
 }
