@@ -41,6 +41,17 @@
             <v-chip :color="product.status === 'active' ? 'success' : 'grey'" size="small" variant="tonal" class="mt-1">
               {{ statusLabel(product.status) }}
             </v-chip>
+            <div class="mt-3">
+              <v-btn
+                variant="tonal"
+                color="primary"
+                prepend-icon="mdi-bell-plus-outline"
+                :disabled="!emailVerified"
+                @click="openTrackDialog"
+              >
+                {{ $t('dashboard.track') }}
+              </v-btn>
+            </div>
           </div>
         </div>
       </v-card>
@@ -145,6 +156,12 @@
       </v-card>
     </template>
 
+    <TrackingSetupDialog
+      v-model="showTrackDialog"
+      :asset="product"
+      @tracked="handleTrackCreated"
+    />
+
   </v-container>
 </template>
 
@@ -153,7 +170,9 @@ import { ref, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
+import TrackingSetupDialog from '@/components/TrackingSetupDialog.vue'
 import { useProductsStore } from '@/stores/products'
+import { useAuthStore } from '@/stores/auth'
 import { getPriceHistory } from '@/api'
 import { formatCurrencyPrice } from '@/utils/price'
 import { Line } from 'vue-chartjs'
@@ -174,8 +193,10 @@ const route = useRoute()
 const { t } = useI18n()
 const { smAndDown } = useDisplay()
 const store = useProductsStore()
+const auth = useAuthStore()
 
 const product = ref(null)
+const showTrackDialog = ref(false)
 const historyDays = ref(30)
 const historyData = ref([])
 const chartHistoryData = ref([])
@@ -189,6 +210,15 @@ const historyPagination = ref({
   total: 0,
 })
 const totalPages = computed(() => Math.max(1, Number(historyPagination.value.last_page) || 1))
+const emailVerified = computed(() => auth.emailVerified)
+
+function openTrackDialog() {
+  showTrackDialog.value = true
+}
+
+async function handleTrackCreated() {
+  await loadProduct()
+}
 
 function statusLabel(status) {
   if (status === 'active') return t('productDetail.active')
