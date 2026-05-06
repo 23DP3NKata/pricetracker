@@ -257,39 +257,63 @@
             prepend-inner-icon="mdi-target"
           />
 
-          <div class="quick-adjust mb-4">
-            <div class="text-caption text-medium-emphasis mb-2">{{ $t('dashboard.quickAdjust') }}</div>
-            <div class="d-flex flex-wrap ga-2">
-              <v-btn
-                v-for="percent in quickAdjustPercents"
-                :key="percent"
-                size="small"
-                variant="tonal"
-                rounded
-                class="quick-adjust-btn"
-                @click="applyTargetPercent(percent)"
-              >
-                {{ percentLabel(percent) }}
-              </v-btn>
-              <v-btn
-                size="small"
-                variant="text"
-                rounded
-                class="quick-adjust-btn"
-                @click="setTargetToCurrent"
-              >
-                {{ $t('dashboard.useCurrentPrice') }}
-              </v-btn>
-            </div>
-            <div class="text-caption text-medium-emphasis mt-2">{{ $t('dashboard.onlyNumbersHint') }}</div>
+          <div v-if="trackForm.targetPrice && formattedTargetPrice" class="text-caption text-medium-emphasis mt-1 mb-3">
+            {{ $t('dashboard.autoNotifyHint', {
+              direction: trackForm.notifyWhen === 'above'
+                ? $t('dashboard.notifyDirectionUp')
+                : $t('dashboard.notifyDirectionDown'),
+              price: formattedTargetPrice,
+            }) }}
           </div>
 
-          <div class="mb-4">
-            <div class="text-caption text-medium-emphasis mb-2">{{ $t('dashboard.notifyCondition') }}</div>
-            <v-btn-toggle v-model="trackForm.notifyWhen" mandatory rounded="lg" class="notify-when-toggle">
-              <v-btn value="above" rounded="lg">{{ $t('dashboard.conditionAbove') }}</v-btn>
-              <v-btn value="below" rounded="lg">{{ $t('dashboard.conditionBelow') }}</v-btn>
-            </v-btn-toggle>
+          <div class="quick-adjust mb-4">
+            <div class="text-caption text-medium-emphasis mb-2">{{ $t('dashboard.quickAdjust') }}</div>
+            <div class="d-flex flex-column ga-2">
+              <div class="d-flex align-center quick-adjust-row">
+                <span class="quick-adjust-direction">▲</span>
+                <v-btn
+                  v-for="percent in quickAdjustValues"
+                  :key="`up_${percent}`"
+                  size="small"
+                  :variant="selectedQuickAdjust === `up_${percent}` ? 'tonal' : 'outlined'"
+                  :color="selectedQuickAdjust === `up_${percent}` ? 'primary' : undefined"
+                  rounded
+                  class="quick-adjust-btn quick-adjust-percent-btn"
+                  @click="applyTargetPercent(percent, 'up')"
+                >
+                  +{{ percent }}%
+                </v-btn>
+              </div>
+
+              <div class="d-flex align-center quick-adjust-row">
+                <span class="quick-adjust-direction">▼</span>
+                <v-btn
+                  v-for="percent in quickAdjustValues"
+                  :key="`down_${percent}`"
+                  size="small"
+                  :variant="selectedQuickAdjust === `down_${percent}` ? 'tonal' : 'outlined'"
+                  :color="selectedQuickAdjust === `down_${percent}` ? 'error' : undefined"
+                  rounded
+                  class="quick-adjust-btn quick-adjust-percent-btn"
+                  @click="applyTargetPercent(percent, 'down')"
+                >
+                  -{{ percent }}%
+                </v-btn>
+              </div>
+
+              <div>
+                <v-btn
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  rounded
+                  class="quick-adjust-btn use-current-price-btn"
+                  @click="setTargetToCurrent"
+                >
+                  {{ $t('dashboard.useCurrentPrice') }}
+                </v-btn>
+              </div>
+            </div>
           </div>
 
           <div class="d-flex justify-end ga-2 mt-2">
@@ -305,7 +329,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay, useTheme } from 'vuetify'
@@ -342,14 +366,15 @@ const trackForm = ref({
   notifyWhen: 'above',
 })
 
+const quickAdjustValues = [1, 2, 5, 10, 15]
+const selectedQuickAdjust = ref(null)
+
 const emailVerified = computed(() => auth.emailVerified)
-
-const quickAdjustPercents = computed(() => {
-  if (trackForm.value.notifyWhen === 'below') {
-    return [-1, -2, -5, -10, -15]
-  }
-
-  return [1, 2, 5, 10, 15]
+const parsedTargetPrice = computed(() => roundToTwo(trackForm.value.targetPrice))
+const formattedTargetPrice = computed(() => {
+  if (parsedTargetPrice.value === null) return ''
+  const currency = selectedAsset.value?.currency || 'USD'
+  return formatPrice(parsedTargetPrice.value, currency)
 })
 
 const coingeckoLogoSrc = computed(() => {
@@ -462,26 +487,41 @@ function handlePricePaste(event) {
   trackForm.value.targetPrice = sanitized
 }
 
-function percentLabel(percent) {
-  return `${percent > 0 ? '+' : ''}${percent}%`
-}
-
-function applyTargetPercent(percent) {
+function applyTargetPercent(percent, direction) {
   if (!selectedAsset.value) return
 
   const current = Number(selectedAsset.value.current_price)
   if (Number.isNaN(current) || current <= 0) return
 
-  const adjusted = roundToTwo(current * (1 + percent / 100))
+  const multiplier = direction === 'up' ? (1 + percent / 100) : (1 - percent / 100)
+  const adjusted = roundToTwo(current * multiplier)
   if (adjusted === null || adjusted <= 0) return
 
+  selectedQuickAdjust.value = `${direction}_${percent}`
   trackForm.value.targetPrice = toPriceInput(adjusted)
+  trackForm.value.notifyWhen = direction === 'up' ? 'above' : 'below'
 }
 
 function setTargetToCurrent() {
   if (!selectedAsset.value) return
+  selectedQuickAdjust.value = null
   trackForm.value.targetPrice = toPriceInput(selectedAsset.value.current_price)
 }
+
+watch(() => trackForm.value.targetPrice, (value) => {
+  if (!selectedAsset.value) return
+
+  const target = roundToTwo(value)
+  const current = roundToTwo(selectedAsset.value.current_price)
+
+  if (target === null || current === null) return
+
+  if (target > current) {
+    trackForm.value.notifyWhen = 'above'
+  } else if (target < current) {
+    trackForm.value.notifyWhen = 'below'
+  }
+})
 
 function formatPercent(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) {
@@ -656,6 +696,7 @@ function openTrackDialog(asset) {
   if (!emailVerified.value) return
 
   selectedAsset.value = asset
+  selectedQuickAdjust.value = null
   trackForm.value = {
     targetPrice: toPriceInput(asset.current_price),
     notifyWhen: 'above',
@@ -924,17 +965,23 @@ onMounted(() => {
   text-transform: none;
 }
 
-.notify-when-toggle {
-  width: fit-content;
-  margin: 0 auto;
+.quick-adjust-row {
   gap: 8px;
 }
 
-.notify-when-toggle :deep(.v-btn) {
-  flex: 0 0 auto;
-  min-width: 140px;
-  text-transform: none;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.25);
+.quick-adjust-direction {
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+  align-self: center;
+}
+
+.quick-adjust-percent-btn {
+  width: 56px;
+}
+
+.use-current-price-btn {
+  font-weight: 600;
 }
 
 .action-col {
