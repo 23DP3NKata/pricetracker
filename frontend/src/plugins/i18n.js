@@ -279,6 +279,11 @@ const messages = {
       emptySubtitle: 'Add an asset from Crypto page and your request will appear here.'
     },
 
+    product: {
+      trackBtn: 'Track price',
+      openPage: 'Open product page',
+    },
+
     productDetail: {
       backToProducts: 'Back to Products',
       openProductPage: 'Open product page',
@@ -804,6 +809,11 @@ const messages = {
       invalidBelowTarget: 'Nosacījumam "zem mērķa" mērķa cena nevar būt augstāka par pašreizējo cenu.',
       emptyTitle: 'Izsekotās kripto vēl nav',
       emptySubtitle: 'Pievieno aktīvu no Kriptovalūtas lapas, un pieprasījums parādīsies šeit.'
+    },
+
+    product: {
+      trackBtn: 'Izsekot cenu',
+      openPage: 'Atvert produkta lapu',
     },
 
     productDetail: {
@@ -1332,6 +1342,11 @@ messages.ru = {
     invalidBelowTarget: 'Для условия "ниже" целевая цена не может быть выше текущей.',
     emptyTitle: 'Пока нет отслеживаемой крипты',
     emptySubtitle: 'Добавьте актив на странице Криптовалюта, и запрос появится здесь.',
+  },
+  product: {
+    ...messages.en.product,
+    trackBtn: 'Отслеживать цену',
+    openPage: 'Открыть страницу товара',
   },
   productDetail: {
     ...messages.en.productDetail,
