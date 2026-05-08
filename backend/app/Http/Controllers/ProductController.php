@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
@@ -26,6 +27,14 @@ class ProductController extends Controller
     public function topAssets(Request $request): JsonResponse
     {
         $limit = max(1, min((int) $request->integer('limit', 10), 20));
+        $cacheKey = "top_assets_limit_{$limit}";
+        $cacheTtl = 300; // 5 minutes
+
+        // Check cache
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            return response()->json($cached);
+        }
 
         $assets = Product::query()
             ->where('status', 'active')
@@ -52,18 +61,30 @@ class ProductController extends Controller
             ]);
 
         if ($assets->isEmpty()) {
-            return response()->json(['data' => []]);
+            $result = ['data' => []];
+            Cache::put($cacheKey, $result, $cacheTtl);
+            return response()->json($result);
         }
 
         $assetIds = $assets->pluck('id')->all();
 
-        $historyByAsset = PriceHistory::query()
+        // Retrieve all 7-day history in a single query
+        $allHistory = PriceHistory::query()
             ->whereIn('product_id', $assetIds)
             ->where('checked_at', '>=', now()->subDays(7))
             ->orderBy('checked_at')
-            ->get(['product_id', 'price', 'checked_at'])
-            ->groupBy('product_id');
+            ->get(['product_id', 'price', 'checked_at']);
 
+        // Group by product_id
+        $historyByAsset = [];
+        foreach ($allHistory as $row) {
+            if (!isset($historyByAsset[$row->product_id])) {
+                $historyByAsset[$row->product_id] = [];
+            }
+            $historyByAsset[$row->product_id][] = $row;
+        }
+
+        // If user is authenticated - get tracked products
         $trackedMap = [];
         if ($request->user()) {
             $trackedIds = UserProduct::query()
@@ -79,14 +100,14 @@ class ProductController extends Controller
             }
         }
 
+        // Assemble data
         $data = [];
-        foreach ($assets as $asset) {
-            $rows = $historyByAsset->get($asset->id, []);
-            if ($rows instanceof Collection) {
-                $rows = $rows->all();
-            }
+        $lastUpdatedTs = null;
+        $lastUpdatedAt = null;
 
-            $rows = array_slice($rows, -48);
+        foreach ($assets as $asset) {
+            $rows = $historyByAsset[$asset->id] ?? [];
+            $rows = array_slice($rows, -48); // Take last 48 points
 
             $points = [];
             foreach ($rows as $row) {
@@ -99,6 +120,14 @@ class ProductController extends Controller
             $lastUpdated = $asset->updated_at;
             if ($asset->last_successful_check) {
                 $lastUpdated = $asset->last_successful_check;
+            }
+
+            if ($lastUpdated) {
+                $ts = $lastUpdated->getTimestamp();
+                if ($lastUpdatedTs === null || $ts > $lastUpdatedTs) {
+                    $lastUpdatedTs = $ts;
+                    $lastUpdatedAt = $lastUpdated;
+                }
             }
 
             $data[] = [
@@ -118,31 +147,16 @@ class ProductController extends Controller
             ];
         }
 
-        $lastUpdatedAt = null;
-        $lastUpdatedTs = null;
-        foreach ($assets as $asset) {
-            $candidate = $asset->updated_at;
-            if ($asset->last_successful_check) {
-                $candidate = $asset->last_successful_check;
-            }
-
-            if (!$candidate) {
-                continue;
-            }
-
-            $candidateTs = $candidate->getTimestamp();
-            if ($lastUpdatedTs === null || $candidateTs > $lastUpdatedTs) {
-                $lastUpdatedTs = $candidateTs;
-                $lastUpdatedAt = $candidate;
-            }
-        }
-
-        return response()->json([
+        $result = [
             'data' => $data,
             'meta' => [
                 'last_updated_at' => optional($lastUpdatedAt)?->toIso8601String(),
             ],
-        ]);
+        ];
+
+        Cache::put($cacheKey, $result, $cacheTtl);
+
+        return response()->json($result);
     }
 
     /**

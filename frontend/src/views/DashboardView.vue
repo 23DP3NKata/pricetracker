@@ -462,7 +462,7 @@ async function loadTopAssets() {
       return
     }
 
-    // Если сервер не дал meta.last_updated_at, берем самое свежее из списка.
+    // If the server did not provide meta.last_updated_at, take the most recent timestamp from the list.
     let latest = null
     let latestTime = 0
 

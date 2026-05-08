@@ -6,6 +6,7 @@ use App\Models\PriceHistory;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PriceHistoryController extends Controller
 {
@@ -19,24 +20,40 @@ class PriceHistoryController extends Controller
         ]);
 
         $days = $validated['days'] ?? null;
+        $page = (int) $request->query('page', 1);
 
-        $historyQuery = PriceHistory::where('product_id', $product->id)
-            ->orderByDesc('checked_at');
+        // Cache for 5 minutes; key includes period and page
+        $cacheKey = "price_history_{$product->id}_days_{$days}_page_{$page}";
+        $cacheTtl = 300; // 5 minutes
 
-        $statsQuery = PriceHistory::where('product_id', $product->id);
-        $chartQuery = PriceHistory::where('product_id', $product->id)
-            ->orderBy('checked_at');
-
-        if ($days !== null) {
-            $historyQuery->where('checked_at', '>=', now()->subDays($days));
-            $statsQuery->where('checked_at', '>=', now()->subDays($days));
-            $chartQuery->where('checked_at', '>=', now()->subDays($days));
+        $cachedData = Cache::get($cacheKey);
+        if ($cachedData) {
+            return response()->json($cachedData);
         }
 
-        $history = $historyQuery->paginate(10, ['id', 'price', 'checked_at']);
-        $historyRows = $history->items();
+        // Retrieve all data for the period
+        $allHistory = Cache::remember("price_data_{$product->id}_days_{$days}", 240, function () use ($product, $days) {
+            $query = PriceHistory::where('product_id', $product->id);
+            
+            if ($days !== null) {
+                $query->where('checked_at', '>=', now()->subDays($days));
+            }
+            
+            return $query->orderBy('checked_at')->get(['id', 'price', 'checked_at']);
+        });
 
-        if (empty($historyRows) && $product->current_price !== null && (int) $history->currentPage() === 1) {
+        // Table - reverse order with pagination
+        $perPage = 10;
+        $reversed = $allHistory->reverse()->values();
+        $total = $reversed->count();
+        $lastPage = max(1, ceil($total / $perPage));
+
+        $historyRows = $reversed
+            ->slice(($page - 1) * $perPage, $perPage)
+            ->values()
+            ->all();
+
+        if (empty($historyRows) && $product->current_price !== null && $page === 1) {
             $historyRows = [[
                 'id' => null,
                 'price' => $product->current_price,
@@ -44,8 +61,9 @@ class PriceHistoryController extends Controller
             ]];
         }
 
-        $chartRows = $chartQuery->get(['id', 'price', 'checked_at']);
-        if ($chartRows->isEmpty() && $product->current_price !== null) {
+        // Chart - in chronological order
+        $chartRows = $allHistory->all();
+        if (empty($chartRows) && $product->current_price !== null) {
             $chartRows = [[
                 'id' => null,
                 'price' => $product->current_price,
@@ -53,36 +71,10 @@ class PriceHistoryController extends Controller
             ]];
         }
 
-        $statsRaw = $statsQuery
-            ->selectRaw('MIN(price) as min_price, MAX(price) as max_price, AVG(price) as avg_price, COUNT(*) as data_points')
-            ->first();
+        // Statistics
+        $stats = $this->calculateStats($allHistory, $product);
 
-        $statsMin = null;
-        $statsMax = null;
-        $statsAvg = null;
-        $statsDataPoints = 0;
-
-        if ($statsRaw && (int) $statsRaw->data_points > 0) {
-            $statsMin = $statsRaw->min_price;
-            $statsMax = $statsRaw->max_price;
-            $statsAvg = round((float) $statsRaw->avg_price, 2);
-            $statsDataPoints = (int) $statsRaw->data_points;
-        } elseif ($product->current_price !== null) {
-            $statsMin = $product->current_price;
-            $statsMax = $product->current_price;
-            $statsAvg = round((float) $product->current_price, 2);
-            $statsDataPoints = 1;
-        }
-
-        $stats = [
-            'min' => $statsMin,
-            'max' => $statsMax,
-            'avg' => $statsAvg,
-            'current' => $product->current_price,
-            'data_points' => $statsDataPoints,
-        ];
-
-        return response()->json([
+        $result = [
             'product_id' => $product->id,
             'symbol' => $product->symbol,
             'period_days' => $days,
@@ -90,11 +82,51 @@ class PriceHistoryController extends Controller
             'history' => $historyRows,
             'chart_history' => $chartRows,
             'pagination' => [
-                'current_page' => (int) $history->currentPage(),
-                'last_page' => (int) $history->lastPage(),
-                'per_page' => (int) $history->perPage(),
-                'total' => (int) $history->total(),
+                'current_page' => $page,
+                'last_page' => $lastPage,
+                'per_page' => $perPage,
+                'total' => $total,
             ],
-        ]);
+        ];
+
+        Cache::put($cacheKey, $result, $cacheTtl);
+
+        return response()->json($result);
+    }
+
+    private function calculateStats($historyCollection, $product)
+    {
+        if ($historyCollection->isEmpty()) {
+            if ($product->current_price !== null) {
+                return [
+                    'min' => $product->current_price,
+                    'max' => $product->current_price,
+                    'avg' => round((float) $product->current_price, 2),
+                    'current' => $product->current_price,
+                    'data_points' => 1,
+                ];
+            }
+
+            return [
+                'min' => null,
+                'max' => null,
+                'avg' => null,
+                'current' => null,
+                'data_points' => 0,
+            ];
+        }
+
+        $prices = $historyCollection->pluck('price')->map(fn($p) => (float) $p);
+        $min = $prices->min();
+        $max = $prices->max();
+        $avg = round($prices->avg(), 2);
+
+        return [
+            'min' => $min,
+            'max' => $max,
+            'avg' => $avg,
+            'current' => $product->current_price,
+            'data_points' => $historyCollection->count(),
+        ];
     }
 }

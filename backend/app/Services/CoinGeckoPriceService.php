@@ -436,6 +436,10 @@ class CoinGeckoPriceService
             ]);
         }
 
+        // Clear cache after updating price
+        $cacheService = new CacheService();
+        $cacheService->clearProductCache($product->id);
+
         if ($oldPrice !== null && $oldPrice > 0) {
             $this->dispatchTargetNotifications($product, $oldPrice, $newPrice);
         }
@@ -443,11 +447,13 @@ class CoinGeckoPriceService
 
     protected function dispatchTargetNotifications(Product $product, float $oldPrice, float $newPrice): void
     {
+        $cacheService = new CacheService();
+
         UserProduct::where('product_id', $product->id)
             ->where('is_active', true)
             ->whereNotNull('target_price')
             ->get()
-            ->each(function (UserProduct $tracker) use ($product, $oldPrice, $newPrice) {
+            ->each(function (UserProduct $tracker) use ($product, $oldPrice, $newPrice, $cacheService) {
                 $target = (float) $tracker->target_price;
                 $condition = 'below';
                 if ($tracker->notify_when !== null) {
@@ -503,6 +509,10 @@ class CoinGeckoPriceService
                     'last_notified_at' => now(),
                     'is_active' => false,
                 ]);
+
+                // Clear user's notifications cache
+                $cacheService->clearUserDashboard($tracker->user_id);
+                $cacheService->clearUserNotifications($tracker->user_id);
             });
     }
 

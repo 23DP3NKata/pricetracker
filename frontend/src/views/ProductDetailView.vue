@@ -6,7 +6,9 @@
 
     <v-progress-linear v-if="store.loading" indeterminate color="primary" class="mb-4" />
 
-    <template v-if="product">
+    <v-skeleton-loader v-if="loading" type="card, table" />
+
+    <template v-else>
       <!-- Product info -->
       <v-card rounded="xl" class="pa-6 mb-6">
         <div class="d-flex align-start justify-space-between flex-wrap ga-4">
@@ -116,7 +118,8 @@
         <div class="mb-4 chart-wrap">
           <div class="chart-scroll">
             <div class="chart-inner" :style="{ height: '280px' }">
-              <Line :data="chartData" :options="chartOptions" />
+              <div v-if="chartLoading" style="height:280px;background:transparent"></div>
+              <Line v-else :data="chartData" :options="chartOptions" />
             </div>
           </div>
         </div>
@@ -244,6 +247,8 @@ const historyDays = ref(30)
 const historyData = ref([])
 const chartHistoryData = ref([])
 const historyStats = ref(null)
+const loading = ref(true)
+const chartLoading = ref(true)
 const historyPage = ref(1)
 const loadingPage = ref(false)
 const historyPagination = ref({
@@ -630,6 +635,7 @@ async function loadProduct() {
 }
 
 async function loadHistory() {
+  chartLoading.value = true
   try {
     const days = historyDays.value === -1 ? null : historyDays.value
 
@@ -654,6 +660,8 @@ async function loadHistory() {
       per_page: 10,
       total: 0,
     }
+  } finally {
+    chartLoading.value = false
   }
 }
 
@@ -676,20 +684,28 @@ async function goToPage(p) {
   }
 }
 
-watch(historyDays, async () => {
-  historyPage.value = 1
-  await loadHistory()
-})
+
 
 watch(
   () => route.params.id,
   async () => {
     historyPage.value = 1
-    await loadProduct()
-    await loadHistory()
+    loading.value = true
+    chartLoading.value = true
+    try {
+      await Promise.all([loadProduct(), loadHistory()])
+    } finally {
+      loading.value = false
+    }
   },
   { immediate: true }
 )
+
+watch(historyDays, async () => {
+  historyPage.value = 1
+  chartLoading.value = true
+  await loadHistory()
+})
 </script>
 
 <style scoped>

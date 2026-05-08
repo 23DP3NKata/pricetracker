@@ -8,6 +8,7 @@ use App\Models\UserProduct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -17,6 +18,14 @@ class DashboardController extends Controller
     public function index(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
+        $cacheKey = "dashboard_{$userId}";
+        $cacheTtl = 60; // 1 minute
+
+        // Check cache
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            return response()->json($cached);
+        }
 
         // Total tracked products
         $totalProducts = UserProduct::where('user_id', $userId)
@@ -52,7 +61,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        return response()->json([
+        $result = [
             'total_products' => $totalProducts,
             'unread_notifications' => $unreadNotifications,
             'recent_drops' => $recentDrops,
@@ -60,6 +69,10 @@ class DashboardController extends Controller
             'monthly_limit' => $user->monthly_limit,
             'checks_used' => $user->checks_used,
             'top_drops' => $topDrops,
-        ]);
+        ];
+
+        Cache::put($cacheKey, $result, $cacheTtl);
+
+        return response()->json($result);
     }
 }
