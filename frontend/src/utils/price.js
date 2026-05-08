@@ -6,6 +6,11 @@ export function roundToTwo(value) {
 
   if (Number.isNaN(numeric)) return null
 
+  // For prices < 1, show up to 6 decimal places to track small changes
+  if (numeric < 1 && numeric > 0) {
+    return Math.round((numeric + Number.EPSILON) * 1000000) / 1000000
+  }
+
   return Math.round((numeric + Number.EPSILON) * 100) / 100
 }
 
@@ -13,11 +18,14 @@ export function formatCurrencyPrice(price, currency = 'USD', locale) {
   const numeric = roundToTwo(price)
   if (numeric === null) return 'N/A'
 
+  // For prices < 1, show up to 6 decimal places
+  const decimals = numeric < 1 && numeric > 0 ? 6 : 2
+
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: String(currency || 'USD').toUpperCase(),
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: decimals,
   }).format(numeric)
 }
 

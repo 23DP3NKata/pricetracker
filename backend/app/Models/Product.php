@@ -30,8 +30,8 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'current_price' => 'decimal:8',
-            'price_change_24h' => 'decimal:4',
+            'current_price' => 'decimal:20,8',
+            'price_change_24h' => 'decimal:10,4',
             'last_successful_check' => 'datetime',
         ];
     }
