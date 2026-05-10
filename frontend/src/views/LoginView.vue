@@ -50,7 +50,14 @@
               :error-messages="submitted ? passwordError.messages : []"
             />
 
-            <div class="d-flex justify-end mb-4">
+            <div class="d-flex align-center justify-space-between mb-4">
+              <v-checkbox
+                v-model="form.remember"
+                :label="$t('auth.rememberMe')"
+                density="compact"
+                hide-details
+                class="remember-checkbox"
+              />
               <router-link to="/forgot-password" class="text-medium-emphasis text-body-2 auth-link">
                 {{ $t('auth.forgotPassword') }}
               </router-link>
@@ -99,6 +106,7 @@ const passwordError = ref({ show: false, messages: [] })
 const form = reactive({
   email: '',
   password: '',
+  remember: false,
 })
 
 onMounted(() => {
