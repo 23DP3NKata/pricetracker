@@ -7,6 +7,18 @@
 
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
+    <v-alert
+      v-if="verifyPrompt"
+      type="warning"
+      variant="tonal"
+      rounded="lg"
+      class="mb-4"
+      closable
+      @click:close="verifyPrompt = false"
+    >
+      {{ $t('settings.verifyPromptFromTracking') }}
+    </v-alert>
+
     <template v-if="profile">
       <div class="settings-rows">
         <div class="settings-row">
@@ -296,14 +308,16 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getUserProfile, updateUserName, updateUserEmail, updateUserPassword, deleteUserAccount, resendVerification } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const loading = ref(true)
+const verifyPrompt = ref(false)
 const profile = ref(null)
 const isAdmin = computed(() => profile.value?.role === 'admin' || auth.isAdmin)
 const editingField = ref(null)
@@ -594,7 +608,21 @@ async function handlePasswordChange() {
   }
 }
 
-onMounted(() => loadProfile())
+function applyVerifyPrompt() {
+  const needsPrompt = String(route.query.verify || '') === '1'
+  verifyPrompt.value = needsPrompt
+
+  if (needsPrompt) {
+    const nextQuery = { ...route.query }
+    delete nextQuery.verify
+    router.replace({ query: nextQuery })
+  }
+}
+
+onMounted(() => {
+  applyVerifyPrompt()
+  loadProfile()
+})
 
 async function handleResendVerification() {
   verifySending.value = true

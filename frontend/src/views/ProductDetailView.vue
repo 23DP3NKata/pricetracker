@@ -51,10 +51,10 @@
             </div>
             <v-btn
               variant="outlined"
-              color="primary"
+              :color="emailVerified ? 'primary' : 'warning'"
               size="default"
               prepend-icon="mdi-bell-plus-outline"
-              :disabled="!emailVerified"
+              :disabled="false"
               @click="openTrackDialog"
             >
               {{ $t('product.trackBtn') }}
@@ -213,7 +213,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import TrackingSetupDialog from '@/components/TrackingSetupDialog.vue'
@@ -236,6 +236,7 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 const { smAndDown } = useDisplay()
 const store = useProductsStore()
@@ -259,6 +260,7 @@ const historyPagination = ref({
 })
 const totalPages = computed(() => Math.max(1, Number(historyPagination.value.last_page) || 1))
 const emailVerified = computed(() => auth.emailVerified)
+const isAuthenticated = computed(() => auth.isAuthenticated)
 const productUrl = computed(() => {
   const url = (product.value?.product_page_url || '').trim()
 
@@ -277,6 +279,16 @@ const historyRows = computed(() =>
 )
 
 function openTrackDialog() {
+  if (!isAuthenticated.value) {
+    router.push({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  if (!emailVerified.value) {
+    router.push({ path: '/settings', query: { verify: '1' } })
+    return
+  }
+
   showTrackDialog.value = true
 }
 

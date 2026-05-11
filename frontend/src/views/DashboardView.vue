@@ -161,12 +161,12 @@
                 size="small"
                 rounded="lg"
                 variant="outlined"
-                color="primary"
+                :color="emailVerified ? 'primary' : 'warning'"
                 class="track-btn text-wrap"
                 height="auto"
                 style="min-height: 36px; padding-top: 6px; padding-bottom: 6px;"
                 prepend-icon="mdi-bell-plus"
-                :disabled="!emailVerified"
+                :disabled="false"
                 @click="openTrackDialog(asset)"
               >
                 <span v-html="$t('dashboard.addAlert')"></span>
@@ -178,12 +178,12 @@
                 size="small"
                 rounded="lg"
                 variant="outlined"
-                color="primary"
+                :color="emailVerified ? 'primary' : 'warning'"
                 class="track-btn text-wrap"
                 height="auto"
                 style="min-height: 36px; padding-top: 6px; padding-bottom: 6px;"
                 prepend-icon="mdi-bell-plus"
-                :disabled="!emailVerified"
+                :disabled="false"
                 @click.stop="openTrackDialog(asset)"
               >
                 <span v-html="$t('dashboard.addAlert')"></span>
@@ -245,6 +245,7 @@ const showTrackDialog = ref(false)
 const selectedAsset = ref(null)
 
 const emailVerified = computed(() => auth.emailVerified)
+const isAuthenticated = computed(() => auth.isAuthenticated)
 
 const coingeckoLogoSrc = computed(() => {
   if (theme.global.current.value.dark) {
@@ -488,7 +489,15 @@ async function loadTopAssets() {
 }
 
 function openTrackDialog(asset) {
-  if (!emailVerified.value) return
+  if (!isAuthenticated.value) {
+    router.push({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  if (!emailVerified.value) {
+    router.push({ path: '/settings', query: { verify: '1' } })
+    return
+  }
 
   selectedAsset.value = asset
   showTrackDialog.value = true
