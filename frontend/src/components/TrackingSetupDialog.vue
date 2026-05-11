@@ -283,7 +283,18 @@ async function submitTracking() {
     openModel.value = false
     emit('tracked')
   } catch (e) {
-    trackError.value = e.response?.data?.message || t('dashboard.failedSaveTracking')
+    const apiError = e.response?.data
+    const errorCode = apiError?.error_code
+    const errorMap = {
+      duplicate_tracking: 'dashboard.duplicateTracking',
+    }
+
+    if (errorCode && errorMap[errorCode]) {
+      trackError.value = t(errorMap[errorCode])
+      return
+    }
+
+    trackError.value = apiError?.message || t('dashboard.failedSaveTracking')
   } finally {
     trackLoading.value = false
   }

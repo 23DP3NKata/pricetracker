@@ -277,18 +277,33 @@ class ProductController extends Controller
             return $directionError;
         }
 
-        $createResult = DB::transaction(function () use ($authUser, $product, $validated) {
+        $createResult = DB::transaction(function () use ($authUser, $product, $notifyWhen, $targetPrice) {
             $user = User::query()->lockForUpdate()->findOrFail($authUser->id);
 
             if ($user->checks_used >= $user->monthly_limit) {
                 return ['created' => false, 'reason' => 'limit'];
             }
 
+            // Prevent duplicate tracking rules for the same user/product/price/direction
+            $duplicateQuery = UserProduct::where('user_id', $user->id)
+                ->where('product_id', $product->id)
+                ->where('notify_when', $notifyWhen);
+
+            if ($targetPrice === null) {
+                $duplicateQuery->whereNull('target_price');
+            } else {
+                $duplicateQuery->where('target_price', $targetPrice);
+            }
+
+            if ($duplicateQuery->exists()) {
+                return ['created' => false, 'reason' => 'duplicate'];
+            }
+
             $tracking = UserProduct::query()->create([
                 'user_id' => $user->id,
                 'product_id' => $product->id,
-                'target_price' => $validated['target_price'] ?? null,
-                'notify_when' => $validated['notify_when'] ?? 'below',
+                'target_price' => $targetPrice,
+                'notify_when' => $notifyWhen,
             ]);
 
             $product->increment('tracking_count');
@@ -302,6 +317,13 @@ class ProductController extends Controller
                 return response()->json([
                     'message' => 'Monthly request limit reached.',
                 ], 403);
+            }
+
+                if ($createResult['reason'] === 'duplicate') {
+                    return response()->json([
+                        'message' => 'Duplicate tracking rule already exists.',
+                        'error_code' => 'duplicate_tracking',
+                    ], 409);
             }
 
             return response()->json(['message' => 'Unable to create tracking rule.'], 409);
