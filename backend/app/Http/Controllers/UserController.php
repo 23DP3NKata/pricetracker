@@ -56,7 +56,7 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100', Rule::unique('users')->ignore($user->id)],
+            'name' => ['required', 'string', 'min:3', 'max:100', 'alpha_num', 'regex:/\pL/u', Rule::unique('users')->ignore($user->id)],
         ]);
 
         $user->name = $validated['name'];

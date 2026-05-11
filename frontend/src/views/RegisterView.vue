@@ -16,16 +16,8 @@
             </div>
           </div>
 
-          <v-alert v-if="auth.error" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="auth.error = null">
-            {{ auth.error }}
-          </v-alert>
-
-          <v-alert v-if="errors" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="errors = null">
-            <ul class="error-list">
-              <template v-for="(msgs, field) in errors" :key="field">
-                <li v-for="msg in msgs" :key="msg">{{ msg }}</li>
-              </template>
-            </ul>
+          <v-alert v-if="serverError" type="error" variant="tonal" rounded="lg" class="mb-4" closable @click:close="serverError = null">
+            {{ serverError }}
           </v-alert>
 
           <v-form ref="formRef" @submit.prevent="handleRegister">
@@ -111,7 +103,7 @@ const router = useRouter()
 const { t } = useI18n()
 const formRef = ref(null)
 const showPassword = ref(false)
-const errors = ref(null)
+const serverError = ref(null)
 
 const submitted = ref(false)
 const nameError = ref({ show: false, messages: [] })
@@ -126,12 +118,38 @@ const form = reactive({
   password_confirmation: '',
 })
 
+const nameAllowedPattern = /^[\p{L}\p{N}]+$/u
+const nameHasLetterPattern = /[\p{L}]/u
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function setFieldErrors({ nameMessages, emailMessages, passwordMessages, confirmMessages }) {
+  nameError.value.messages = nameMessages
+  nameError.value.show = nameMessages.length > 0
+
+  emailError.value.messages = emailMessages
+  emailError.value.show = emailMessages.length > 0
+
+  passwordError.value.messages = passwordMessages
+  passwordError.value.show = passwordMessages.length > 0
+
+  confirmError.value.messages = confirmMessages
+  confirmError.value.show = confirmMessages.length > 0
+}
+
 function validateName() {
   const messages = []
   if (!form.name) {
     messages.push(t('auth.required'))
-  } else if (form.name.length < 2) {
-    messages.push(t('auth.min2Chars'))
+  } else {
+    if (form.name.length < 3) {
+      messages.push(t('auth.min3Chars'))
+    }
+
+    if (!nameAllowedPattern.test(form.name)) {
+      messages.push(t('auth.onlyLettersNumbers'))
+    } else if (!nameHasLetterPattern.test(form.name)) {
+      messages.push(t('auth.mustIncludeLetter'))
+    }
   }
   return messages
 }
@@ -140,7 +158,7 @@ function validateEmail() {
   const messages = []
   if (!form.email) {
     messages.push(t('auth.required'))
-  } else if (!/.+@.+\..+/.test(form.email)) {
+  } else if (!emailPattern.test(form.email)) {
     messages.push(t('auth.invalidEmail'))
   }
   return messages
@@ -168,39 +186,62 @@ function validateConfirm() {
 
 async function handleRegister() {
   submitted.value = true
+  serverError.value = null
 
   const nameMessages = validateName()
   const emailMessages = validateEmail()
   const passwordMessages = validatePassword()
   const confirmMessages = validateConfirm()
 
-  nameError.value.messages = nameMessages
-  nameError.value.show = nameMessages.length > 0
-
-  emailError.value.messages = emailMessages
-  emailError.value.show = emailMessages.length > 0
-
-  passwordError.value.messages = passwordMessages
-  passwordError.value.show = passwordMessages.length > 0
-
-  confirmError.value.messages = confirmMessages
-  confirmError.value.show = confirmMessages.length > 0
+  setFieldErrors({
+    nameMessages,
+    emailMessages,
+    passwordMessages,
+    confirmMessages,
+  })
 
   if (nameError.value.show || emailError.value.show || passwordError.value.show || confirmError.value.show) {
     return
   }
 
-  errors.value = null
   try {
     await auth.register(form)
     router.push('/verify-email')
   } catch (e) {
-    if (e.response?.status !== 422) {
+    if (e.response?.status === 422 && e.response?.data?.errors) {
+      applyServerErrors(e.response.data.errors)
       return
     }
-
-    errors.value = e.response.data.errors
+    serverError.value = e.response?.data?.message || t('auth.registrationFailed')
   }
+}
+
+function applyServerErrors(serverErrors) {
+  submitted.value = true
+
+  const nameMessages = serverErrors.name ? validateName() : []
+  if (serverErrors.name && nameMessages.length === 0) {
+    nameMessages.push(t('auth.nameInvalid'))
+  }
+
+  const emailMessages = serverErrors.email ? validateEmail() : []
+  if (serverErrors.email && emailMessages.length === 0) {
+    emailMessages.push(t('auth.emailTaken'))
+  }
+
+  const passwordMessages = serverErrors.password ? validatePassword() : []
+  if (serverErrors.password && passwordMessages.length === 0) {
+    passwordMessages.push(t('auth.passwordInvalid'))
+  }
+
+  const confirmMessages = serverErrors.password_confirmation ? validateConfirm() : []
+
+  setFieldErrors({
+    nameMessages,
+    emailMessages,
+    passwordMessages,
+    confirmMessages,
+  })
 }
 </script>
 

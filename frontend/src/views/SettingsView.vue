@@ -367,13 +367,26 @@ function isValidEmail(value) {
   return /.+@.+\..+/.test(value)
 }
 
+const nameAllowedPattern = /^[\p{L}\p{N}]+$/u
+const nameHasLetterPattern = /[\p{L}]/u
+
 function nameErrors() {
   if (!nameSubmitted.value) return []
 
   const name = nameForm.name?.trim() || ''
   if (!name) return [t('settings.required')]
-  if (name.length > 100) return [t('settings.max100')]
-  return []
+
+  const messages = []
+  if (name.length < 3) messages.push(t('settings.min3'))
+  if (name.length > 100) messages.push(t('settings.max100'))
+
+  if (!nameAllowedPattern.test(name)) {
+    messages.push(t('settings.onlyLettersNumbers'))
+  } else if (!nameHasLetterPattern.test(name)) {
+    messages.push(t('settings.mustIncludeLetter'))
+  }
+
+  return messages
 }
 
 function emailErrors() {
