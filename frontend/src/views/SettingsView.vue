@@ -19,6 +19,18 @@
       {{ $t('settings.verifyPromptFromTracking') }}
     </v-alert>
 
+    <v-alert
+      v-if="profileMsg"
+      :type="profileMsg.type"
+      variant="tonal"
+      rounded="lg"
+      class="mb-4"
+      closable
+      @click:close="profileMsg = null"
+    >
+      {{ profileMsg.text }}
+    </v-alert>
+
     <template v-if="profile">
       <div class="settings-rows">
         <div class="settings-row">
@@ -318,6 +330,7 @@ const router = useRouter()
 const { t } = useI18n()
 const loading = ref(true)
 const verifyPrompt = ref(false)
+const profileMsg = ref(null)
 const profile = ref(null)
 const isAdmin = computed(() => profile.value?.role === 'admin' || auth.isAdmin)
 const editingField = ref(null)
@@ -409,6 +422,10 @@ function emailErrors() {
   const email = emailForm.email?.trim() || ''
   if (!email) return [t('settings.required')]
   if (!isValidEmail(email)) return [t('settings.invalidEmail')]
+  const currentEmail = (profile.value?.email || '').trim().toLowerCase()
+  if (currentEmail && email.toLowerCase() === currentEmail) {
+    return [t('settings.emailSameAsCurrent')]
+  }
   return []
 }
 
@@ -429,6 +446,28 @@ function emailConfirmErrors() {
   if (!confirmEmail) return [t('settings.required')]
   if (confirmEmail !== (emailForm.email?.trim() || '')) return [t('settings.emailsNoMatch')]
   return []
+}
+
+function translateEmailErrorMessage(message) {
+  if (!message) return ''
+
+  const normalized = String(message).trim()
+  if (normalized === 'The email has already been taken.') {
+    return t('settings.emailTaken')
+  }
+
+  return normalized
+}
+
+function translatePasswordErrorMessage(message) {
+  if (!message) return ''
+
+  const normalized = String(message).trim()
+  if (normalized === 'The current password is incorrect.') {
+    return t('settings.currentPasswordInvalid')
+  }
+
+  return normalized
 }
 
 function currentPasswordErrors() {
@@ -543,13 +582,17 @@ async function handleNameChange() {
   nameMsg.value = null
   try {
     const { data } = await updateUserName({ name: nameForm.name.trim() })
+    profileMsg.value = { type: 'success', text: data.message }
     nameMsg.value = { type: 'success', text: data.message }
     nameSubmitted.value = false
     await auth.fetchUser()
     await loadProfile()
     editingField.value = null
   } catch (e) {
-    nameMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedUpdateName') }
+    const fallback = t('settings.failedUpdateName')
+    const text = e.response?.data?.message || fallback
+    profileMsg.value = { type: 'error', text }
+    nameMsg.value = { type: 'error', text }
   } finally {
     nameSaving.value = false
   }
@@ -567,6 +610,7 @@ async function handleEmailChange() {
       email_confirmation: emailForm.email_confirmation.trim(),
       password: emailForm.password,
     })
+    profileMsg.value = { type: 'success', text: data.message }
     emailMsg.value = { type: 'success', text: data.message }
     emailForm.email_confirmation = emailForm.email
     emailForm.password = ''
@@ -575,7 +619,11 @@ async function handleEmailChange() {
     await loadProfile()
     editingField.value = null
   } catch (e) {
-    emailMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedUpdateEmail') }
+    const rawMessage = e.response?.data?.message
+    const translated = translateEmailErrorMessage(rawMessage)
+    const text = translated || t('settings.failedUpdateEmail')
+    profileMsg.value = { type: 'error', text }
+    emailMsg.value = { type: 'error', text }
   } finally {
     emailSaving.value = false
   }
@@ -595,6 +643,7 @@ async function handlePasswordChange() {
   passwordMsg.value = null
   try {
     const { data } = await updateUserPassword(passwordForm)
+    profileMsg.value = { type: 'success', text: data.message }
     passwordMsg.value = { type: 'success', text: data.message }
     passwordForm.current_password = ''
     passwordForm.password = ''
@@ -602,7 +651,11 @@ async function handlePasswordChange() {
     passwordSubmitted.value = false
     editingField.value = null
   } catch (e) {
-    passwordMsg.value = { type: 'error', text: e.response?.data?.message || t('settings.failedChangePassword') }
+    const rawMessage = e.response?.data?.message
+    const translated = translatePasswordErrorMessage(rawMessage)
+    const text = translated || t('settings.failedChangePassword')
+    profileMsg.value = { type: 'error', text }
+    passwordMsg.value = { type: 'error', text }
   } finally {
     passwordSaving.value = false
   }
