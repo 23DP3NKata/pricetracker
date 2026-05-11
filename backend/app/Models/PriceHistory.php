@@ -20,7 +20,7 @@ class PriceHistory extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:20,8',
+            'price' => 'decimal:8',
             'checked_at' => 'datetime',
         ];
     }
