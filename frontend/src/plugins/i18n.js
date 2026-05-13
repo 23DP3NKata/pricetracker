@@ -154,6 +154,16 @@ const messages = {
       registrationFailed: 'Registration failed',
       min8Chars: 'Min 8 characters',
       passwordsDontMatch: 'Passwords don\'t match',
+      password_requirements: {
+        min_length: 'At least 8 characters',
+        uppercase: 'At least one uppercase letter',
+        lowercase: 'At least one lowercase letter',
+        numbers: 'At least one number',
+        symbols: 'At least one special symbol',
+      },
+      validation: {
+        password: 'Password does not meet the requirements',
+      },
     },
 
     authRecovery: {
@@ -701,6 +711,16 @@ const messages = {
       registrationFailed: 'Neizdevās reģistrācija',
       min8Chars: 'Vismaz 8 rakstzīmes',
       passwordsDontMatch: 'Paroles nesakrīt',
+      password_requirements: {
+        min_length: 'Vismaz 8 rakstzīmes',
+        uppercase: 'Vismaz viena lielā burts',
+        lowercase: 'Vismaz viens mazais burts',
+        numbers: 'Vismaz viena ciparu',
+        symbols: 'Vismaz viens spēcīgs simbols',
+      },
+      validation: {
+        password: 'Parole neatbilst prasībām',
+      },
     },
 
     authRecovery: {
@@ -1249,6 +1269,16 @@ messages.ru = {
     registrationFailed: 'Регистрация не удалась',
     min8Chars: 'Минимум 8 символов',
     passwordsDontMatch: 'Пароли не совпадают',
+    password_requirements: {
+      min_length: 'Минимум 8 символов',
+      uppercase: 'Хотя бы одна заглавная буква',
+      lowercase: 'Хотя бы одна строчная буква',
+      numbers: 'Хотя бы одна цифра',
+      symbols: 'Хотя бы один спецсимвол',
+    },
+    validation: {
+      password: 'Пароль не соответствует требованиям',
+    },
   },
   authRecovery: {
     ...messages.en.authRecovery,
