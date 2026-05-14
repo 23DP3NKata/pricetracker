@@ -114,12 +114,11 @@
             <div class="head-coin">{{ $t('tracking.asset') }}</div>
             <div>{{ $t('tracking.currentPrice') }}</div>
             <div>{{ $t('tracking.target') }}</div>
-            <div>{{ $t('tracking.condition') }}</div>
             <div class="status-head">{{ $t('tracking.status') }}</div>
             <div class="head-actions">{{ $t('tracking.actions') }}</div>
           </div>
 
-          <div v-for="(item, index) in activeRows" :key="item.id" class="list-row">
+          <div v-for="item in activeRows" :key="item.id" class="list-row">
             <div class="index-col">{{ index + 1 }}</div>
 
             <router-link :to="`/products/${item.product_id}`" class="asset-link coin-cell">
@@ -149,21 +148,6 @@
                 maxlength="18"
                 min="0"
                 step="0.01"
-                density="compact"
-                variant="outlined"
-                hide-details
-                class="modern-input"
-                rounded="lg"
-              />
-            </div>
-
-            <div class="condition-col">
-              <v-select
-                v-model="item.notify_when"
-                @update:model-value="() => item._unsaved = true"
-                :items="notifyWhenOptions"
-                item-title="text"
-                item-value="value"
                 density="compact"
                 variant="outlined"
                 hide-details
@@ -222,7 +206,7 @@
     </div>
 
     <div v-if="activeRows.length" class="tracking-cards">
-      <div v-for="(item, index) in activeRows" :key="item.id" class="tracking-card">
+      <div v-for="item in activeRows" :key="item.id" class="tracking-card">
         <div class="tracking-card-top">
           <router-link :to="`/products/${item.product_id}`" class="tracking-card-asset">
             <v-avatar size="34" color="grey-lighten-4">
@@ -252,22 +236,6 @@
               maxlength="18"
               min="0"
               step="0.01"
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="modern-input"
-              rounded="lg"
-            />
-          </div>
-
-          <div class="tracking-card-control">
-            <div class="tracking-card-label">{{ $t('tracking.condition') }}</div>
-            <v-select
-              v-model="item.notify_when"
-              @update:model-value="() => item._unsaved = true"
-              :items="notifyWhenOptions"
-              item-title="text"
-              item-value="value"
               density="compact"
               variant="outlined"
               hide-details
@@ -322,12 +290,11 @@
             <div class="head-coin">{{ $t('tracking.asset') }}</div>
             <div>{{ $t('tracking.currentPrice') }}</div>
             <div>{{ $t('tracking.target') }}</div>
-            <div>{{ $t('tracking.condition') }}</div>
             <div class="status-head">{{ $t('tracking.status') }}</div>
             <div class="head-actions">{{ $t('tracking.actions') }}</div>
           </div>
 
-          <div v-for="(item, index) in completedRows" :key="item.id" class="list-row list-row--completed">
+          <div v-for="item in completedRows" :key="item.id" class="list-row list-row--completed">
             <div class="index-col">{{ index + 1 }}</div>
 
             <router-link :to="`/products/${item.product_id}`" class="asset-link coin-cell">
@@ -350,10 +317,6 @@
 
             <div class="target-col text-body-2 text-medium-emphasis">
               {{ formatPrice(item.target_price, item.currency) }}
-            </div>
-
-            <div class="condition-col text-body-2 text-medium-emphasis">
-              {{ conditionLabel(item.notify_when) }}
             </div>
 
             <div class="status-cell">
@@ -389,7 +352,7 @@
     </div>
 
     <div v-if="completedRows.length" class="tracking-cards">
-      <div v-for="(item, index) in completedRows" :key="item.id" class="tracking-card tracking-card--completed">
+      <div v-for="item in completedRows" :key="item.id" class="tracking-card tracking-card--completed">
         <div class="tracking-card-top">
           <router-link :to="`/products/${item.product_id}`" class="tracking-card-asset">
             <v-avatar size="34" color="grey-lighten-4">
@@ -412,11 +375,6 @@
           <div class="tracking-card-pair">
             <div class="tracking-card-label">{{ $t('tracking.target') }}</div>
             <div class="tracking-card-value">{{ formatPrice(item.target_price, item.currency) }}</div>
-          </div>
-
-          <div class="tracking-card-pair">
-            <div class="tracking-card-label">{{ $t('tracking.condition') }}</div>
-            <div class="tracking-card-value">{{ conditionLabel(item.notify_when) }}</div>
           </div>
         </div>
 
@@ -467,11 +425,6 @@ const conditionFilter = ref('all')
 const statusFilter = ref('all')
 const sortBy = ref('symbolAsc')
 
-const notifyWhenOptions = computed(() => [
-  { text: t('tracking.conditionBelow'), value: 'below' },
-  { text: t('tracking.conditionAbove'), value: 'above' },
-])
-
 const conditionFilterOptions = computed(() => [
   { text: t('tracking.conditionAll'), value: 'all' },
   { text: t('tracking.conditionBelow'), value: 'below' },
@@ -504,9 +457,17 @@ function usageColor() {
   return 'primary'
 }
 
-function conditionLabel(value) {
-  if (value === 'above') return t('tracking.conditionAbove')
-  return t('tracking.conditionBelow')
+function resolveNotifyWhen(targetPrice, currentPrice, fallback = 'above') {
+  const target = roundToTwo(targetPrice)
+  const current = roundToTwo(currentPrice)
+
+  if (target === null || current === null) {
+    return fallback
+  }
+
+  if (target > current) return 'above'
+  if (target < current) return 'below'
+  return fallback
 }
 
 const filteredRows = computed(() => {
@@ -654,7 +615,7 @@ async function loadTracking() {
       current_price: product.current_price,
       currency: product.currency || 'USD',
       target_price: toPriceInput(entry.target_price),
-      notify_when: entry.notify_when || 'below',
+      notify_when: resolveNotifyWhen(entry.target_price, product.current_price, entry.notify_when || 'above'),
       is_active: entry.is_active ?? true,
       last_checked_at: entry.last_checked_at || null,
       last_notified_at: entry.last_notified_at || null,
@@ -684,24 +645,15 @@ async function saveItem(item) {
   successMsg.value = null
   const currentPrice = Number(item.current_price)
   const targetPrice = roundToTwo(item.target_price)
-
-  if (
-    item.notify_when === 'below'
-    && targetPrice !== null
-    && !Number.isNaN(currentPrice)
-    && targetPrice > currentPrice
-  ) {
-    error.value = t('tracking.invalidBelowTarget')
-    return
-  }
+  const notifyWhen = resolveNotifyWhen(targetPrice, currentPrice, item.notify_when || 'above')
 
   item._saving = true
   try {
-    const normalizedTargetPrice = roundToTwo(item.target_price)
+    const normalizedTargetPrice = targetPrice
 
     await updateTrackingRule(item.id, {
       target_price: normalizedTargetPrice,
-      notify_when: item.notify_when,
+      notify_when: notifyWhen,
       is_active: !!item.is_active,
     })
     await reloadAll()
@@ -778,11 +730,12 @@ onMounted(() => {
 
 .tracking-card-fields {
   display: grid;
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
 .tracking-card-fields--readonly {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .tracking-card-control,
@@ -891,7 +844,7 @@ onMounted(() => {
 }
 
 .list-shell {
-  --tracking-grid: 40px minmax(200px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(120px, 0.8fr) minmax(100px, 0.8fr);
+  --tracking-grid: 40px minmax(200px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(120px, 0.8fr) minmax(100px, 0.8fr);
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -976,8 +929,7 @@ onMounted(() => {
 }
 
 .price-col,
-.target-col,
-.condition-col {
+.target-col {
   align-self: center;
 }
 
