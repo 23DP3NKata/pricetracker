@@ -773,7 +773,7 @@ const messages = {
       action: 'Darbība',
       tracked: 'Izsekots',
       track: 'Izsekot',
-      addAlert: 'Pievienot<br>paziņojumu',
+      addAlert: 'Pievienot paziņojumu',
       trackDesc: 'Sākt izsekot šo aktīvu',
       trackingSetupTitle: 'Izsekošanas iestatīšana',
       trackingSetupSubtitle: 'Uzstādi mērķi ar dažiem klikšķiem',
