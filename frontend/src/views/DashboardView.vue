@@ -58,7 +58,7 @@
           {{ $t('dashboard.emptyTopAssetsHint') }}
         </v-alert>
 
-      <v-card rounded="lg" class="list-shell" v-if="assets.length">
+      <v-card rounded="lg" class="list-shell crypto-table" v-if="displayAssets.length">
           <div class="list-head">
             <button type="button" class="head-cell sortable-head" :class="{ 'head-active': sortBy === 'rank' }" @click="toggleSort('rank')">
               #
@@ -90,7 +90,7 @@
           </div>
 
           <div
-            v-for="asset in sortedAssets"
+            v-for="asset in displayAssets"
             :key="asset.id"
             class="list-row"
           >
@@ -191,6 +191,50 @@
             </div>
           </div>
     </v-card>
+
+    <div v-if="displayAssets.length" class="crypto-cards">
+      <div
+        v-for="asset in displayAssets"
+        :key="asset.id"
+        class="crypto-card"
+      >
+        <div class="crypto-card-main" @click="goToCoin(asset.id)">
+          <div class="coin-left">
+            <v-avatar size="36" color="grey-lighten-4" class="coin-avatar">
+              <v-img v-if="asset.image_url" :src="asset.image_url" :alt="asset.symbol" />
+              <span v-else class="text-caption font-weight-bold">{{ asset.symbol?.slice(0, 1) }}</span>
+            </v-avatar>
+
+            <div class="coin-meta">
+              <div class="coin-line">
+                <span class="coin-symbol">{{ asset.symbol }}</span>
+                <span class="coin-name">{{ asset.title }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="coin-right">
+            <div class="coin-price-row">
+              <div class="coin-price">{{ formatPrice(asset.current_price, asset.currency) }}</div>
+              <v-btn
+                icon="mdi-bell-outline"
+                size="small"
+                variant="text"
+                class="notify-icon-btn"
+                :color="emailVerified ? 'primary' : 'warning'"
+                :aria-label="$t('dashboard.addAlert')"
+                :title="$t('dashboard.addAlert')"
+                @click.stop="openTrackDialog(asset)"
+              />
+            </div>
+            <div :class="['coin-change', percentClass(asset._change24h)]">
+              {{ formatPercent(asset._change24h) }}
+              <span class="coin-period">24h</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div v-if="assets.length" class="coingecko-attribution">
       <span class="coingecko-source">{{ $t('dashboard.sourceLabel') }}</span>
@@ -307,6 +351,8 @@ const sortedAssets = computed(() => {
   return list
 })
 
+const displayAssets = computed(() => uniqueById(sortedAssets.value))
+
 const lastUpdatedLabel = computed(() => {
   if (!lastUpdatedAt.value) return ''
 
@@ -327,6 +373,20 @@ function formatPercent(value) {
   const num = Number(value)
   const sign = num > 0 ? '+' : ''
   return `${sign}${num.toFixed(2)}%`
+}
+
+function uniqueById(list) {
+  const seen = new Set()
+  const result = []
+
+  for (const item of Array.isArray(list) ? list : []) {
+    const id = item?.id
+    if (seen.has(id)) continue
+    seen.add(id)
+    result.push(item)
+  }
+
+  return result
 }
 
 function formatTrendPercent(value) {
@@ -503,6 +563,11 @@ function openTrackDialog(asset) {
   showTrackDialog.value = true
 }
 
+function goToCoin(id) {
+  if (!id) return
+  router.push(`/products/${id}`)
+}
+
 async function handleTracked() {
   await loadTopAssets()
 }
@@ -542,6 +607,7 @@ onMounted(() => {
 <style scoped>
 .dashboard-crypto {
   max-width: 1180px;
+  overflow-x: hidden;
 }
 
 .list-shell {
@@ -737,8 +803,121 @@ onMounted(() => {
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.track-btn--card {
+  min-width: 0;
+}
+
 .mobile-track-action {
   justify-self: end;
+}
+
+.crypto-cards {
+  display: none;
+}
+
+.crypto-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.crypto-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--card-bg, rgb(var(--v-theme-surface)));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.crypto-card-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.notify-icon-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.coin-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.coin-avatar {
+  flex: 0 0 auto;
+}
+
+.coin-meta {
+  min-width: 0;
+}
+
+.crypto-card .coin-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.crypto-card .coin-symbol {
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.crypto-card .coin-name {
+  font-size: 0.82rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coin-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+.coin-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.coin-price {
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.coin-change {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.coin-period {
+  margin-left: 4px;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+  font-weight: 500;
 }
 
 @media (max-width: 959px) {
@@ -765,6 +944,36 @@ onMounted(() => {
 
   .coingecko-attribution {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .crypto-table {
+    display: none;
+  }
+
+  .crypto-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .crypto-card {
+    padding: 12px 14px;
+  }
+
+  .crypto-card .coin-name {
+    max-width: 44vw;
+  }
+}
+
+@media (min-width: 769px) {
+  .crypto-table {
+    display: block;
+  }
+
+  .crypto-cards {
+    display: none;
   }
 }
 

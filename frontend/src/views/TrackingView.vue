@@ -107,7 +107,7 @@
         <span class="section-counter">{{ activeRows.length }}</span>
       </div>
 
-      <div class="list-shell">
+      <div class="list-shell tracking-table">
         <div class="table-scroll">
           <div class="list-head">
             <div class="head-index">#</div>
@@ -221,13 +221,101 @@
       </div>
     </div>
 
+    <div v-if="activeRows.length" class="tracking-cards">
+      <div v-for="(item, index) in activeRows" :key="item.id" class="tracking-card">
+        <div class="tracking-card-top">
+          <router-link :to="`/products/${item.product_id}`" class="tracking-card-asset">
+            <v-avatar size="34" color="grey-lighten-4">
+              <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
+              <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
+            </v-avatar>
+            <div class="tracking-card-asset-text">
+              <div class="asset-symbol">{{ item.symbol }}</div>
+              <div class="asset-title text-medium-emphasis">{{ item.title }}</div>
+            </div>
+          </router-link>
+
+          <div class="tracking-card-price">
+            <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
+            <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
+          </div>
+        </div>
+
+        <div class="tracking-card-fields">
+          <div class="tracking-card-control">
+            <div class="tracking-card-label">{{ $t('tracking.target') }}</div>
+            <v-text-field
+              v-model="item.target_price"
+              @update:model-value="val => { normalizeItemTargetInput(item, val); item._unsaved = true }"
+              type="text"
+              inputmode="decimal"
+              maxlength="18"
+              min="0"
+              step="0.01"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="modern-input"
+              rounded="lg"
+            />
+          </div>
+
+          <div class="tracking-card-control">
+            <div class="tracking-card-label">{{ $t('tracking.condition') }}</div>
+            <v-select
+              v-model="item.notify_when"
+              @update:model-value="() => item._unsaved = true"
+              :items="notifyWhenOptions"
+              item-title="text"
+              item-value="value"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="modern-input"
+              rounded="lg"
+            />
+          </div>
+        </div>
+
+        <div class="tracking-card-footer">
+          <div class="tracking-card-actions">
+            <v-btn
+              size="small"
+              :variant="item._unsaved ? 'tonal' : 'text'"
+              class="icon-action-btn"
+              :loading="item._saving"
+              :color="item._unsaved ? 'primary' : 'default'"
+              :style="item._unsaved ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
+              icon="mdi-content-save-outline"
+              :aria-label="$t('tracking.save')"
+              @click="saveItem(item)"
+            />
+
+            <v-btn
+              size="small"
+              variant="text"
+              class="icon-action-btn"
+              :loading="item._deleting"
+              @mouseenter="item._hoverDelete = true"
+              @mouseleave="item._hoverDelete = false"
+              :color="item._hoverDelete ? 'error' : 'default'"
+              :style="item._hoverDelete ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
+              icon="mdi-trash-can-outline"
+              :aria-label="$t('tracking.remove')"
+              @click="removeItem(item)"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div v-if="completedRows.length" class="mb-5">
       <div class="section-header">
         <h2 class="text-subtitle-1 font-weight-bold mb-0 section-title">{{ $t('tracking.completedSection') }}</h2>
         <span class="section-counter">{{ completedRows.length }}</span>
       </div>
 
-      <div class="list-shell">
+      <div class="list-shell tracking-table">
         <div class="table-scroll">
           <div class="list-head">
             <div class="head-index">#</div>
@@ -295,6 +383,58 @@
                 </template>
               </v-tooltip>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="completedRows.length" class="tracking-cards">
+      <div v-for="(item, index) in completedRows" :key="item.id" class="tracking-card tracking-card--completed">
+        <div class="tracking-card-top">
+          <router-link :to="`/products/${item.product_id}`" class="tracking-card-asset">
+            <v-avatar size="34" color="grey-lighten-4">
+              <v-img v-if="item.image_url" :src="item.image_url" :alt="item.symbol" />
+              <span v-else class="text-caption font-weight-bold">{{ item.symbol?.slice(0, 1) }}</span>
+            </v-avatar>
+            <div class="tracking-card-asset-text">
+              <div class="asset-symbol">{{ item.symbol }}</div>
+              <div class="asset-title text-medium-emphasis">{{ item.title }}</div>
+            </div>
+          </router-link>
+
+          <div class="tracking-card-price">
+            <div class="price-main">{{ formatPrice(item.current_price, item.currency) }}</div>
+            <div class="price-sub text-medium-emphasis">{{ formatPriceHint(item.current_price) }}</div>
+          </div>
+        </div>
+
+        <div class="tracking-card-fields tracking-card-fields--readonly">
+          <div class="tracking-card-pair">
+            <div class="tracking-card-label">{{ $t('tracking.target') }}</div>
+            <div class="tracking-card-value">{{ formatPrice(item.target_price, item.currency) }}</div>
+          </div>
+
+          <div class="tracking-card-pair">
+            <div class="tracking-card-label">{{ $t('tracking.condition') }}</div>
+            <div class="tracking-card-value">{{ conditionLabel(item.notify_when) }}</div>
+          </div>
+        </div>
+
+        <div class="tracking-card-footer">
+          <div class="tracking-card-actions">
+            <v-btn
+              size="small"
+              variant="text"
+              class="icon-action-btn"
+              :loading="item._deleting"
+              @mouseenter="item._hoverDelete = true"
+              @mouseleave="item._hoverDelete = false"
+              :color="item._hoverDelete ? 'error' : 'default'"
+              :style="item._hoverDelete ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
+              icon="mdi-trash-can-outline"
+              :aria-label="$t('tracking.remove')"
+              @click="removeItem(item)"
+            />
           </div>
         </div>
       </div>
@@ -594,6 +734,93 @@ onMounted(() => {
 <style scoped>
 .tracking-view {
   max-width: 1240px;
+  overflow-x: hidden;
+}
+
+.tracking-cards {
+  display: none;
+}
+
+.tracking-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--card-bg, rgb(var(--v-theme-surface)));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.tracking-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tracking-card-asset {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.tracking-card-asset-text {
+  min-width: 0;
+}
+
+.tracking-card-price {
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+.tracking-card-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.tracking-card-fields--readonly {
+  grid-template-columns: 1fr 1fr;
+}
+
+.tracking-card-control,
+.tracking-card-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tracking-card-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tracking-card-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.tracking-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tracking-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.tracking-card--completed .tracking-card-fields {
+  padding-top: 2px;
 }
 
 .usage-block {
@@ -876,6 +1103,46 @@ onMounted(() => {
     gap: 10px;
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .tracking-table {
+    display: none;
+  }
+
+  .tracking-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tracking-card-top {
+    align-items: center;
+  }
+
+  .tracking-card-fields--readonly {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-card-footer {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .tracking-card-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 769px) {
+  .tracking-table {
+    display: block;
+  }
+
+  .tracking-cards {
+    display: none;
   }
 }
 </style>
