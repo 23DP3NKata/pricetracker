@@ -118,7 +118,7 @@
             <div class="head-actions">{{ $t('tracking.actions') }}</div>
           </div>
 
-          <div v-for="item in activeRows" :key="item.id" class="list-row">
+          <div v-for="(item, index) in activeRows" :key="item.id" class="list-row">
             <div class="index-col">{{ index + 1 }}</div>
 
             <router-link :to="`/products/${item.product_id}`" class="asset-link coin-cell">
@@ -294,7 +294,7 @@
             <div class="head-actions">{{ $t('tracking.actions') }}</div>
           </div>
 
-          <div v-for="item in completedRows" :key="item.id" class="list-row list-row--completed">
+          <div v-for="(item, index) in completedRows" :key="item.id" class="list-row list-row--completed">
             <div class="index-col">{{ index + 1 }}</div>
 
             <router-link :to="`/products/${item.product_id}`" class="asset-link coin-cell">
