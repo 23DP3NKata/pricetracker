@@ -161,6 +161,9 @@
               <div class="text-caption text-medium-emphasis mt-1" v-if="item.last_notified_at">
                 {{ $t('tracking.completedAt') }}: {{ formatDate(item.last_notified_at) }}
               </div>
+              <div class="text-caption text-medium-emphasis mt-1" v-if="item.rule_count !== null">
+                {{ $t('tracking.rulesCount', { count: item.rule_count }) }}
+              </div>
             </div>
 
             <div class="actions-col">
@@ -246,6 +249,9 @@
         </div>
 
         <div class="tracking-card-footer">
+          <div class="tracking-card-meta text-caption text-medium-emphasis" v-if="item.rule_count !== null">
+            {{ $t('tracking.rulesCount', { count: item.rule_count }) }}
+          </div>
           <div class="tracking-card-actions">
             <v-btn
               size="small"
@@ -324,6 +330,9 @@
               <div class="text-caption text-medium-emphasis mt-1" v-if="item.last_notified_at">
                 {{ $t('tracking.completedAt') }}: {{ formatDate(item.last_notified_at) }}
               </div>
+              <div class="text-caption text-medium-emphasis mt-1" v-if="item.rule_count !== null">
+                {{ $t('tracking.rulesCount', { count: item.rule_count }) }}
+              </div>
             </div>
 
             <div class="actions-col">
@@ -379,6 +388,9 @@
         </div>
 
         <div class="tracking-card-footer">
+          <div class="tracking-card-meta text-caption text-medium-emphasis" v-if="item.rule_count !== null">
+            {{ $t('tracking.rulesCount', { count: item.rule_count }) }}
+          </div>
           <div class="tracking-card-actions">
             <v-btn
               size="small"
@@ -605,6 +617,7 @@ async function loadTracking() {
 
   for (const entry of entries) {
     const product = entry.product || {}
+        const stats = entry.stats || {}
 
     list.push({
       id: entry.id,
@@ -619,6 +632,9 @@ async function loadTracking() {
       is_active: entry.is_active ?? true,
       last_checked_at: entry.last_checked_at || null,
       last_notified_at: entry.last_notified_at || null,
+          rule_count: typeof stats.rules_count === 'number' ? stats.rules_count : null,
+          rules_active: typeof stats.active_count === 'number' ? stats.active_count : null,
+          rules_completed: typeof stats.completed_count === 'number' ? stats.completed_count : null,
       _unsaved: false,
       _hoverDelete: false,
       _saving: false,
@@ -763,6 +779,10 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+.tracking-card-meta {
+  font-weight: 500;
 }
 
 .tracking-card-actions {

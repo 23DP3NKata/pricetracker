@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\UserProduct;
 use App\Services\CoinGeckoPriceService;
+use App\Services\TrackingRuleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -19,6 +20,7 @@ class ProductController extends Controller
 
     public function __construct(
         protected CoinGeckoPriceService $priceService,
+        protected TrackingRuleService $trackingRuleService,
     ) {}
 
     /**
@@ -347,6 +349,9 @@ class ProductController extends Controller
 
         $perPage = (int) ($validated['per_page'] ?? 100);
 
+        $ruleStatsByProductId = $this->trackingRuleService
+            ->getRuleStatsByProductId($request->user()->id);
+
         $rules = UserProduct::query()
             ->where('user_id', $request->user()->id)
             ->with(['product' => function ($query) {
@@ -371,6 +376,11 @@ class ProductController extends Controller
                 'last_checked_at' => optional($rule->last_checked_at)->toDateTimeString(),
                 'last_notified_at' => optional($rule->last_notified_at)->toDateTimeString(),
                 'created_at' => optional($rule->created_at)->toDateTimeString(),
+                'stats' => $ruleStatsByProductId[$rule->product_id] ?? [
+                    'rules_count' => 0,
+                    'active_count' => 0,
+                    'completed_count' => 0,
+                ],
                 'product' => [
                     'id' => $rule->product->id,
                     'title' => $rule->product->title,
