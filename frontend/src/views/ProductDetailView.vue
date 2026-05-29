@@ -118,87 +118,92 @@
         <div class="mb-4 chart-wrap">
           <div class="chart-scroll">
             <div class="chart-inner" :style="{ height: '280px' }">
-              <div v-if="chartLoading" style="height:280px;background:transparent"></div>
+              <v-skeleton-loader v-if="chartLoading" type="image" height="280" />
               <Line v-else :data="chartData" :options="chartOptions" />
             </div>
           </div>
         </div>
 
         <!-- Price table -->
-        <template v-if="historyData.length">
-          <div class="d-sm-none">
-            <div
-              v-for="item in historyRows"
-              :key="item.id"
-              class="d-flex justify-space-between align-center py-2 mobile-history-row"
-            >
-              <span class="text-caption text-medium-emphasis">{{ formatDate(item.checked_at) }}</span>
-              <div class="text-right">
-                <div class="text-body-2 font-weight-500">{{ formatPrice(item.price) }}</div>
-                <div class="text-caption" :class="item.change >= 0 ? 'text-success' : 'text-error'">
-                  {{ item.change >= 0 ? '▲' : '▼' }} {{ formatChange(item.change) }}
+        <template v-if="historyLoading">
+          <v-skeleton-loader type="table" />
+        </template>
+        <template v-else>
+          <template v-if="historyData.length">
+            <div class="d-sm-none">
+              <div
+                v-for="item in historyRows"
+                :key="item.id"
+                class="d-flex justify-space-between align-center py-2 mobile-history-row"
+              >
+                <span class="text-caption text-medium-emphasis">{{ formatDate(item.checked_at) }}</span>
+                <div class="text-right">
+                  <div class="text-body-2 font-weight-500">{{ formatPrice(item.price) }}</div>
+                  <div class="text-caption" :class="item.change >= 0 ? 'text-success' : 'text-error'">
+                    {{ item.change >= 0 ? '▲' : '▼' }} {{ formatChange(item.change) }}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="d-none d-sm-block">
-            <v-table density="compact" class="history-table">
-              <thead>
-                <tr>
-                  <th>{{ $t('productDetail.date') }}</th>
-                  <th class="text-right">{{ $t('productDetail.price') }}</th>
-                  <th class="text-right">{{ $t('productDetail.change') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(entry, i) in historyData" :key="`${entry.checked_at}-${entry.price}-${i}`">
-                  <td>{{ formatDate(entry.checked_at) }}</td>
-                  <td class="text-right font-weight-medium">{{ formatPrice(entry.price) }}</td>
-                  <td class="text-right">
-                    <template v-if="i < historyData.length - 1">
-                      <span :class="historyChangeClass(entry.price, historyData[i + 1].price)">
-                        {{ historyChangeArrow(entry.price, historyData[i + 1].price) }}
-                        {{ historyChangeAmount(entry.price, historyData[i + 1].price) }}
-                        ({{ historyChangePercent(entry.price, historyData[i + 1].price) }})
-                      </span>
-                    </template>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </div>
-
-          <div v-if="!smAndDown" class="d-flex justify-center align-center flex-wrap ga-2 mt-4">
-            <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage <= 1" @click="goToPage(1)">
-              «
-            </v-btn>
-            <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage <= 1" @click="goToPage(historyPage - 1)">
-              ‹
-            </v-btn>
-            <div class="d-flex align-center ga-2 text-body-2 text-medium-emphasis">
-              <span>{{ $t('productDetail.pageIndicator', { current: historyPage, last: totalPages }) }}</span>
-              <input
-                class="page-input"
-                type="number"
-                :value="historyPage"
-                min="1"
-                :max="totalPages"
-                @change="goToPage(Number($event.target.value))"
-              />
+            <div class="d-none d-sm-block">
+              <v-table density="compact" class="history-table">
+                <thead>
+                  <tr>
+                    <th>{{ $t('productDetail.date') }}</th>
+                    <th class="text-right">{{ $t('productDetail.price') }}</th>
+                    <th class="text-right">{{ $t('productDetail.change') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(entry, i) in historyData" :key="`${entry.checked_at}-${entry.price}-${i}`">
+                    <td>{{ formatDate(entry.checked_at) }}</td>
+                    <td class="text-right font-weight-medium">{{ formatPrice(entry.price) }}</td>
+                    <td class="text-right">
+                      <template v-if="i < historyData.length - 1">
+                        <span :class="historyChangeClass(entry.price, historyData[i + 1].price)">
+                          {{ historyChangeArrow(entry.price, historyData[i + 1].price) }}
+                          {{ historyChangeAmount(entry.price, historyData[i + 1].price) }}
+                          ({{ historyChangePercent(entry.price, historyData[i + 1].price) }})
+                        </span>
+                      </template>
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
             </div>
-            <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage >= totalPages" @click="goToPage(historyPage + 1)">
-              ›
-            </v-btn>
-            <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage >= totalPages" @click="goToPage(totalPages)">
-              »
-            </v-btn>
+
+            <div v-if="!smAndDown" class="d-flex justify-center align-center flex-wrap ga-2 mt-4">
+              <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage <= 1" @click="goToPage(1)">
+                «
+              </v-btn>
+              <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage <= 1" @click="goToPage(historyPage - 1)">
+                ‹
+              </v-btn>
+              <div class="d-flex align-center ga-2 text-body-2 text-medium-emphasis">
+                <span>{{ $t('productDetail.pageIndicator', { current: historyPage, last: totalPages }) }}</span>
+                <input
+                  class="page-input"
+                  type="number"
+                  :value="historyPage"
+                  min="1"
+                  :max="totalPages"
+                  @change="goToPage(Number($event.target.value))"
+                />
+              </div>
+              <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage >= totalPages" @click="goToPage(historyPage + 1)">
+                ›
+              </v-btn>
+              <v-btn variant="text" rounded="xl" size="small" :disabled="loadingPage || historyPage >= totalPages" @click="goToPage(totalPages)">
+                »
+              </v-btn>
+            </div>
+          </template>
+
+          <div v-else class="text-center text-medium-emphasis pa-4">
+            {{ $t('productDetail.noPriceDataYet') }}
           </div>
         </template>
-
-        <div v-else class="text-center text-medium-emphasis pa-4">
-          {{ $t('productDetail.noPriceDataYet') }}
-        </div>
       </v-card>
     </template>
 
@@ -249,6 +254,7 @@ const historyData = ref([])
 const chartHistoryData = ref([])
 const historyStats = ref(null)
 const loading = ref(true)
+const historyLoading = ref(true)
 const chartLoading = ref(true)
 const historyPage = ref(1)
 const loadingPage = ref(false)
@@ -648,6 +654,7 @@ async function loadProduct() {
 
 async function loadHistory() {
   chartLoading.value = true
+  historyLoading.value = true
   try {
     const days = historyDays.value === -1 ? null : historyDays.value
 
@@ -674,6 +681,7 @@ async function loadHistory() {
     }
   } finally {
     chartLoading.value = false
+    historyLoading.value = false
   }
 }
 
