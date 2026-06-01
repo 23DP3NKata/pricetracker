@@ -53,18 +53,31 @@ class PriceHistoryController extends Controller
         }
 
         // Chart - in chronological order (limit rows to keep response fast)
-        $chartRows = Cache::remember("price_history_chart_{$product->id}_days_{$days}", $cacheTtl, function () use ($product, $days, $chartLimit) {
-            $query = PriceHistory::query()->where('product_id', $product->id);
-            if ($days !== null) {
-                $query->where('checked_at', '>=', now()->subDays($days));
+        $chartRows = Cache::remember("price_history_chart_{$product->id}_days_{$days}", $cacheTtl, function () use ($baseQuery, $chartLimit) {
+            $total = (clone $baseQuery)->count();
+            if ($total <= $chartLimit) {
+                return (clone $baseQuery)
+                    ->orderBy('checked_at')
+                    ->get(['id', 'price', 'checked_at'])
+                    ->all();
             }
 
-            $rows = $query
-                ->orderByDesc('checked_at')
-                ->limit($chartLimit)
-                ->get(['id', 'price', 'checked_at']);
+            $step = max(1, (int) ceil($total / $chartLimit));
+            $rows = [];
+            $index = 0;
 
-            return $rows->reverse()->values()->all();
+            (clone $baseQuery)
+                ->orderBy('checked_at')
+                ->chunk(1000, function ($chunk) use (&$rows, &$index, $step) {
+                    foreach ($chunk as $row) {
+                        if ($index % $step === 0) {
+                            $rows[] = $row;
+                        }
+                        $index += 1;
+                    }
+                });
+
+            return $rows;
         });
         if (empty($chartRows) && $product->current_price !== null) {
             $chartRows = [[
