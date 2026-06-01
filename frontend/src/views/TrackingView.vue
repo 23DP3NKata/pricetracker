@@ -231,53 +231,54 @@
         <div class="tracking-card-fields">
           <div class="tracking-card-control">
             <div class="tracking-card-label">{{ $t('tracking.target') }}</div>
-            <v-text-field
-              v-model="item.target_price"
-              @update:model-value="val => { normalizeItemTargetInput(item, val); item._unsaved = true }"
-              type="text"
-              inputmode="decimal"
-              maxlength="18"
-              min="0"
-              step="0.01"
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="modern-input"
-              rounded="lg"
-            />
+            <div class="tracking-card-input-row">
+              <v-text-field
+                v-model="item.target_price"
+                @update:model-value="val => { normalizeItemTargetInput(item, val); item._unsaved = true }"
+                type="text"
+                inputmode="decimal"
+                maxlength="18"
+                min="0"
+                step="0.01"
+                density="compact"
+                variant="outlined"
+                hide-details
+                class="modern-input"
+                rounded="lg"
+              />
+              <div class="tracking-card-input-actions">
+                <v-btn
+                  size="small"
+                  :variant="item._unsaved ? 'tonal' : 'text'"
+                  class="icon-action-btn"
+                  :loading="item._saving"
+                  :color="item._unsaved ? 'primary' : 'default'"
+                  :style="item._unsaved ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
+                  icon="mdi-content-save-outline"
+                  :aria-label="$t('tracking.save')"
+                  @click="saveItem(item)"
+                />
+                <v-btn
+                  size="small"
+                  variant="text"
+                  class="icon-action-btn"
+                  :loading="item._deleting"
+                  @mouseenter="item._hoverDelete = true"
+                  @mouseleave="item._hoverDelete = false"
+                  :color="item._hoverDelete ? 'error' : 'default'"
+                  :style="item._hoverDelete ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
+                  icon="mdi-trash-can-outline"
+                  :aria-label="$t('tracking.remove')"
+                  @click="removeItem(item)"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="tracking-card-footer">
           <div class="tracking-card-meta text-caption text-medium-emphasis" v-if="item.rule_count !== null">
             {{ $t('tracking.rulesCount', { count: item.rule_count }) }}
-          </div>
-          <div class="tracking-card-actions">
-            <v-btn
-              size="small"
-              :variant="item._unsaved ? 'tonal' : 'text'"
-              class="icon-action-btn"
-              :loading="item._saving"
-              :color="item._unsaved ? 'primary' : 'default'"
-              :style="item._unsaved ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
-              icon="mdi-content-save-outline"
-              :aria-label="$t('tracking.save')"
-              @click="saveItem(item)"
-            />
-
-            <v-btn
-              size="small"
-              variant="text"
-              class="icon-action-btn"
-              :loading="item._deleting"
-              @mouseenter="item._hoverDelete = true"
-              @mouseleave="item._hoverDelete = false"
-              :color="item._hoverDelete ? 'error' : 'default'"
-              :style="item._hoverDelete ? 'transition: all 0.2s' : 'opacity: 0.25; transition: all 0.2s'"
-              icon="mdi-trash-can-outline"
-              :aria-label="$t('tracking.remove')"
-              @click="removeItem(item)"
-            />
           </div>
         </div>
       </div>
@@ -790,6 +791,19 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   flex: 0 0 auto;
+}
+
+.tracking-card-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.tracking-card-input-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .tracking-card--completed .tracking-card-fields {
